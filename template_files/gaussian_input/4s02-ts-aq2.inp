@@ -1,0 +1,21 @@
+%nproc=24
+%mem=10GB
+%chk=1.chk
+#P b3lyp/gen gfinput opt(ts,noeigen,readfc) scf=(xqc,maxcon=128,maxcyc=128) scrf(cpcm,read,solvent=water) geom(check,newdefinition) iop(1/8=1) guess=read
+
+synthetase-4s02-0/1.chk
+
+0 1
+
+O N S
+6-31G(d')
+****
+C H
+6-31G
+****
+
+radii=uaks
+alpha=1.2
+eps=4.0
+
+
