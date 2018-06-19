@@ -1,0 +1,8 @@
+%chk=1.chk
+%nproc=24
+%mem=14GB
+#P b3lyp/gen opt freq scf=(xqc,maxcon=128,maxcyc=128)
+
+Description
+
+charge multiplicity

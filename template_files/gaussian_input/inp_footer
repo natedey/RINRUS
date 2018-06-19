@@ -1,0 +1,16 @@
+%chk=1.chk
+%nproc=24
+%mem=14GB
+#P b3lyp/gen opt freq scf=(xqc,maxcon=128,maxcyc=128) guess=read geom(check,step=26)
+
+dd-peptidase-complex from 1PWCpdb direct-trim
+
+0 1
+
+O N S
+6-31G(d')
+****
+C H
+6-31G
+****
+
