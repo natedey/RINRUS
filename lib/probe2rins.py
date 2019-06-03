@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import os, sys, re
 from copy import *
 from numpy import *
@@ -95,8 +97,10 @@ def check_dict_repeat(key,a,dict):
 
 def probe_analysis(probefile,sel_res):
     ### sel_res format A:300,A:301,A:302 ###
+    print sel_res
     sel_res_list = sel_res.split(',')
     res_list = deepcopy(sel_res_list)
+    print res_list
 
     res_acts = {}
     actions  = []
@@ -105,6 +109,7 @@ def probe_analysis(probefile,sel_res):
 
     with open(probefile,'r') as f:
         lines = f.readlines()
+    print lines[0]
 
     for line in lines:
         c = line.split(':')
@@ -206,8 +211,9 @@ if __name__ == "__main__":
         print "Usage: probe_file select_res[in form of A:300,A:301,A:302]"
         exit()
     probefile = sys.argv[1]
+    sel_res = sys.argv[2]
 
-    res_list, res_acts, actions, siflines, res_atoms = probe_analysis(probefile,sys.argv[2])
+    res_list, res_acts, actions, siflines, res_atoms = probe_analysis(probefile,sel_res)
     res_dict = order_reslist(res_list)
 
     write_rin(actions)
