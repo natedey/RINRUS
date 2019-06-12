@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os, sys, re
-from PDB import *
+from read_write_pdb import *
 from read_probe import *
 from copy import *
 
@@ -13,7 +13,8 @@ from copy import *
 ###################################################################
 
 
-pdb   = read_pdb(sys.argv[1])
+#pdb   = read_pdb(sys.argv[1])
+pdb, res_info, tot_charge = read_pdb(sys.argv[1])
 probe = sys.argv[2]
 freqf = sys.argv[3]
 list4 = sys.argv[4]
