@@ -1,0 +1,41 @@
+small
+b3lyp/genecp
+opt(ts,noeigen,calcfc)
+freq
+#guess=read
+#geom=(checkpoint,step=10)
+#iop(1/8=1)
+scf=(xqc,maxcon=128,maxcyc=128)
+scrf(cpcm,read,solvent=water) EmpiricalDispersion=GD3BJ
+
+basis:
+Mg     0                              
+S   2   1.00                          
+      0.7250000             -0.4058454
+      0.1112000              1.1688704
+S   1   1.00                          
+      0.0404000              1.0000000
+P   2   1.00                          
+      1.2400000             -0.0749753
+      0.1346000              1.0178183
+P   1   1.00                          
+      0.0422000              1.0000000
+****                                  
+S     0                               
+6-31G(d')                             
+****                                  
+O     0                               
+6-31G(d')                             
+****                                  
+N     0                               
+6-31G(d')                             
+****                                  
+C     0                               
+6-31G                                 
+****                                  
+H     0                               
+6-31G                                 
+****                                  
+                                      
+Mg                                    
+lanl2dz                               
