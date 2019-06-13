@@ -50,7 +50,7 @@ def get_inttype(c):
     elif c == 'hb':
         action = 'hbond'
     else:
-        print 'Cannot find interaction type!'
+        print('Cannot find interaction type!')
         return "None"
     return action
 
@@ -97,10 +97,10 @@ def check_dict_repeat(key,a,dict):
 
 def probe_analysis(probefile,sel_res):
     ### sel_res format A:300,A:301,A:302 ###
-    print sel_res
+    print(sel_res)
     sel_res_list = sel_res.split(',')
     res_list = deepcopy(sel_res_list)
-    print res_list
+    print(res_list)
 
     res_acts = {}
     actions  = []
@@ -109,7 +109,7 @@ def probe_analysis(probefile,sel_res):
 
     with open(probefile,'r') as f:
         lines = f.readlines()
-    print lines[0]
+    print(lines[0])
 
     for line in lines:
         c = line.split(':')
@@ -164,12 +164,12 @@ def order_reslist(res_list):
 
 def print_list(res_list):
     for i in res_list:
-        print i
+        print(i)
 
 
 def print_dict(dict):
     for i in sorted(dict.keys()):
-        print i, dict[i]
+        print(i, dict[i])
 
 
 def write_res_freq(res_list, res_acts, res_atoms):
@@ -208,7 +208,7 @@ def write_sif(siflines):
 
 if __name__ == "__main__":
     if (len(sys.argv) < 3):
-        print "Usage: probe_file select_res[in form of A:300,A:301,A:302]"
+        print("Usage: probe_file select_res[in form of A:300,A:301,A:302]")
         exit()
     probefile = sys.argv[1]
     sel_res = sys.argv[2]
