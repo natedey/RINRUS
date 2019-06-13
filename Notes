@@ -1,3 +1,6 @@
+# The python3 library is lib3
+# Most of the scripts are in bin
+
 # After get a raw pdb file (raw.pdb), check ambiguous atoms, clean up
 # Run reduce, generate a new H added pdb file (raw_h.pdb) 
 # Check the new pdb file, if there is metal, replace with an atom with same coordination (such as replace Mg with O)
@@ -5,7 +8,12 @@
 # If there is atom "CA" or "CB" in ligands, replace with "CA'" and "CB'"
 # After previous 3 check stpes, save the file to a new file (raw_h_modify.pdb)
 # Use this new pdb file (raw_h_modify.pdb), run probe and save result to *.probe
-# Run probe2rins.py
-# Modify freq_per_res.dat file for trim residues
+
+# Run probe2rins.py to generate freq_per_res.dat
+# Example: python3 ../bin/probe2rins.py -f 3bwm_h.probe -s A:300,A:301,A:302
+
+# Run freq_per_res.dat file for trim residues
+# Example: python3 ../bin/probe_freq_2pdb.py 3bwm_h_mg.ent 3bwm_h.probe freq_per_res.dat A,300,A,301,A,302
+
 # Use raw_h.pdb, freq_per_res.dat, and other needed files run probe_freq_2pdb.py
 # Run pymol_scripts.py to add H to the trimmed pdb files for differnt size model

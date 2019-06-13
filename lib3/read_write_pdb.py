@@ -81,7 +81,7 @@ def read_pdb(pdbfile,TER=False):
     f.close()
     return pdb, res_info, tot_charge
 
-pdb, res_info, tot_charge = read_pdb('/home/qcheng1/projects/comt/2019.2/set2-probe-freq/man-ts/3bwm_h_mg_ts_wGlu199.ent')
+#pdb, res_info, tot_charge = read_pdb('/home/qcheng1/projects/comt/2019.2/set2-probe-freq/man-ts/3bwm_h_mg_ts_wGlu199.ent')
 
 def write_pdb(filename,pdb,renum_atom=True,hydrogen=True,renum_res=False):
     if ( isinstance(filename,IOBase) ):
