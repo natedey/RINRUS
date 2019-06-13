@@ -22,8 +22,9 @@
 # Use raw_h.pdb, freq_per_res.dat, and other needed files run probe_freq_2pdb.py
 # Run pymol_scripts.py to add H to the trimmed pdb files for differnt size model
 
-# Run pymol_scripts.py to add H to res_*.pdb
+# Run pymol_scripts.py to add H to res_*.pdb, which generate a log.pml file, and then run pymol -qc log.pml
 # Example: python3 bin/pymol_scripts.py res_*.pdb 301,302
+#          pymol -qc log.pml
 
 # Run write_input.py to generate template file and input file
 # Example: python3 bin/write_input.py -noh res_*.pdb -adh res_*_h.pdb -intmp input_templat
