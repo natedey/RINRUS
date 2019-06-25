@@ -176,6 +176,7 @@ def check_s(chain,id,atom,res_info,nres_atom):
                 res_info[(chain,id)] = ['CA','CB']
     return nres_atom, res_info
 
+### check one residue after ### 
 def check_a(chain,id,atom,nres_info,nres_atom,res_name,pdb_res_name):
     if 'C' in atom and (chain,id+1) in pdb_res_name.keys():
         if (chain,id+1) not in nres_atom.keys(): 
@@ -191,6 +192,7 @@ def check_a(chain,id,atom,nres_info,nres_atom,res_name,pdb_res_name):
             res_name[(chain,id+1)] = pdb_res_name[(chain,id+1)]
     return nres_atom, nres_info, res_name
 
+### check one residue before ###
 def check_b(chain,id,atom,nres_info,nres_atom,res_name,pdb_res_name):
     if 'N' in atom and (chain,id-1) in pdb_res_name.keys():
         if (chain,id-1) not in nres_atom.keys():
@@ -219,11 +221,19 @@ def check_bb(chain,id,nres_atom):
     return nres_atom
 
 def final_pick(pdb,nres_atom,nres_info):
+    list_cb = ['ARG','LYS','GLU','GLN','MET','TRP','TYR','PHE']
     res_pick = []
     for line in pdb:
         if (line[5],line[6]) in nres_atom.keys() and line[2].strip() in nres_atom[(line[5],line[6])]:
-            if (line[5],line[6]) in nres_info.keys() and line[2].strip() in nres_info[(line[5],line[6])]:
+            if line[2].strip() == 'CA':
                 res_pick.append( [line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],'-1'] )
+            elif line[2].strip() == 'CB':
+                if line[4].strip() in list_cb and 'CG' in nres_atom[(line[5],line[6])]:
+                    res_pick.append( [line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],'-1'] )
+                elif line[4].strip() not in list_cb and 'CA' not in nres_atom[(line[5],line[6])]:
+                    res_pick.append( [line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],'-1'] )
+                else:
+                    res_pick.append( [line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],' 0'] )
             else:
                 res_pick.append( [line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],' 0'] )
     return res_pick
