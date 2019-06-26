@@ -1,6 +1,6 @@
 import sys, os
 from numpy import *
-from PDB import *
+from read_write_pdb import *
 from res_atoms import *
 
 

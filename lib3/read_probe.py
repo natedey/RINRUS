@@ -60,7 +60,7 @@ def analyse_side(side,res_name,res_count,res_atom):
 
 
 def get_probe_atoms(probefile,res_name,res_atom,res_cout):     # # res_list in format ('A',400,'A',62)
-    sel_keys = res_name.keys()
+    sel_keys = list(res_name.keys())
     with open(probefile) as f:
         lines = f.readlines()
     for i in range(len(lines)):

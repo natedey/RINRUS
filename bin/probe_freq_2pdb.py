@@ -12,7 +12,7 @@ from copy import *
 #pdb = read_pdb('../comt2/3bwm_h_mg.ent')
 #probe = '../comt2/3bwm_h.probe'
 #freqf = 'freq_per_res.dat'
-#idx_list = ['A',300,'A',301,'A',302]
+#idx_list = ['A',300;'A',301;'A',302]
 ###################################################################
 
 
@@ -26,7 +26,7 @@ c = list4.split(',')
 for i in range(0,len(c),2):
     idx_list.append(c[i])
     idx_list.append(int(c[i+1]))
-print(idx_list)
+print('Seeds are:', idx_list)
 
 res_name = {}
 res_atom = {}
@@ -37,7 +37,7 @@ cres_atom = {}
 
 ### get key residues ###
 res_atom, res_name, res_info, pdb_res_name = get_sel_atoms(pdb,idx_list,res_atom,res_name,res_info,pdb_res_name)
-sel_key = res_name.keys()   ### sel_key = [('A',300),('A',301),('A',302)]
+sel_key = list(res_name.keys())   ### sel_key = [('A',300),('A',301),('A',302)]
 
 ### Sort residue by frequency ###
 qf = {}
