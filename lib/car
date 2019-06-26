@@ -1,0 +1,562 @@
+#!/bin/bash
+# CEW 10/21/2013
+# usage:
+#
+# car arg1 arg2(optional) arg3(optional)
+#
+## this script will print coordinates to the screen
+#
+# car arg1 (arg2) (arg3)
+# arg1 is the name of car file without the car extension
+# arg2 is the name of base directory to which to transfer input file (1.inp)
+# arg3 is the flag \"make\", which, if present, the car script creates a
+#      new directory named arg1 on $remotemachine;
+# i.e., arg1 is appended onto arg2: the arg2/arg1 directory on $remotemachine
+#
+# if template.inp exists, the script will build an input file from template.inp
+# and template.bs and transfer the input file to penquin in the arg2 directory
+#
+## example 
+## car c2h6 project make
+#
+
+script_name=car
+bindir=/home/$USER/newbin
+REMOTEUSER=$USER
+remotemachine=hpclogin.memphis.edu
+remoteprepath=/home/$REMOTEUSER
+
+if [ "$1" = "--help" ]; then
+echo "This script will print coordinates to the screen
+usage:
+\$ $script_name arg1 (arg2) (arg3)
+ arg1 is the name of car file without the car extension
+ arg2 is the name of base directory to which to transfer input file (1.inp)
+ arg3 is the flag \"make\", which, if present, the $script_name script creates a
+      new directory named arg1 on $remotemachine;
+ i.e., arg1 is appended onto arg2: the arg2/arg1 directory on $remotemachine
+
+ if template.inp exists (template.charge must also exist), the script will
+ build an input file from template.inp and template.charge and transfer the
+ input file to $remotemachine in the arg2 directory
+
+ if template.bs and/or template.modred exist, they will be used during the
+ build of the input file
+
+the template.bs file must have the basis set in the same format as that from the EMSL webpage
+
+use car --config to see formats of other template files (hard returns/blank lines really matter!!!)
+
+for example,
+\$ $script_name c2h6 project make
+will
+1) get coordinates from c2h6.car
+ if templates exist, 
+2) make a new directory named c2h6 on $remotemachine in the $remoteprepath/project directory
+3) make an input file c2h6.car in $remoteprepath/project
+
+modred sections, freeze codes, and ONIOM layer data can be built into the input file
+
+run \"$script_name --config\" to print a reasonable $script_name.config file
+run \"$script_name --template\" to print reasonable template files (that must be edited)
+"
+exit
+elif [ "$1" = "--config" ]; then
+echo "# here is an example config file for $script_name
+# if it exists, it should be named $script_name.config
+#
+## the directory location of the template files
+template_location `pwd`/
+#
+## the input template filename
+template_input  template.inp
+#
+## the charge template filename
+template_charge template.charge
+#
+## the basis set template filename
+template_basis  template.bs
+#
+## generate the basis set from the build-basis-set.sh script
+build_basis  true
+## print the entire template.bs file for the basis set
+#build_basis  false
+#
+## use a modred section filename
+#template_modred_section template.modred
+#
+## the template locations are all customizable
+## these locations override the template_location
+template_location_input  `pwd`/
+template_location_charge `pwd`/
+template_location_basis  `pwd`/
+template_location_modred `pwd`/
+#
+##
+ecp_core 10
+# ecp_core 10 # Neon core
+# ecp_core 18 # Argon core
+# ecp_core 31 # Argon core only for p block, all electron for 1st row transition metals
+# ecp_core 36 # Krypton core
+#
+## constrain the first number_constrain atoms
+constrain false
+# uncomment 'number_constrain' and put the number of atoms to constrain; the script
+# puts freeze codes for the first 'number_constrain' atoms)
+#number_constrain 0
+#
+## the oniom_data file (this file contains the ONIOM layer and link atom data,
+# just as it looks in the input file)
+#oniom_data oniom-data.txt
+#
+## various defaults are customizable
+bindir /home/$USER/newbin
+REMOTEUSER $USER
+remotemachine penguin1.memphis.edu
+remoteprepath /home/$REMOTEUSER
+"
+exit
+elif [ "$1" = "--template" ] || [ "$1" = "--templates" ]; then
+echo "Be sure to pay close attention to the newlines!
+# here is a reasonable default template.inp
+!begin
+%chk=1.chk
+%mem=800mw
+%nproc=8
+#P b3lyp/genecp opt freq gfinput scf=(xqc,maxcon=128,maxcyc=128)
+
+! end"
+echo "
+# here is a reasonable default template.charge
+!begin
+0 1
+! end"
+echo "
+# here is a reasonable default template.modred
+!begin
+1 2 3 F
+
+! end"
+echo "
+# here is a reasonable default template.bs
+!begin
+Zn     0
+lanl2dz
+****
+O     0
+6-31G(d')
+****
+C     0
+6-31G(d')
+****
+H     0
+6-31G(d')
+****
+
+Zn
+lanl2dz
+
+! end"
+exit
+fi
+
+if [ -f "`pwd`/$script_name.config" ]; then
+ config="`pwd`/$script_name.config"
+ echo "a local config file was found, be careful, using $config for configuration"
+ template_location="`grep ^template_location $config | awk '{print $2}'`"
+    template_input="`grep ^template_input    $config | awk '{print $2}'`"
+   template_charge="`grep ^template_charge   $config | awk '{print $2}'`"
+    template_basis="`grep ^template_basis    $config | awk '{print $2}'`"
+   template_modred="`grep ^template_modred   $config | awk '{print $2}'`"
+          ecp_core="`grep ^ecp_core          $config | awk '{print $2}'`"
+       build_basis="`grep ^build_basis       $config | awk '{print $2}'`"
+         constrain="`grep ^constrain         $config | awk '{print $2}'`"
+  number_constrain="`grep ^number_constrain  $config | awk '{print $2}'`"
+        oniom_data="`grep ^oniom_data        $config | awk '{print $2}'`"
+
+  template_location_input="`grep  ^template_location_input $config | awk '{print $2}'`"
+ template_location_charge="`grep ^template_location_charge $config | awk '{print $2}'`"
+  template_location_basis="`grep  ^template_location_basis $config | awk '{print $2}'`"
+ template_location_modred="`grep ^template_location_modred $config | awk '{print $2}'`"
+
+if grep ^bindir        $config 1> /dev/null; then        bindir="`grep        ^bindir $config | awk '{print $2}'`"; fi
+if grep ^REMOTEUSER    $config 1> /dev/null; then    REMOTEUSER="`grep    ^REMOTEUSER $config | awk '{print $2}'`"; fi
+if grep ^remotemachine $config 1> /dev/null; then remotemachine="`grep ^remotemachine $config | awk '{print $2}'`"; fi
+if grep ^remoteprepath $config 1> /dev/null; then remoteprepath="`grep ^remoteprepath $config | awk '{print $2}'`"; fi
+
+elif [ -f "$bindir/$script_name.config" ]; then
+ config="$bindir/$script_name.config"
+ echo "a local config file was not found, be careful, using $config for configuration"
+ template_location="`grep ^template_location $config | awk '{print $2}'`"
+    template_input="`grep ^template_input    $config | awk '{print $2}'`"
+   template_charge="`grep ^template_charge   $config | awk '{print $2}'`"
+    template_basis="`grep ^template_basis    $config | awk '{print $2}'`"
+   template_modred="`grep ^template_modred   $config | awk '{print $2}'`"
+          ecp_core="`grep ^ecp_core          $config | awk '{print $2}'`"
+       build_basis="`grep ^build_basis       $config | awk '{print $2}'`"
+         constrain="`grep ^constrain         $config | awk '{print $2}'`"
+  number_constrain="`grep ^number_constrain  $config | awk '{print $2}'`"
+        oniom_data="`grep ^oniom_data        $config | awk '{print $2}'`"
+
+  template_location_input="`grep  ^template_location_input $config | awk '{print $2}'`"
+ template_location_charge="`grep ^template_location_charge $config | awk '{print $2}'`"
+  template_location_basis="`grep  ^template_location_basis $config | awk '{print $2}'`"
+ template_location_modred="`grep ^template_location_modred $config | awk '{print $2}'`"
+
+if grep ^bindir        $config 1> /dev/null; then        bindir="`grep        ^bindir $config | awk '{print $2}'`"; fi
+if grep ^REMOTEUSER    $config 1> /dev/null; then    REMOTEUSER="`grep    ^REMOTEUSER $config | awk '{print $2}'`"; fi
+if grep ^remotemachine $config 1> /dev/null; then remotemachine="`grep ^remotemachine $config | awk '{print $2}'`"; fi
+if grep ^remoteprepath $config 1> /dev/null; then remoteprepath="`grep ^remoteprepath $config | awk '{print $2}'`"; fi
+
+else
+ echo "no config file was found, be careful, using reasonable defaults"
+ template_location="`pwd`/"
+ #
+ ## the input template filename
+ template_input=template.inp
+ #
+ ## the charge template filename
+ template_charge=template.charge
+ #
+ ## the basis set template filename
+ template_basis=template.bs
+ #
+ ## generate the basis set from the build-basis-set.sh script
+ build_basis=true
+ #
+ ## the ecp core
+ # ecp=10 # Neon core
+ # ecp=18 # Argon core
+ # ecp=31 # Argon core only for p block, all electron for 1st row transition metals
+ # ecp=36 # Krypton core
+ ecp_core=10
+ #
+ ## use a modred section, filename
+ #template_modred=template.modred
+ #
+ ## the template locations are all customizable
+ template_location_input=$template_location
+ template_location_charge=$template_location
+ template_location_basis=$template_location
+ #template_location_modred=$template_location
+ #
+ ## constrain
+ constrain=false
+ #number_constrain=0
+ #
+ ## the oniom_data file
+ #oniom_data=oniom-data.txt
+fi
+
+
+# be sure that $template_location ends in a "\"
+[[ $template_location != */ ]] && template_location="$template_location"/
+
+
+if [ ! "$1" ]; then
+ echo $1 no car file was given
+
+else
+
+ if [ -n "$oniom_data" ]; then
+  echo this is an ONIOM job
+  if [ ! -f "$oniom_data" ]; then
+    echo "need \"$oniom_data\", which contains the layer data file to build inputs
+ for an oniom job; this file must contain only the ONIOM data at the end of each line
+ in the original input file; no other data can be in this file"
+    exit
+  else
+    echo reading file for oniom data
+    old_IFS=$IFS
+    IFS=$'\n'
+    oniomdata=($(cat $oniom_data))
+    IFS=$old_IFS
+  fi
+ fi
+
+ if [ "$constrain" == "true" ]; then
+  echo constraining the first $number_constrain atoms
+  test $number_constrain -eq 0 2>/dev/null
+  if [ $? -eq 2 ]; then
+   echo the number of atoms to constrain, $number_constrain, is not an integer, exiting...
+   exit
+  fi
+ fi
+ if [ ! "$2" ]; then
+   if test -f "$1".car; then
+    echo "$1".car has been read
+    echo $2 no directory was specified--no file will be transferred to $remotemachine
+    echo here are the coordinates for "$1".car
+    printf "\n"
+    if test -f "$template_location_charge$template_charge"; then
+     cat $template_location_charge$template_charge
+    fi
+    if [ "$constrain" == "true" ] && [ -n "$oniom_data" ]; then
+     molec_spec=(`awk '/DATE/,/end/ {{if (NF==9) print $8, $2, $3, $4}}' "$1.car"`)
+     number_atoms=$((${#molec_spec[*]}/4))
+# check that the each atom has an ONIOM code
+     if [ "$number_atoms" != "${#oniomdata[*]}" ]; then 
+      echo number of atoms \($number_atoms\) not equal to number of items in oniom_data file \(${#oniomdata[*]}\)
+      exit
+     fi
+     j=0
+     frz_code=-1
+     for (( i = 0 ; i < $number_atoms ; i++ ))
+      do
+       if [ "$i" -ge "$number_constrain" ]; then frz_code=0; fi
+       printf "%-6s%3s%14s%15s%15s%s\n" ${molec_spec[j]} $frz_code ${molec_spec[j+1]} ${molec_spec[j+2]} ${molec_spec[j+3]} " ${oniomdata[i]}"
+       j=$((j+4))
+      done
+
+    elif [ "$constrain" == "true" ]; then
+#     echo constrain
+     molec_spec=(`awk '/DATE/,/end/ {{if (NF==9) print $8, $2, $3, $4}}' "$1.car"`)
+     number_atoms=$((${#molec_spec[*]}/4))
+     j=0
+     frz_code=-1
+     for (( i = 0 ; i < $number_atoms ; i++ ))
+      do
+       if [ "$i" -ge "$number_constrain" ]; then frz_code=0; fi
+       printf "%-6s%3s%14s%15s%15s\n" ${molec_spec[j]} $frz_code ${molec_spec[j+1]} ${molec_spec[j+2]} ${molec_spec[j+3]}
+       j=$((j+4))
+      done
+
+    elif [ "$constrain" == "pdbcol" ]; then
+     echo "Extracting freeze code info from terminal column of pdb file"
+     molec_spec=(`awk '/DATE/,/end/ {{if (NF==9) print $8, $2, $3, $4}}' "$1.car"`)
+     number_atoms=$((${#molec_spec[*]}/4))
+     pdbfile=$(grep -Eo '^[0-9]+' <<< $1)
+     frz_code=(`awk '{if (NF>10) print $NF}' "final_$pdbfile.pdb"`)
+     j=0
+     for (( i = 0 ; i < $number_atoms ; i++ ))
+      do
+       printf "%-6s%3s%14s%15s%15s\n" ${molec_spec[j]} ${frz_code[i]} ${molec_spec[j+1]} ${molec_spec[j+2]} ${molec_spec[j+3]} >> "$1.inp"
+       j=$((j+4))
+      done
+
+    elif [ -n "$oniom_data" ]; then
+     molec_spec=(`awk '/DATE/,/end/ {{if (NF==9) print $8, $2, $3, $4}}' "$1.car"`)
+     number_atoms=$((${#molec_spec[*]}/4))
+# check that the each atom has an ONIOM code
+     if [ "$number_atoms" != "${#oniomdata[*]}" ]; then 
+      echo number of atoms \($number_atoms\) not equal to number of items in oniom_data file \(${#oniomdata[*]}\)
+      exit
+     fi
+     j=0
+     for (( i = 0 ; i < $number_atoms ; i++ ))
+      do
+       printf "%-6s%14s%15s%15s%s\n" ${molec_spec[j]} ${molec_spec[j+1]} ${molec_spec[j+2]} ${molec_spec[j+3]} " ${oniomdata[i]}"
+       j=$((j+4))
+      done
+
+    else
+     awk '/DATE/,/end/ {{if (NF==9) printf "%-6s%14s%15s%15s\n", $8, $2, $3, $4}}' "$1.car"
+    fi
+   else
+    echo "$1".car does not exist 
+   fi
+ else
+
+  if test -f "$1".car; then
+
+   if test -f "$template_location_charge$template_charge"; then
+
+    if test -f "$template_location_input$template_input"; then
+     cat $template_location_input$template_input > "$1.inp"
+     echo "$1.car" >> "$1.inp"
+     printf "\n" >> "$1.inp"
+     cat $template_location_charge$template_charge >> "$1.inp"
+## begin coordinates for molecular specification
+##     awk -f $bindir/extract-car.awk "$1.car" >> "$1.inp"
+    if [ "$constrain" == "true" ] && [ -n "$oniom_data" ]; then
+     molec_spec=(`awk '/DATE/,/end/ {{if (NF==9) print $8, $2, $3, $4}}' "$1.car"`)
+     number_atoms=$((${#molec_spec[*]}/4))
+# check that the each atom has an ONIOM code
+     if [ "$number_atoms" != "${#oniomdata[*]}" ]; then 
+      echo number of atoms \($number_atoms\) not equal to number of items in oniom_data file \(${#oniomdata[*]}\)
+      exit
+     fi
+     j=0
+     frz_code=-1
+     for (( i = 0 ; i < $number_atoms ; i++ ))
+      do
+       if [ "$i" -ge "$number_constrain" ]; then frz_code=0; fi
+       printf "%-6s%3s%14s%15s%15s%s\n" ${molec_spec[j]} $frz_code ${molec_spec[j+1]} ${molec_spec[j+2]} ${molec_spec[j+3]} " ${oniomdata[i]}" >> "$1.inp"
+       j=$((j+4))
+      done
+
+    elif [ "$constrain" == "true" ]; then
+#     echo constrain
+     molec_spec=(`awk '/DATE/,/end/ {{if (NF==9) print $8, $2, $3, $4}}' "$1.car"`)
+     number_atoms=$((${#molec_spec[*]}/4))
+     j=0
+     frz_code=-1
+     for (( i = 0 ; i < $number_atoms ; i++ ))
+      do
+       if [ "$i" -ge "$number_constrain" ]; then frz_code=0; fi
+       printf "%-6s%3s%14s%15s%15s\n" ${molec_spec[j]} $frz_code ${molec_spec[j+1]} ${molec_spec[j+2]} ${molec_spec[j+3]} >> "$1.inp"
+       j=$((j+4))
+      done
+
+    elif [ "$constrain" == "pdbcol" ]; then
+     echo "Extracting freeze code info from terminal column of pdb file"
+     molec_spec=(`awk '/DATE/,/end/ {{if (NF==9) print $8, $2, $3, $4}}' "$1.car"`)
+     number_atoms=$((${#molec_spec[*]}/4))
+     pdbfile=$(grep -Eo '^[0-9]+' <<< $1)
+     frz_code=(`awk '{if (NF>10) print $NF}' "final_$pdbfile.pdb"`)
+     j=0 
+     for (( i = 0 ; i < $number_atoms ; i++ ))
+      do
+       printf "%-6s%3s%14s%15s%15s\n" ${molec_spec[j]} ${frz_code[i]} ${molec_spec[j+1]} ${molec_spec[j+2]} ${molec_spec[j+3]} >> "$1.inp"
+       j=$((j+4))
+      done
+
+    elif [ -n "$oniom_data" ]; then
+     molec_spec=(`awk '/DATE/,/end/ {{if (NF==9) print $8, $2, $3, $4}}' "$1.car"`)
+     number_atoms=$((${#molec_spec[*]}/4))
+# check that the each atom has an ONIOM code
+     if [ "$number_atoms" != "${#oniomdata[*]}" ]; then 
+      echo number of atoms \($number_atoms\) not equal to number of items in oniom_data file \(${#oniomdata[*]}\)
+      exit
+     fi
+     j=0
+     for (( i = 0 ; i < $number_atoms ; i++ ))
+      do
+       printf "%-6s%14s%15s%15s%s\n" ${molec_spec[j]} ${molec_spec[j+1]} ${molec_spec[j+2]} ${molec_spec[j+3]} " ${oniomdata[i]}" >> "$1.inp"
+       j=$((j+4))
+      done
+
+    else
+     awk '/DATE/,/end/ {{if (NF==9) printf "%-6s%14s%15s%15s\n", $8, $2, $3, $4}}' "$1.car" >> "$1.inp"
+    fi
+## end coordinates for molecular specification
+     printf "\n" >> "$1.inp"
+     if test -f "$template_location_modred$template_modred"; then
+       if [ -n "`grep -i modred $template_location_input$template_input`" ]; then
+        cat $template_location_modred$template_modred >> "$1.inp"
+       else
+        echo you requested a modred section, but your route line does not contain a call to modred
+        exit
+       fi
+     fi
+     if test -f "$template_location_basis$template_basis"; then
+        if [ -z "$build_basis" ]; then
+         echo "something is wrong with your config file b/c build_basis is not set"
+         echo "rebuild your config file"
+         exit
+        elif [ $build_basis == "false" ]; then
+         cat $template_location_basis$template_basis >> "$1.inp"
+        elif [ $build_basis == "true" ]; then
+         if [ ! -f $bindir/build-basis-set.sh ]; then
+          echo $bindir/build-basis-set.sh does not exist
+          exit
+         fi
+
+        if [ -z "$ecp_core" ]; then
+         echo "something is wrong with your config file b/c ecp_core is not set"
+         echo "rebuild your config file"
+         exit
+        fi
+
+         $bindir/build-basis-set.sh "$1" $template_location_basis$template_basis $ecp_core >> "$1.inp"
+         echo $bindir/build-basis-set.sh "$1" $template_location_basis$template_basis $ecp_core
+        fi
+     else
+       echo no basis set/ecp was added to the input file      
+     fi
+# sanity checks
+     if [ -n "`grep -i modred $template_location_input$template_input`" ] && [ ! -f "$template_location_modred$template_modred" ]; then
+      echo  you specified modred in your route line, but you do not have a modred template
+      exit
+     fi
+     if [ -z "`grep -i modred $template_location_input$template_input`" ] && [ -f "$template_location_modred$template_modred" ]; then
+      echo  you did not specify modred in your route line, but you have a modred template
+      exit
+     fi
+     if [ -n "`grep -i gen $template_location_input$template_input`" ] && [ ! -f "$template_location_basis$template_basis" ]; then
+      echo  you specified gen or genecp in your route line, but you do not have a basis template
+      exit
+     fi
+     if [ -z "`grep -i gen $template_location_input$template_input`" ] && [ -f "$template_location_basis$template_basis" ]; then
+      echo  you did not specify gen or genecp in your route line, but you have a basis template
+      exit
+     fi
+     
+# tests for arg3 and creates the appropriate directory on $remotemachine if arg3 = make 
+
+    if [ "$3" == "make" ];then
+     remotedir=`ssh $remotemachine "if [ -d "$2"/"$1" ]; then
+      echo yes
+      else
+      echo no
+      fi"`
+
+       if [ "$remotedir" == "no" ]; then 
+        ssh $remotemachine mkdir "$2"/"$1"
+       else
+        echo the directory "$2"/"$1" already exists on $remotemachine
+       fi
+
+# checks to see if a 1.inp file already exists on $remotemachine and prompts user before overwriting the old 1.inp
+
+      transfer=`ssh $remotemachine "if [ -f "$2"/"$1"/1.inp ]; then
+      echo yes
+      else
+      echo no
+      fi"`
+
+      if [ $transfer == "yes" ]; then
+       echo Do you want to overwrite "$2"/"$1"/1.inp? \(y/n\)
+       read -n 1 interrogate 
+       echo 
+        if [ "$interrogate" = "y" ]; then
+           scp "$1.inp" $REMOTEUSER@$remotemachine:"$2"/"$1"/1.inp >& /dev/null
+         if [ "$?" = "0" ]; then
+           echo the input file has been copied to here on $remotemachine
+           echo $remoteprepath/"$2"/"$1"/1.inp
+           rm "$1.inp"
+         else
+           echo something went horribly, horribly wrong
+         fi
+        fi
+      else
+       scp "$1.inp" $REMOTEUSER@$remotemachine:"$2"/"$1"/1.inp  >& /dev/null
+       if [ "$?" = "0" ]; then
+         echo the input file has been copied to here on $remotemachine
+         echo $remoteprepath/"$2"/"$1"/1.inp
+         rm "$1.inp"
+       else
+         echo something went horribly, horribly wrong
+       fi
+      fi
+
+    else
+
+     scp "$1.inp" $REMOTEUSER@$remotemachine:"$2"/"$1"/1.inp
+     if [ "$?" = "0" ]; then
+       echo the input file has been copied to here on $remotemachine
+       echo $remoteprepath/"$2"/"$1"/1.inp
+       rm "$1.inp"
+     else
+       echo something went horribly, horribly wrong
+     fi
+
+    fi
+
+    else
+     echo "you specified a directory, but there is no route input template"
+     echo "$template_location_input$template_input"
+     echo "to build the input file"
+    fi
+   else
+    echo the charge template $template_location_charge$template_charge file does not exist
+   fi
+
+  else
+   echo "$1".car does not exist 
+  fi
+  
+ fi
+
+fi
+
