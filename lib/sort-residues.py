@@ -19,7 +19,7 @@ with open(filename) as fp:
         newstring = header + str(reslist) + footer
         corrected.append(newstring)
 
-savefile = open(filename, "w")
+savefile = open("sorted-" + filename, "w")
 for item in corrected:
     savefile.write(item)
 savefile.close()
