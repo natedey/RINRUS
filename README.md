@@ -13,12 +13,17 @@ export PYTHONPATH="~/git/RINRUS/lib3:$PYTHONPATH"
 ### Python dependencies
 
 - Python >= 3.x
-- `numpy`
+- NumPy
+
+For certain scripts (optional),
+- matplotlib
+- BioPython
 
 ### External dependencies
 
 - [probe](https://github.com/rlabduke/probe)
 - [reduce](https://github.com/rlabduke/reduce)
+
 which both require
 - CMake >= 3.10
 - Any C/C++ compiler suite with C++11 support
