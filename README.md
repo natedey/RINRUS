@@ -3,7 +3,19 @@ Residue Interaction Network-based ResidUe Selector (RINRUS) is a QM-cluster mode
 
 ## Installation
 
-### Dependencies
+Clone this repository, then add the library code under `lib3` to your `PYTHONPATH`. For example, in `~/git`:
+``` bash
+cd ~/git
+git clone git@github.com:MiloCheng17/RINRUS.git
+export PYTHONPATH="~/git/RINRUS/lib3:$PYTHONPATH"
+```
+
+### Python dependencies
+
+- Python >= 3.x
+- `numpy`
+
+### External dependencies
 
 - [probe](https://github.com/rlabduke/probe)
 - [reduce](https://github.com/rlabduke/reduce)
@@ -13,13 +25,8 @@ which both require
 
 ## Usage example
 
-Please git clone RINRUS to you home directory
-The python3 library is `lib3`, add path by adding `export PYTHONPATH=$PATHONPATH:$HOME/git/RINRUS/lib3`
-Most of the scripts are in `bin`
-
 After get a raw pdb file (`raw.pdb`), check ambiguous atoms, clean up
-Run reduce, generate a new H added pdb file (`raw_h.pdb`) 
-Example:
+Run `reduce` to generate a new H-added PDB file (`raw_h.pdb`):
 ```bash
 $HOME/git/RINRUS/bin/reduce -NOFLIP 3bwm.pdb > 3bwm_h.ent
 ```
@@ -35,8 +42,7 @@ Example:
 $HOME/git/RINRUS/bin/probe -unformated -MC -self "all" 3bwm_h.ent > 3bwm_h.probe
 ```
 
-Run probe2rins.py to generate `freq_per_res.dat`
-Example:
+Run probe2rins.py to generate `freq_per_res.dat`. The seed is comma-separated list of colon-separated pairs, the first part being the ID of the PDB subunit, the second part being the residue number in that subunit:
 ``` bash
 python3 $HOME/git/RINRUS/bin/probe2rins.py -f 3bwm_h.probe -s 'A:300,A:301,A:302'
 ```
