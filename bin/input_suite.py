@@ -123,7 +123,7 @@ def write_gau_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,re
                         for l in lines1[basis[basis.index(i)]:basis[basis.index(i)+1]]:
                             inp.writelines(l)
             inp.write("%s"%"\n")
-            except_lanl2dz=["C","H","O","N","S"]
+            except_lanl2dz=["C","H","O","N","S","Li","LI","F"]
             for i in range(len(lines1)):   
                 if i in basis:
                     if (lines1[i].split(" ")[0].title()) in usednospace:

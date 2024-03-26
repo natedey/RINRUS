@@ -56,7 +56,7 @@ def gaussian_opt_xyz(lines,natoms):
         xyz = []
         for i in range(p_start[j],p_start[j]+natoms):
             v = lines[i].split()
-            print(v)
+            # print(v)
             xyz.append([float(v[3]),float(v[4]),float(v[5])])
         opt.append(xyz)
     return opt
