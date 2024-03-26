@@ -1,4 +1,3 @@
-
 ## Usage example 1 - generating a single or a few input files with probe interaction count ranking 
 
 If your structure is not appropriately pre-processed then go through steps 1-4 to protonate and clean up substrate molecules. This is the user's responsibility to verify, since RINRUS will generate models from provided structure and cannot yet run sanity checks
@@ -161,7 +160,13 @@ python3 ~/git/RINRUS/bin/write_input.py -intmp input_temp -c -2 -noh res_7.pdb -
 
 ## Usage example 4 - generating a single or a few input files with manual ranking (from SAPT, ML, or from some scheme that doesn't yet interface with RINRUS automatically)
 
-Here we'll discuss the formatting of freq_per_res.dat and res_atoms.dat and how to manually construct these from an arbitrary ranking scheme or a scheme not tabulated internally with RINRUS. 
+1. Obtain the a protonated PDB file to use for generating an res_atoms.dat file by hand
+ 
+2. Generate your own res_atoms.dat file from a list of residues, adding side chain and main chain atoms (if any) you want to include in your model.
+   Use an existing res_atoms.dat file as a template. More documentation is forthcoming for this part.
+
+3. If you are interested in truncated models (smaller than the "maximal model"), make sure the residues are listed in order that you want to add them,
+   with decreasing interaction count in the third column.
 
 ## Usage example 5 - GENERATE ALL THE THINGS!!! Combinatorial model building from probe and arpeggio
 
@@ -222,14 +227,3 @@ Note: Multiple seed indices can be indicated by space separation as A/202 A/202
 ls -lrt| grep -v slurm |awk '{print $9}'|grep -E res_atoms_|cut -c 11-12|cut -d. -f1>list; mkdir pdbs; for i in `cat list`; do mkdir model-${i}-01; cd model-${i}-01; mv ../res_atoms_${i}.dat .; python3 ~/git/RINRUS/bin/rinrus_trim2_pdb.py -s A:203 -ratom res_atoms_${i}.dat -pdb ../2cht_h_ac_aligned.pdb; python3 ~/git/RINRUS/bin/pymol_scripts.py -ignore_ids 203 -pdbfilename *.pdb; cp *_h.pdb model-${i}_h.pdb; cp model-${i}_h.pdb ../pdbs/; cp res_atoms_${i}.dat ../pdbs/${i}.dat ; cd ..; done
 ```
 Be aware that while the res_atoms_#.dat model sets generated are technically unique to each other, once RINRUS generates the full trimmed QM-models, a lot of the them will no longer be unique and will be identical to others. So there a need to check to determine which QM-models are still unique (and not redundant)
-
-## U Select the residues and the substrate (seed) IDs you want to generate res_atoms.dat from. 
- 1. Obtain the pdb file (2cht) to use for generating res_atoms.dat file
- 
- 2. For example if you select the following residues are selected from 2cht: 
-    TSA-201, ASP-118, PRO-117, LEU-115, TYR-108, ARG-7 and ARG-90 from chain A
-
- 3. To generate your own res_atoms.dat file from a list of residues:
-  copy an example of res_atoms.dat file and edit the atoms and chain IDs based on how you want to trim the selected residues. 
-
-

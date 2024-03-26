@@ -336,7 +336,7 @@ def main(file,nor):
                 commands_step5(freeze,num,path_to_RIN,logger)
                 command_step6(template_path,Computational_program,basis_set_library,charge,str(num),path_to_RIN,logger)
                 shutil.copy('1.inp',str(num)+'.inp')
-                shutil.copy('template.pdb','template_'+str(num)+'_.pdb')
+                shutil.copy('template.pdb','template_'+str(num)+'.pdb')
         else:
             commands_step4(seed,mod_pdb,model_num,path_to_RIN,RIN_program,logger)
             commands_step5(freeze,model_num,path_to_RIN,logger)
@@ -363,7 +363,7 @@ def main(file,nor):
                 commands_step5(freeze,num,path_to_RIN,logger)
                 command_step6(template_path,Computational_program,basis_set_library,charge,str(num),path_to_RIN,logger)
                 shutil.copy('1.inp',str(num)+'.inp')
-                shutil.copy('template.pdb','template_'+str(num)+'_.pdb')
+                shutil.copy('template.pdb','template_'+str(num)+'.pdb')
         else:
             commands_step4(seed,pdb,model_num,path_to_RIN,RIN_program,logger)
             commands_step5(freeze,model_num,path_to_RIN,logger)
@@ -392,7 +392,7 @@ def main(file,nor):
                 commands_step5(freeze,num,path_to_RIN,logger)
                 command_step6(template_path,Computational_program,basis_set_library,charge,str(num),path_to_RIN,logger)
                 shutil.copy('1.inp',str(num)+'.inp')
-                shutil.copy('template.pdb','template_'+str(num)+'_.pdb')
+                shutil.copy('template.pdb','template_'+str(num)+'.pdb')
         else:
             commands_step4(seed,mod_pdb,model_num,path_to_RIN,RIN_program,logger)
             commands_step5(freeze,model_num,path_to_RIN,logger)
