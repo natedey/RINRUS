@@ -1,3 +1,11 @@
+#! /usr/bin/env python
+import argparse
+import sys
+
+"""
+This is a program written by Tejaskumar Suhgaia in Deyonker research group
+at university of memphis.
+"""
 
 def isNumber(s):    
     for i in range(len(s)):
@@ -25,7 +33,7 @@ def assign_new_chain(old_chain, used_chains):
     new_chain = chr(ord(old_chain) + 1)
     while new_chain in used_chains:
         new_chain = chr(ord(new_chain) + 1)
-    used_chains.add(new_chain)
+    used_chains.append(new_chain)
     return new_chain
 def process_pdb_file(file_path):
     new_pdb_lines = []
@@ -38,12 +46,22 @@ def process_pdb_file(file_path):
     # integ1="42"
     # print(is_hex("2e60"))
     # print(isNumber("2160"))
-    with open("frame460_test.pdb", 'r') as file:
+    
+if __name__ == '__main__':
+    """ Usage: hexnumberrewiter.py -p template.pdb """
+    parser = argparse.ArgumentParser(description='')
+    parser.add_argument('-p', dest='pdbf', default='template.pdb', help='pdb file')
+    args = parser.parse_args()
+    pdbf = args.pdbf
+    output_file_path = 'HexCorrected_'+pdbf  
+    new_pdb_lines=[]
+    with open(pdbf, 'r') as file:
         for line in file:
             if line.startswith("ATOM") or line.startswith("HETATM"):
                 # Extract relevant information
                 old_chain = line[21]
                 hex_residue_number = line[22:26]
+                used_chains=[]
 
                 # Convert hexadecimal residue number to four-digit number
                 new_residue_number = convert_hex_to_four_digit(hex_residue_number)
@@ -58,7 +76,7 @@ def process_pdb_file(file_path):
                 new_pdb_lines.append(line)
 
     # Write the modified PDB file
-    with open('modified_pdb.pdb', 'w') as output_file:
+    with open(output_file_path, 'w') as output_file:
         output_file.writelines(new_pdb_lines)
 
 if __name__ == "__main__":

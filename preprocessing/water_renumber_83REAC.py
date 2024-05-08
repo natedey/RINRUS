@@ -15,9 +15,9 @@ used_chainID= set()
 lastOldNewchainID = {}
 
 if __name__ == '__main__':
-    """ Usage: res_extract.py -p template.pdb """
+    """ Usage: water_renumber_83REAC.py -p template.pdb """
     parser = argparse.ArgumentParser(description='renumber residue_id for hydrogen water from 0 to sorresponding oxygen from pdb file')
-    parser.add_argument('-p', dest='pdbf', default='83REAC_QChem1.pdb', help='template pdb file')
+    parser.add_argument('-p', dest='pdbf', default='83REAC_QChem1.pdb', help='pdb file')
     args = parser.parse_args()
     pdbf = args.pdbf
     output_file_path = 'waterid_ocrrected_'+pdbf  

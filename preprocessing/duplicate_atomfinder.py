@@ -14,9 +14,9 @@ used_chainID= set()
 lastOldNewchainID = {}
 
 if __name__ == '__main__':
-    """ Usage: res_extract.py -p template.pdb """
-    parser = argparse.ArgumentParser(description='generate residue information from pdb file')
-    parser.add_argument('-p', dest='pdbf', default='frame460_test.pdb', help='template pdb file')
+    """ Usage: duplicate_atomfinder.py -p template.pdb """
+    parser = argparse.ArgumentParser(description='')
+    parser.add_argument('-p', dest='pdbf', default='template.pdb', help='pdb file')
     args = parser.parse_args()
     pdbf = args.pdbf
     output_file_path = 'ChainCorrected_'+pdbf  
