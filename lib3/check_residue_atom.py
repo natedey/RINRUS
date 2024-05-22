@@ -118,7 +118,6 @@ def final_pick2(pdb,res_atom,res_info,sel_key):
                     res_pick.append( [line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],'-1'] )
                     if 'CB' not in res_info[(line[5],line[6])]:
                         res_info[(line[5],line[6])].append('CB')
-                    else:
                 else:
                     if 'CB' in res_info[(line[5],line[6])]:
                         res_pick.append( [line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],'-1'] )
