@@ -204,4 +204,5 @@ if __name__ == '__main__':
     elif ifmat == "gau-xtb":
         write_xtb_input('%s/%s'%(wdir,inp_name),int_tmp,charge,multi,pic_atom,tot_charge,res_count)
     else:
-        print("Please provide a input format that you want to run your calculation!")
+        print("ERROR: ifmat not set. Please provide an input format for your calculations!")
+
