@@ -84,27 +84,20 @@ def trim_pdb_models(sm,res_atom,res_info,pdb_res_name,pdb_res_atom,res_part_list
             #value_list = deepcopy(res_part_list[cha][res_id])
             value_list = deepcopy(res_part_list[key])
             res_atom[key] = check_sc(pdb_res_name[key],value_list,cres_atoms_sc)
+
             if not bool(set(res_atom[key])&set(['N','CA','C','O','H','HA','HA2','HA3'])) and 'CB' in res_atom[key]:
                 res_info[key] = ['CA','CB']
                 res_atom[key].append('CA')
             else:
-                res_info[key] = ['CA']
-                ##### Taylor added the append statements below the GLY methyl problem and really any residue that had just CA in the res_atom file ######
-                res_atom[key].append('N')
-                res_atom[key].append('O')
-                res_atom[key].append('C')
-                ###########################
                 res_atom[key] = check_mc(pdb_res_name[key],res_atom[key])
-    #print(res_part_list['C',57],'Hey')
-    #for cha in res_part_list.keys():
-    #    for res_id in sorted(res_part_list[cha].keys()):
+
+    ### add necessary atoms from adjacent residues to complete peptide bonds ###
     for key in sorted(res_part_list.keys()):
         key = (key[0],key[1])
         cha = key[0]
         res_id = key[1]
         if key not in sel_key and pdb_res_name[key] not in ('HOH', 'WAT','O'):
-        ### Check one residue before according to "N and H" ###    
-            #if bool(set(res_atom[key])&set(['N','H'])):
+        ### Check one residue before according to "N and H" ###
             if bool(set(res_atom[key])&set(['N','H'])) and (cha,res_id-1) in pdb_res_name.keys():
                 if (cha,res_id-1) not in res_atom.keys():
                     res_atom[(cha,res_id-1)] = ['CA','C','O','HA','HA2','HA3']
@@ -112,8 +105,7 @@ def trim_pdb_models(sm,res_atom,res_info,pdb_res_name,pdb_res_atom,res_part_list
                     for atom in ['CA','C','O','HA','HA2','HA3']:
                         if atom not in res_atom[(cha,res_id-1)]:
                             res_atom[(cha,res_id-1)].append(atom)
-        ### Check one residue after according to "C and O" ###    
-            #if bool(set(res_atom[key])&set(['C','O'])):
+        ### Check one residue after according to "C and O" ###
             if bool(set(res_atom[key])&set(['C','O'])) and (cha, res_id+1) in pdb_res_name.keys():
                 if (cha,res_id+1) not in res_atom.keys():
                     res_atom[(cha,res_id+1)] = ['CA','HA','HA2','HA3','N','H']
@@ -124,7 +116,6 @@ def trim_pdb_models(sm,res_atom,res_info,pdb_res_name,pdb_res_atom,res_part_list
 
     ### Check one "CACA" ###    
     for key in sorted(res_atom.keys()):
-#        if key not in sel_key and pdb_res_name[key] not in ('HOH', 'WAT','O'):
         if pdb_res_name[key] not in ('HOH', 'WAT','O') and pdb_res_name[key] in res_atoms_all.keys():
             cha = key[0]
             res_id = key[1]
@@ -139,6 +130,20 @@ def trim_pdb_models(sm,res_atom,res_info,pdb_res_name,pdb_res_atom,res_part_list
                     for atom in ['N','H']:
                         if atom not in res_atom[(cha,res_id+1)]:
                             res_atom[(cha,res_id+1)].append(atom)
+
+    ### DAW: if res_atoms still only has CA and/or HA(s), add both sides of MC to avoid methane. Do same for Ala SC to avoid ethane ###
+    for key in sorted(res_atom.keys()):
+        if key not in sel_key and pdb_res_name[key] not in ('HOH', 'WAT','O'):
+            cha = key[0]
+            res_id = key[1]
+            if (cha,res_id-1) not in res_atom.keys() and (cha,res_id+1) not in res_atom.keys():
+                if set(res_atom[key]).issubset({'CA', 'HA', 'HA2', 'HA3'}) or (pdb_res_name[key] in ['ALA'] and set(res_atom[key]).issubset({'CA', 'HA', 'HA2', 'HA3','CB','HB1','HB2','HB3'})):
+                    res_atom[key].append('N')
+                    res_atom[key].append('H')
+                    res_atom[key].append('O')
+                    res_atom[key].append('C')
+                    res_atom[(cha,res_id-1)] = ['CA','C','O','HA','HA2','HA3']
+                    res_atom[(cha,res_id+1)] = ['CA','HA','HA2','HA3','N','H']
 
     ### Check frozen info ###
     for key in sorted(res_atom.keys()):
@@ -157,8 +162,6 @@ def trim_pdb_models(sm,res_atom,res_info,pdb_res_name,pdb_res_atom,res_part_list
                     res_info[key].remove('CA')
                 if 'CB' in ufree_atoms[key]:
                     res_info[key].remove('CB')
-
-#    res_pick,res_info = final_pick2(pdb,res_atom,res_info,sel_key)
 
     res_pick,res_info = final_pick2(pdb,res_atom,res_info,sel_key)
 
@@ -259,4 +262,3 @@ if __name__ == '__main__':
     else:
         res_l = int(method)
         trim_pdb_models(res_l,res_atom,res_info,pdb_res_name,pdb_res_atom,res_part_list,cha_res_list,Alist,ufree_atoms)
-       # print(pdb_res_atom[('C',57)])
