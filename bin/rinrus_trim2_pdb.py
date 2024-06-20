@@ -86,7 +86,7 @@ def trim_pdb_models(sm,res_atom,res_info,pdb_res_name,pdb_res_atom,res_part_list
             res_atom[key] = check_sc(pdb_res_name[key],value_list,cres_atoms_sc)
 
             if not bool(set(res_atom[key])&set(['N','CA','C','O','H','HA','HA2','HA3'])) and 'CB' in res_atom[key]:
-                res_info[key] = ['CA','CB']
+                res_info[key] = ['CA']
                 res_atom[key].append('CA')
             else:
                 res_atom[key] = check_mc(pdb_res_name[key],res_atom[key])
