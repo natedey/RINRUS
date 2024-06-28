@@ -354,28 +354,7 @@ if __name__ == '__main__':
             dist = first_hit[1]
             df_6['Side atm type'].append(satm)
             df_6['Side Chain'].append(format(round(dist,4),'.4f'))
-
-    
-    ##########################################################################################################################################
-
-    
-    
-
-        
-        
-
-    
-    
-
-
-           
-   
-
- 
-    
-    
-    
-    
+  
     d_res = open('res_atom-%.2f.dat'%cut,'w')
     for key in res_id.keys():
         d_res.write('%-2s %-5s %-7.4f'%(key[0],key[1],res_id[key][0]))
@@ -383,19 +362,8 @@ if __name__ == '__main__':
             d_res.write(' %-6s'%res_id[key][v])
         d_res.write('\n')
     d_res.close()
-    
-
-
-            
-
-
-    
-    #### On Jan 2023 Taylor additions, creates a csv file and prints out a dataframe of results. The script reads the dist_per_res dat file and creates three lists 
-    # with the chain id, residue number and distance. These three lists are turned into a pandas dataframe. The dataframe is then turned into a list. 
-    # This list is looped through the pdb file to find that res name based on the chain id and res num. Following, a csv file is printed out that includes the chain id, res name and res num. ####
-
-                    
-        #### On Jan 2023 Taylor additions, creates a csv file and prints out a dataframe of results. The script reads the dist_per_res dat file and creates three lists 
+                
+  #### On Jan 2023 Taylor additions, creates a csv file and prints out a dataframe of results. The script reads the dist_per_res dat file and creates three lists 
     # with the chain id, residue number and distance. These three lists are turned into a pandas dataframe. The dataframe is then turned into a list. 
     # This list is looped through the pdb file to find that res name based on the chain id and res num. Following, a csv file is printed out that includes the chain id, res name and res num. ####
     chain_id = []
@@ -434,7 +402,6 @@ if __name__ == '__main__':
         name = name.split(',')
         amino_name_lst.append(name[1])
                     
-                    
     with open('data_name-%.2f.csv'%cut,'w') as fp:
         fp.write('Chain,' + 'res and ID,'+'distance\n')
     with open('data_name-%.2f.csv'%cut,'a') as fp:
@@ -442,10 +409,6 @@ if __name__ == '__main__':
             a = i.split(',')
             df_6['res_name'].append(a[1])
             fp.write(str(i)+'\n')
-
-            
-                 
-
     
     df_6 = pd.DataFrame(df_6)
     print(df_6)
@@ -498,10 +461,7 @@ for num,line in enumerate(df_6['ChainID']):
             newlist_s_2+=str(key[0]) + ' '
         
         out_put.append(chain_id+'  '+res_num+'  '+str(sorted_dct_s_2[0][1])+'   '+newlist_s_2)
-        
-        
-        
-
+   
     elif float(df_6['Main Chain'][num])>float(df_6['Side Chain'][num]):
         chain_id = df_6['ChainID'][num]
         res_num = str(df_6['res_num'][num])
@@ -516,8 +476,6 @@ for num,line in enumerate(df_6['ChainID']):
                 if i[1] == 'N' or i[1] == 'CA' or i[1] == 'O' or i[1] == 'C' or i[1]=='HA' or i[1]=='H':
                     atom_let_m +=str(i[1]).replace(' ','')+str(round(i[0],4)) + str(round(i[0],4))
                     atom_dct_m[i[1]]=round(i[0],4)
-        
-
                 else:
                     atom_let_s +=str(i[1]).replace(' ','')+'  '+str(round(i[0],4))
                     atom_dct_s[i[1]]=round(i[0],4)
@@ -547,8 +505,6 @@ for num,line in enumerate(df_6['ChainID']):
                 if i[1] == 'N' or i[1] == 'CA' or i[1] == 'O' or i[1] == 'C' or i[1]=='HA' or i[1]=='H':
                     atom_let_m +=str(i[1]).replace(' ','')+str(round(i[0],4)) + str(round(i[0],4))
                     atom_dct_m[i[1]]=round(i[0],4)
-        
-
                 else:
                     atom_let_s +=str(i[1]).replace(' ','')+'  '+str(round(i[0],4))
                     atom_dct_s[i[1]]=round(i[0],4)
@@ -567,17 +523,6 @@ for num,line in enumerate(df_6['ChainID']):
     elif float(df_6['Main Chain'][num])==float(df_6['Side Chain'][num]):
         print('ERROR Main chain and side chain distances are the same please check input')
         break
-
-
-
-
-
-
-
-
-
-
-
     
 df_fin = {'Chain ID':[],'Atom num':[],'Dist':[],'Atoms':[]}
 
@@ -641,10 +586,8 @@ for num,i in enumerate(df_fin['Chain ID']):
 df_fin = pd.DataFrame(df_fin)
 df_fin = df_fin.astype({'Chain ID':'str','Atom num':'int','Dist':'float','Atoms':'str'})
 
-
 df_fin = df_fin.sort_values('Dist')
 df_fin.to_csv('res_atom-%.2f_new.csv'%cut,index=False)
-
 
 reorg_ID = []
 reorg_num = []
@@ -659,21 +602,6 @@ with open('res_atom-%.2f_new.csv'%cut,'r') as fp:
         reorg_dist.append(new_line[2])
         reorg_atms.append(new_line[3])
 
-
 with open('res_atom-%.2f_new.dat'%cut,'w') as fp:
     for num,i in enumerate(reorg_ID):
         fp.write(str(reorg_ID[num])+'  '+str(reorg_num[num])+'  '+reorg_dist[num]+'  ' + reorg_atms[num])
-
-        
-
-
-
-
-    
-
-        
-        
-
-    
-    
-
