@@ -108,7 +108,18 @@ def trim_pdb_models(sm,res_atom,res_info,pdb_res_name,pdb_res_atom,res_part_list
         ### Check one residue after according to "C and O" ###
             if bool(set(res_atom[key])&set(['C','O'])) and (cha, res_id+1) in pdb_res_name.keys():
                 if (cha,res_id+1) not in res_atom.keys():
-                    res_atom[(cha,res_id+1)] = ['CA','HA','HA2','HA3','N','H']
+                    ### DAW: Check if next residue is proline ###
+                    if pdb_res_name[(cha,res_id+1)] == 'PRO':
+                        res_atom[(cha,res_id+1)] = ['N', 'CA', 'C', 'O', 'CB', 'CG', 'CD', 'HA', '2HB', '3HB', '2HG', '3HG', '2HD', '3HD']
+                        ### DAW: Complete the other peptide bond of proline as well ###
+                        if (cha,res_id+2) not in res_atom.keys():
+                            res_atom[(cha,res_id+2)] = ['CA','HA','HA2','HA3','N','H']
+                        else:
+                            for atom in ['CA','HA','HA2','HA3','N','H']:
+                                if atom not in res_atom[(cha,res_id+2)]:
+                                    res_atom[(cha,res_id+2)].append(atom)
+                    else:
+                        res_atom[(cha,res_id+1)] = ['CA','HA','HA2','HA3','N','H']
                 else:
                     for atom in ['CA','HA','HA2','HA3','N','H']:
                         if atom not in res_atom[(cha,res_id+1)]:
