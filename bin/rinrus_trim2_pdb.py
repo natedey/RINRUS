@@ -217,7 +217,7 @@ if __name__ == '__main__':
     parser.add_argument('-c', dest='r_atom', default='res_atoms.dat', help='atom info for each residue')
     parser.add_argument('-cres', dest='cres', default='None', help='Noncanonical residue information')
     parser.add_argument('-unfrozen', dest='ufree', default='None', help='Seed canonical residue unfrozen CA/CB, chain:Resid:CACB,chain:Resid:CA')
-    parser.add_argument('-model', dest='method', default='All', help='generate one or all trimmed models, if "7" is given, then will generate the 7th model')
+    parser.add_argument('-model', dest='method', default='All', help='generate one or all trimmed models, if "7" is given, then will generate the 7th model, "max" for only maximal model')
 
     args = parser.parse_args()
 
@@ -270,6 +270,8 @@ if __name__ == '__main__':
     if method == 'All':
         for i in range(len(sel_key),l_res):
             trim_pdb_models(i+1,res_atom,res_info,pdb_res_name,pdb_res_atom,res_part_list,cha_res_list,Alist,ufree_atoms)
+    elif method == 'max':
+        trim_pdb_models(l_res,res_atom,res_info,pdb_res_name,pdb_res_atom,res_part_list,cha_res_list,Alist,ufree_atoms)
     else:
         res_l = int(method)
         trim_pdb_models(res_l,res_atom,res_info,pdb_res_name,pdb_res_atom,res_part_list,cha_res_list,Alist,ufree_atoms)
