@@ -30,7 +30,8 @@ export PYTHONPATH="~/git/RINRUS/lib3:$PYTHONPATH"
 - pymol
   - If installing via conda, it's under `-c conda-forge pymol-open-source`.
 - openbabel (required for Arpeggio)
-
+- pandas
+  
 For certain scripts (optional),
 - matplotlib
 - BioPython
@@ -77,6 +78,6 @@ Current production-level use cases are described in `bin/`.
 
 ### Contributors
 This code was conceptualized in the DeYonker group at the University of Memphis Department of Chemistry.
-Prof. Qianyi Cheng is the primary coder, and now contributes to RINRUS with her independent research group.
-Additional conceptualization, documentation and code have been provided by
-Prof. Nathan DeYonker, Dr. Thomas Summers (University of Nevada-Reno), Donatus Agbaglo, Tejas Suhagia, Dr. Taylor Santaloci, Prof. Jose Fernando Ruggiero Bachega, (Universidade Federal de Ciências da Saúde de Porto Alegre), and Dr. Eric Berquist (Q-Chem, Inc.)
+Prof. Qianyi Cheng was the primary contributor to early versions of RINRUS, who now runs her independent research group at University of Memphis.
+Additional code, conceptualization, and documentation have been provided by
+Prof. Nathan DeYonker, Dr. Dominique Wappett, Dr. Thomas Summers, Dr. Donatus Agbaglo, Tejas Suhagia, Dr. Taylor Santaloci, Prof. Jose Fernando Ruggiero Bachega, (Universidade Federal de Ciências da Saúde de Porto Alegre), and Dr. Eric Berquist (Q-Chem, Inc.)
