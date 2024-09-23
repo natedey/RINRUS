@@ -1,8 +1,18 @@
 # RINRUS
 
-Residue Interaction Network-based ResidUe Selector (RINRUS) is a QM-cluster model building tool.  Starting from a raw PDB file, after running a series of preparation tasks, the tool will
+Residue Interaction Network-based ResidUe Selector (RINRUS) is a QM-cluster model building tool for biomolecular systems. Starting from a raw PDB file, after running a series of preparation tasks, the tool will
 - select important residues for chemical reactions, and
 - generate trimmed PDB files with the corresponding quantum chemical inputs.
+
+RINRUS is the first tool available that performs automated and algorithmic trimming and capping of enzyme models. Reproducibility is embedded into the model construction workflow, setting new community standards.
+
+A software review paper is in preparation. For now, the best way to acknowledge RINRUS is to cite:
+DOI: 10.1016/j.bpj.2021.07.029
+and
+DOI: 10.1039/D3CP06100K
+
+If you have questions or would like to contribute to the development of RINRUS, please email 
+Prof. Nathan DeYonker, Department of Chemistry, University of Memphis at ndyonker@memphis.edu
 
 ## Installation
 
@@ -20,7 +30,8 @@ export PYTHONPATH="~/git/RINRUS/lib3:$PYTHONPATH"
 - pymol
   - If installing via conda, it's under `-c conda-forge pymol-open-source`.
 - openbabel (required for Arpeggio)
-
+- pandas
+  
 For certain scripts (optional),
 - matplotlib
 - BioPython
@@ -67,6 +78,6 @@ Current production-level use cases are described in `bin/`.
 
 ### Contributors
 This code was conceptualized in the DeYonker group at the University of Memphis Department of Chemistry.
-Prof. Qianyi Cheng is the primary coder, and now contributes to RINRUS with her independent research group.
-Additional conceptualization, documentation and code have been provided by
-Prof. Nathan DeYonker, Dr. Thomas Summers (University of Nevada-Reno), Donatus Agbaglo, Tejas Suhagia, Dr. Taylor Santaloci, Prof. Jose Fernando Ruggiero Bachega, (Universidade Federal de Ciências da Saúde de Porto Alegre), and Dr. Eric Berquist (Q-Chem, Inc.)
+Prof. Qianyi Cheng was the primary contributor to early versions of RINRUS, who now runs her independent research group at University of Memphis.
+Additional code, conceptualization, and documentation have been provided by
+Prof. Nathan DeYonker, Dr. Dominique Wappett, Dr. Thomas Summers, Dr. Donatus Agbaglo, Tejas Suhagia, Dr. Taylor Santaloci, Prof. Jose Fernando Ruggiero Bachega, (Universidade Federal de Ciências da Saúde de Porto Alegre), and Dr. Eric Berquist (Q-Chem, Inc.)
