@@ -1,0 +1,7 @@
+nprocs: 10
+maxcore: 16
+jobtype: opt
+method: B3LYP
+basis: def2-SVP
+auxbasis: def2/J
+solvent_method: CPCM(water)

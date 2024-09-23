@@ -322,3 +322,71 @@ def write_xtb_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,re
     ### else can be constraint ###
 
 
+
+"""
+write orca input files using orca template file
+"""
+def write_orca_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,res_count):
+    ### inp_name default can be 1.inp, but first is name.input such as 9.input
+    ### From input_template file ###
+    ### nprocs
+    ### maxcore
+    ### jobtype opt/freq
+    ### method
+    ### basis
+    ### auxbasis
+    ### solvent_method
+
+    with open(inp_temp) as f:
+        lines = f.readlines()
+    for line in lines:
+        if line.startswith('#'): continue
+        if line.startswith('jobtype'):
+            v = line.split(':')
+            if "/" in v[1]:
+                jobtype = [x.strip() for x in v[1].split('/')]
+            else:
+                jobtype = v[1].strip()
+        if line.startswith('nprocs'):
+            nprocs = line.split(':')[1].strip()
+        if line.startswith('maxcore'):
+            maxcore = line.split(':')[1].strip()
+        if line.startswith('method'):
+            method = line.split(':')[1].strip()
+        if line.startswith('basis'):
+            basis = line.split(':')[1].strip()
+        if line.startswith('auxbasis'):
+            auxbasis = line.split(':')[1].strip()
+        if line.startswith('ecp'):
+            ecp = line.split(':')[1].strip()
+        if line.startswith('solvent_method'):
+            sol = line.split(':')[1].strip()
+        if line.startswith('def_basis'):
+            start = lines.index(line)
+            def_basis = []
+            for l in range(start+1,len(lines)):
+                def_basis.append(lines[l])
+
+
+    ## write input
+    inp = open('%s'%inp_name,'w')
+    inp.write("! %s %s D3BJ %s %s %s\n"%(jobtype,method,basis,auxbasis,sol))
+    inp.write("%%pal nprocs %s end\n"%nprocs)
+    inp.write("%%maxcore %s000\n"%maxcore)
+    inp.write("%geom\n  constraints\n")
+    for i in range(len(pic_atom)):
+        atom = pic_atom[i]
+        if atom[16] == '-1':
+            atn = int(atom[1]) - 1
+            inp.write("  { C %d C }\n"%atn)
+    inp.write("  end\nend\n")
+    inp.write("*xyz %d %d\n"%(charge+tot_charge,multiplicity))
+    for i in range(len(pic_atom)):
+        atom = pic_atom[i]
+        if atom[16] == '-1':
+            inp.write("%6s %8.3f %8.3f %8.3f  M = 999.9\n"%(atom[14].strip(),atom[8],atom[9],atom[10]))
+        else:
+            inp.write("%6s %8.3f %8.3f %8.3f\n"%(atom[14].strip(),atom[8],atom[9],atom[10]))
+    inp.write("*\n")
+
+    inp.close()
