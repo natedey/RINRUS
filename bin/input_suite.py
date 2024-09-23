@@ -384,7 +384,7 @@ def write_orca_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,r
     for i in range(len(pic_atom)):
         atom = pic_atom[i]
         if atom[16] == '-1':
-            inp.write("%6s %8.3f %8.3f %8.3f  M = 999.9\n"%(atom[14].strip(),atom[8],atom[9],atom[10]))
+            inp.write("%6s %8.3f %8.3f %8.3f  M = 99999.9\n"%(atom[14].strip(),atom[8],atom[9],atom[10]))
         else:
             inp.write("%6s %8.3f %8.3f %8.3f\n"%(atom[14].strip(),atom[8],atom[9],atom[10]))
     inp.write("*\n")
