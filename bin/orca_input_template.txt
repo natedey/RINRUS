@@ -4,4 +4,4 @@ jobtype: opt
 method: B3LYP
 basis: def2-SVP
 auxbasis: def2/J
-solvent_method: CPCM(water)
+solvent_epsilon: 4
