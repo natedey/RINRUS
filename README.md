@@ -11,6 +11,8 @@ DOI: 10.1016/j.bpj.2021.07.029
 and
 DOI: 10.1039/D3CP06100K
 
+The development of RINRUS has been supported by the National Science Foundation Division of Biological Infrastructure
+(CAREER BIO-1846408) and the Department of Energy Basic Energy Sciences (SBIR DE-SC0021568).
 If you have questions or would like to contribute to the development of RINRUS, please email 
 Prof. Nathan DeYonker, Department of Chemistry, University of Memphis at ndyonker@memphis.edu
 
