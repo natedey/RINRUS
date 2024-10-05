@@ -1,74 +1,64 @@
-
-
+The driver runs the entire RINRUS model building procedure from initial PDB structure to input file with one command. To run individual steps or for more information on how the procedure works, see the [step-by-step usage instructions](../bin/README.md).
 
 ```bash
-$HOME/git/RINRUS/driver/RINRUS_driver.py -i driver_input -nor False 
+# Usage of the RINRUS driver
+$HOME/git/RINRUS/driver/RINRUS_driver.py -i driver_input -red True
+
+# Arguments:
+-i FILE    driver input file (default: driver_input)
+-red BOOL  protonate initial structure with reduce true/false (default: True)
 ``` 
-### Driver Flag options
-- -i <filename>:
-  - The template format input file is the file **_driver_input_**  
-- -nor <boolean>:
-  - **_False_** reduce is used and this is the default.
-  - **_True_** reduce is not used.
 
-### Log file
-The driver log file is named **_rinrus_log.out_**
+## Input file
+The `driver_input` file should contain the following details:
+```
+PDB: [starting pdb file name]
+Seed: [seed residues]
+RIN_program: [probe/arpeggio/distance/manual]
+Model(s): [model number or maximal or all] 
+Substrate(s)_charge: [overall charge of seed]
+Multiplicity: [model multiplicity]
+Computational_program: [gaussian/gau-xtb/orca/qchem]
+input_template_path: [path to input file template]
+basisset_library: [path to Gaussian basis set file]
+path_to_type_of_RIN: [path to RINRUS bin directory]
+```
 
-## Input File Format
-- PDB filename
-- Seed: format <chain_id:number>
-- Type of RIN program (The input options are below)
-  - _Probe_
-  - _Arpeggio_
-  - _Distance_
-  - _Manual_
-- Substrate charge
-- Multiplicity
-- Computational Program
-- Path to the input template file
-- Path to the basis set library
-- Path to the RINRUS bin directory
+## Log file
+The driver writes a log file called `rinrus_log.out` with the details of the run/commands called.
 
-## Driver script commands and flags that are included when running. ##
-### Reduce Command
+## Commands run by the driver
+
+### Reduce protonation if selected
+
 ```bash
 $HOME/git/RINRUS/bin/reduce -NOFLIP -Quiet PDB.pdb > PDB_h.pdb 
 ```
-### Probe Command
-```bash
-$HOME/git/RINRUS/bin/probe -unformated -MC -self "all" -Quiet ' PDB_h > PDB.probe
-```
-Then runs the rinrus trim script, pymol script and write_inputs script in the manual command section
-### Arpeggio Command
-```bash
-$HOME/git/RINRUS/bin/arpeggio/arpeggio.py PDB.pdb
-```
+
+### RIN generation/atom selection
 
 ```bash
-$HOME/git/RINRUS/bin/arpeggio2rins.py -f PDB.contacts -s seed_number
+# If probe selected:
+$HOME/git/RINRUS/bin/probe -unformated -MC -self "all" -Quiet PDB_h.pdb > PDB.probe
+$HOME/git/RINRUS/bin/probe2rins.py -f PDB.probe -s [seed residues]
+
+# If arpeggio selected
+$HOME/git/RINRUS/bin/arpeggio/arpeggio.py PDB_h.pdb
+$HOME/git/RINRUS/bin/arpeggio2rins.py -f PDB.contacts -s [seed residues]
+
+# If distance selected
+$HOME/git/RINRUS/bin/pdb_dist_rank.py -pdb PDB_h.pdb -s [seed residues] -cut [cutoff] -type [avg/mass]
 ```
 
-```bash
-$HOME/git/RINRUS/bin/rinrus_trim2_pdb.py -s seed_number -pdb PDB.pdb -c contact_counts.dat -model NNN
-```
-Then runs the pymol script and write_inputs script in the manual command section
+If using the distance selection metric, the subsequent trimming/capping/input file generation steps need to be run manually. 
 
-### Distance Command
+### Model trimming and capping
 ```bash
-$HOME/git/RINRUS/bin/pdb_dist_rank.py -pdb PDB.pdb -s seed -cut distance -type avg/mass
+$HOME/git/RINRUS/bin/rinrus_trim2_pdb.py -s [seed residues] -pdb PDB_h.pdb -model N [-c contact_counts.dat (if arpeggio)]
+$HOME/git/RINRUS/bin/pymol_protonate.py -ignore_ids [seed residues] -pdb res_N.pdb
 ```
--Once res_atom file made switch program option to manual
 
-### Manual Command
-_Rinrus Trim script_
+### Input file creation
 ```bash
-$HOME/git/RINRUS/bin/rinrus_trim2_pdb.py -s seed -pdb PDB_modify.pdb -model NNN
-```
-_Pymol Scripts_
-```bash
-$HOME/git/RINRUS/bin/pymol_scripts.py -ignore_ids ### -pdbfilename res_#.pdb
-```
-_Write Inputs script_
-```bash
-$HOME/git/RINRUS/bin/write_input.py -intmp path_to_template -format computational_program -basisinfo path_to_basis_info -c charge -noh res_#.pdb -adh res_#_h.pdb
+$HOME/git/RINRUS/bin/write_input.py -intmp input_template_path -format computational_program -basisinfo basisset_library -c substrate_charge -noh res_N.pdb -adh res_N_h.pdb
 ```

@@ -21,7 +21,7 @@ Prof. Nathan DeYonker, Department of Chemistry, University of Memphis at ndyonke
 Clone this repository, then add the library code under `lib3` to your `PYTHONPATH`. For example, in `~/git`:
 ``` bash
 cd ~/git
-git clone git@github.com:MiloCheng17/RINRUS.git
+git clone git@github.com:natedey/RINRUS.git
 export PYTHONPATH="~/git/RINRUS/lib3:$PYTHONPATH"
 ```
 
@@ -55,30 +55,24 @@ PDB HET groups (some ligands and noncanonical amino acids) can be protonated by 
 The connectivity table file is included with RINRIS: bin/reduce_wwPDB_het_dict.txt
 You must set a shell environment variable to allow reduce to use the reduce_wwPDB_het_dict file, 
 as the default location is /local:
-
+```bash
 setenv REDUCE_HET_DICT /home/$USER/git/RINRUS/bin/reduce_wwPDB_het_dict.txt 
-
+```
 or
-
+```bash
 export REDUCE_HET_DICT=/home/$USER/git/RINRUS/bin/reduce_wwPDB_het_dict.txt
-
+```
 Further preproccesing of ligands likely required!
 
-Current production-level use cases are described in `bin/`.
 
-## Usage example 1 - generating a single or a few input files with probe interaction count ranking 
+## How to use
 
-## Usage example 2 - generating a single or a few input files with distance-based ranking
+To run the full workflow from initial protein PDB structure to QM software input file use the driver as described in [driver/](driver/README.md).
 
-## Usage example 3 - generating a single or a few input files with arpeggio interaction-type ranking
+More detailed documentation/instructions for each step of the process is given in [bin/](bin/README.md).
 
-## Usage example 4 - generating a single or a few input files with manual ranking (from SAPT, ML, or from some scheme that doesn't yet interface with RINRUS automatically)
 
-## GENERATE ALL THE THINGS!!! Combinatorial model building from arpeggio or probe
-## Usage example 5a - Combinatorial model building from arpeggio
-## Usage example 5b - Combinatorial model building from probe
-
-### Contributors
+## Contributors
 This code was conceptualized in the DeYonker group at the University of Memphis Department of Chemistry.
 Prof. Qianyi Cheng was the primary contributor to early versions of RINRUS, who now runs her independent research group at University of Memphis.
 Additional code, conceptualization, and documentation have been provided by

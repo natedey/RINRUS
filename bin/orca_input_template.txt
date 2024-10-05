@@ -1,7 +1,8 @@
 nprocs: 10
 maxcore: 16
-jobtype: opt
+jobtype: opt freq
 method: B3LYP
+disp: D3BJ
 basis: def2-SVP
 auxbasis: def2/J
 solvent_epsilon: 4

@@ -20,20 +20,35 @@ def system_run(cmd):
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-pdbfilename", nargs="+")
-#parser.add_argument("-resids")
+parser.add_argument("-pdb", nargs="+")
 parser.add_argument("-ignore_ids")
-#parser.add_argument("-")
+parser.add_argument("-ignore_ats")
 args = parser.parse_args()
+ignoreid = args.ignore_ids
+ignoreat = args.ignore_ats
+
+# Process ignore ids and atoms
+ignoreid = ignoreid.split(',')
+notres = ""
+for i in ignoreid:
+    res_id = i.split(':')
+    res = f" and not (chain {res_id[0]} and resi {int(res_id[1])})"
+    notres += res
+notat = "name NH1 or name NH2"
+if ignoreat is not None:
+    ignoreat = ignoreat.split(',')
+    for i in ignoreat:
+        atom = f" or name {i}"
+        notat += atom
 
 with open("log.pml", "w") as logf:
-    for pdbfilename in args.pdbfilename:
+    for pdbfilename in args.pdb:
         name = os.path.splitext(pdbfilename)[0]
         outputfilename = f"{name}_h.pdb"
         logf.write(f"load {pdbfilename}\n")
         if args.ignore_ids is not None:
             logf.write(
-                f'cmd.select("sel","{name} and not resi {args.ignore_ids} and not name NH1 and not name NH2")\n'
+                f'cmd.select("sel","{name}{notres} and not ({notat})")\n'
             )
             logf.write('cmd.h_add("sel")\n')
         else:

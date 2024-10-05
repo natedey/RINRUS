@@ -333,6 +333,7 @@ def write_orca_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,r
     ### maxcore
     ### jobtype opt/freq
     ### method
+    ### disp
     ### basis
     ### auxbasis
     ### solvent_method
@@ -353,6 +354,8 @@ def write_orca_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,r
             maxcore = line.split(':')[1].strip()
         if line.startswith('method'):
             method = line.split(':')[1].strip()
+        if line.startswith('disp'):
+            disp = line.split(':')[1].strip()
         if line.startswith('basis'):
             basis = line.split(':')[1].strip()
         if line.startswith('auxbasis'):
@@ -370,7 +373,7 @@ def write_orca_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,r
 
     ## write input
     inp = open('%s'%inp_name,'w')
-    inp.write("! %s %s D3BJ %s %s\n"%(jobtype,method,basis,auxbasis))
+    inp.write("! %s %s %s %s %s\n"%(jobtype,method,disp,basis,auxbasis))
     inp.write("%%pal nprocs %s end\n"%nprocs)
     inp.write("%%maxcore %s000\n"%maxcore)
     inp.write("%%cpcm epsilon %s end\n"%sol)

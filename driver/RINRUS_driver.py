@@ -187,17 +187,17 @@ def commands_step4(seed,pdb,model_num,path_to_RIN,RIN_program,logger):
 
 def commands_step5(freeze,model_num,path_to_RIN,logger):
     
-    path = os.path.expanduser(path_to_RIN+'/pymol_scripts.py')
+    path = os.path.expanduser(path_to_RIN+'/pymol_protonate.py')
     name = 'res_' + str(model_num)+'.pdb'
     #loc = str(freeze).find(':')
-    freeze_2 = ''
-    for i in freeze:
-        if i.isnumeric()==True:
-            freeze_2 += i
-        elif i == ',':
-            freeze_2 += i
+    #freeze_2 = ''
+    #for i in freeze:
+    #    if i.isnumeric()==True:
+    #        freeze_2 += i
+    #    elif i == ',':
+    #        freeze_2 += i
     #print(freeze_2)
-    arg= ['python3',path, '-ignore_ids',str(freeze_2),'-pdbfilename', name]
+    arg= ['python3',path, '-ignore_ids',str(freeze),'-pdb', name]
     #out = subprocess.run(args,shell=True,stdout=PIPE,stderr=STDOUT,universal_newlines=True)
     out = subprocess.run(arg)
     logger.info('The inputted pymol script path: '+ str(out.args))
@@ -213,7 +213,8 @@ def command_step6(template,format,basisinfo,charge,model_num,path_to_RIN,logger)
     path_2 =os.path.expanduser(basisinfo.replace('\n','').replace(' ','')) 
     noh =  ' res_'+model_num+'.pdb '
     adh = ' res_'+model_num+'_h.pdb'
-    arg= ['python3', path ,'-intmp',str(template),'-format',str(format),'-basisinfo',path_2,'-c',str(charge),'-noh',str(noh).replace(' ',''),'-adh',str(adh).replace(' ','')]
+    # DAW: added argument for hopt calc to keep consistent with old write_input format
+    arg= ['python3', path ,'-intmp',str(template),'-format',str(format),'-basisinfo',path_2,'-c',str(charge),'-type', 'hopt','-noh',str(noh).replace(' ',''),'-adh',str(adh).replace(' ','')]
     result = subprocess.run(arg)
     logger.info('write inputs output:'+ str(result.args))
    # arg= ['python3', path ,'-intmp',str(template),'-format',str(format),'-basisinfo',path_2,'-c','-2','-noh',str(noh).replace(' ',''),'-adh',str(adh).replace(' ','')]
@@ -261,7 +262,8 @@ def main(file,nor):
  
 # Setting the threshold of logger to DEBUG
     logger.setLevel(logging.DEBUG)
-    print(nor)
+    # DAW: also had to add negation here as part of updating syntax
+    print(not nor)
     driver_input_file = file
     pdb,Seed,RIN_program,charge,multi,Computational_program,template_path,basis_set_library,seed,model_num,path_to_RIN= driver_file_reader(file,logger)
     RIN_program = RIN_program.lower()
@@ -420,12 +422,13 @@ if __name__ == '__main__':
                         dest='driver_input',
                         default='driver_input',
                         help=' This is the driver_input file')
-    parser.add_argument('-nor',
-                        dest='NOR',
-                        default='False',
-                        help='If true the the pdb will not be protonated')
+    # DAW: double negative input command was confusing - changed input syntax, argument is parsed as (not inputvalue) to avoid changing whole code
+    parser.add_argument('-red',
+                        dest='red',
+                        default='True',
+                        help='If true then the pdb will be protonated')
 
-args = parser.parse_args()
-nor = args.NOR
+    args = parser.parse_args()
+    nor = not args.red
 
-main(args.driver_input,nor)
+    main(args.driver_input,nor)

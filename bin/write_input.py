@@ -103,16 +103,16 @@ if __name__ == '__main__':
     #########################################################################################################################################################
 
     parser = argparse.ArgumentParser(description='Prepare template PDB files, write input files, save output PDB files in working directory',formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('-step', dest='step', default=0, type=int, 
-            help='step0: read noh, addh pdbs, write_final_pdb and read input_template write_first_inp, \n' + 
-            'step1: read outputwrite_modred_inp, input_template, write_second_inp, \n' +
-            'step2: read new pdb file, input_template, write_new_inp \n' +
-            'step3: read pdb1 and pdb2 for replacing the fragment in pdb1 with pdb2 coordinates and write new input')
+    parser.add_argument('-type', dest='step', default='pdb', 
+            help='hopt: read noh, addh pdbs, write_final_pdb and read input_template write_first_inp, \n' + 
+            'gauout: read outputwrite_modred_inp, input_template, write_second_inp, \n' +
+            'pdb: read new pdb file, input_template, write_new_inp \n' +
+            'replacecoords: read pdb1 and pdb2 for replacing the fragment in pdb1 with pdb2 coordinates and write new input')
     parser.add_argument('-wdir', dest='output_dir', default=os.path.abspath('./'), help='working dir')
     parser.add_argument('-tmp', dest='tmp_pdb', default=None, help='template_pdb_file')
     parser.add_argument('-noh', dest='no_h_pdb', default=None, help='trimmed_pdb_file')
     parser.add_argument('-adh', dest='h_add_pdb', default=None, help='hadded_pdb_file')
-    parser.add_argument('-new', dest='new_pdb', default=None, help='new_pdb_file')
+    parser.add_argument('-pdb', dest='new_pdb', default=None, help='new_pdb_file')
     parser.add_argument('-intmp', dest='input_tmp', default=None, help='template_for_write_input')
     parser.add_argument('-outf', dest='gau_out', default='1.out', help='output_name')
     parser.add_argument('-inpn', dest='inp_name', default='1.inp', help='input_name')
@@ -146,11 +146,11 @@ if __name__ == '__main__':
     ifmat    = args.fmat
     basisinfo = args.basisinfo
 
-    if step == 0:
+    if step == 'hopt':
         pic_atom, tot_charge = pdb_after_addh(nohpdb,adhpdb)
         res_count = adhpdb.split('_')[1]
         write_pdb('%s'%tmp_pdb,pic_atom,res_count)
-    elif step == 1:
+    elif step == 'gauout':
         i_name = []
         for gau_input in glob('%s/*inp'%wdir):
             m = re.search(r'-(\d+)-inp', gau_input)
@@ -177,14 +177,14 @@ if __name__ == '__main__':
                 print("check if the files are propagated correctly!")
 #                sys.exit()
         res_count = 'step-%s'%i_step
-        if step == 1:
+        if step == 'gauout':
             pdb_file, new_dir = gen_pdbfiles(wdir,i_step,tmp_pdb)
             pic_atom, res_info, tot_charge = read_pdb('%s/%s.pdb'%(new_dir,pdb_file))
-    elif step == 2:
+    elif step == 'pdb':
         newpdb = args.new_pdb
         pic_atom, res_info, tot_charge = read_pdb(newpdb)
         res_count = args.new_pdb
-    elif step == 3:
+    elif step == 'replacecoords':
         pdb1 = args.pdb1
         pdb2 = args.pdb2
         parts = args.parts
