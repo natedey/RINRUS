@@ -21,7 +21,7 @@ if __name__ == '__main__':
     
     xyz = []
     for atom in lines:
-        xyz.append("%.3f %.3f %.3f"%(atom[0],atom[1],atom[2]))
+        xyz.append(["%.3f"%atom[0],"%.3f"%atom[1],"%.3f"%atom[2]])
 
     if "/" in output:
         output = output.split('/')[-1]

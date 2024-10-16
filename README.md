@@ -67,9 +67,9 @@ Further preproccesing of ligands likely required!
 
 ## How to use
 
-To run the full workflow from initial protein PDB structure to QM software input file use the driver as described in [driver/](driver/README.md).
+The entire processed-PDB-to-input-file RINRUS workflow can be run at once using the driver, or steps can be run individually.
 
-More detailed documentation/instructions for each step of the process is given in [bin/](bin/README.md).
+Full usage instructions are described in [bin/](bin/README.md).
 
 
 ## Contributors

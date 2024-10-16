@@ -326,7 +326,7 @@ def write_xtb_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,re
 """
 write orca input files using orca template file
 """
-def write_orca_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,res_count):
+def write_orca_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,res_count,hopt):
     ### inp_name default can be 1.inp, but first is name.input such as 9.input
     ### From input_template file ###
     ### nprocs
@@ -383,7 +383,10 @@ def write_orca_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,r
         if atom[16] == '-1':
             atn = int(atom[1]) - 1
             inp.write("  { C %d C }\n"%atn)
-    inp.write("  end\nend\n")
+    inp.write("  end\n")
+    if hopt == 1:
+        inp.write("  optimizeHydrogens true\n")
+    inp.write("end\n")
     inp.write("*xyz %d %d\n"%(charge+tot_charge,multiplicity))
     for i in range(len(pic_atom)):
         atom = pic_atom[i]

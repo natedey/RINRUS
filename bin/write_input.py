@@ -146,10 +146,13 @@ if __name__ == '__main__':
     ifmat    = args.fmat
     basisinfo = args.basisinfo
 
+    hopt = 0
+
     if step == 'hopt':
         pic_atom, tot_charge = pdb_after_addh(nohpdb,adhpdb)
         res_count = adhpdb.split('_')[1]
         write_pdb('%s'%tmp_pdb,pic_atom,res_count)
+        hopt = 1
     elif step == 'gauout':
         i_name = []
         for gau_input in glob('%s/*inp'%wdir):
@@ -204,7 +207,7 @@ if __name__ == '__main__':
     elif ifmat == "gau-xtb":
         write_xtb_input('%s/%s'%(wdir,inp_name),int_tmp,charge,multi,pic_atom,tot_charge,res_count)
     elif ifmat == "orca":
-        write_orca_input('%s/%s'%(wdir,inp_name),int_tmp,charge,multi,pic_atom,tot_charge,res_count)
+        write_orca_input('%s/%s'%(wdir,inp_name),int_tmp,charge,multi,pic_atom,tot_charge,res_count,hopt)
     else:
         print("ERROR: ifmat not set. Please provide an input format for your calculations!")
 

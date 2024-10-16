@@ -1,0 +1,13 @@
+PDB: 2cht_h_corrected_new.pdb
+Protonate_initial: True
+Seed: A:203 
+RIN_program: probe 
+Histidine: 
+Model(s): maximal
+Seed_charge: -2
+Multiplicity: 1
+Computational_program: orca
+input_template_path: ~/git/RINRUS/bin/orca_input_template.txt
+basisset_library: ~/git/RINRUS/template_files/basisinfo
+path_to_type_of_RIN: ~/git/RINRUS/bin
+

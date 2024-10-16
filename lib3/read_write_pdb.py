@@ -118,7 +118,7 @@ def update_xyz(pdb,xyz):
     sel_atom = []
     for i in range(len(pdb)):
         atom = pdb[i]
-        atom[8:11] = xyz[i,:]
+        atom[8:11] = xyz[i]
         sel_atom.append(atom)
     return sel_atom
 
