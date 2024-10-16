@@ -33,7 +33,8 @@ path_to_type_of_RIN: [path to RINRUS bin directory]
 The driver writes a log file called `rinrus_log_[date].out` with the details of the run/commands called.
 
 <details>
-<summary>Commands run by the driver:</summary>
+    <summary>Commands run by the driver:</summary>
+    
 ```bash
 # If reduce protonation selected
 $HOME/git/RINRUS/bin/reduce -NOFLIP -Quiet PDB.pdb > PDB_h.pdb 
