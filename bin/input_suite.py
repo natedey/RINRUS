@@ -12,7 +12,7 @@ from glob import glob
 """
 write gaussian input files using gaussian template file
 """
-def write_gau_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,res_count,basisinfo):
+def write_gau_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,res_count,basisinfo,hopt):
     ### inp_name default is 1.inp, but first is name.input such as 9.input
     ### inp_type list which includes [small/large, level_theory, basis, opt, freq,  
     ### input_template line0: nprocshared and mem 
@@ -71,7 +71,8 @@ def write_gau_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,re
 
     if lines[5][0] == '#':
         ### For pre-optmization where all heavy atoms kept frozen with "-1" except H atoms
-        if lines[1][0] != '#' and 'sto-3g' in lines[1] and lines[2].strip() == 'opt':
+        #if lines[1][0] != '#' and 'sto-3g' in lines[1] and lines[2].strip() == 'opt':
+        if hopt == 1:
             for atom in pic_atom:
                 if atom[14].strip() == 'H':
                     inp.write("%4s %6s         %8.3f %8.3f %8.3f\n"%(atom[14].strip(),'0',atom[8],atom[9],atom[10])) 

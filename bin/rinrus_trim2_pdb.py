@@ -50,22 +50,70 @@ def gen_res_seq(freqf,sel_key):
                 qf[j][cha] = [res]
     return qf
 
-def trim_pdb_models(sm,res_atom,res_info,pdb_res_name,pdb_res_atom,res_part_list,cha_res_list,Alist,ufree_atoms):
-    test = {}
-    tot = {}
+def trim_pdb_models(sm,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd):
     res_part_list = {}
-    for i in range(sm):
+    res_atom = {}
+    res_info = {}
+
+    # add seed fragments to res_part_list
+    for i in range(len(iratoms)):
         c = iratoms[i].split()
-        res_part_list[(c[0],int(c[1]))]=[]
-    for i in range(sm):
-        c = iratoms[i].split()
-        res_part_list[(c[0],int(c[1]))].append(c[3:])
+        if (c[0],int(c[1])) in sel_key:
+            res_part_list[(c[0],int(c[1]))]=c[3:]
+
+    # add any required non-seed fragments
+    if mustadd != None and mustadd != '':
+        addatoms = []
+        mustadd = mustadd.split(',')
+        for i in mustadd:
+            addat = i.split(':')
+            if len(addat)==2:
+                allats=pdb_res_atom[(addat[0],int(addat[1]))]
+                addatoms.append(f"{addat[0]} {addat[1]} {allats}")
+            else:
+                groups=addat[2].split("+")
+                ats=[]
+                if "S" in groups: #add side chain
+                    ats.append("CB")
+                if "C" in groups: #add C terminus
+                    ats.append("O")
+                if "N" in groups: #add N terminus
+                    ats.append("N")
+                addatoms.append(f"{addat[0]} {addat[1]} {" ".join(ats)}")
+        for i in range(len(addatoms)):
+            c = addatoms[i].split()
+            res_part_list[(c[0],int(c[1]))]=c[2:]
+            #if (c[0],int(c[1])) in res_part_list.keys():
+            #    for at in c[2:]:
+            #        if at not in res_part_list[(c[0],int(c[1]))]:
+            #            res_part_list[(c[0],int(c[1]))].append(at)
+            #else:
+            #    res_part_list[(c[0],int(c[1]))]=c[2:]
+
+    # add residues until reach desired size
+    count = len(res_part_list)
+    for i in range(len(iratoms)):
+        if count < sm:
+            c = iratoms[i].split()
+            #res_part_list[(c[0],int(c[1]))]=[]
+            #res_part_list[(c[0],int(c[1]))].append(c[3:])
+            if (c[0],int(c[1])) not in sel_key:
+                if (c[0],int(c[1])) in res_part_list.keys():
+                    for at in c[3:]:
+                        if at not in res_part_list[(c[0],int(c[1]))]:
+                            res_part_list[(c[0],int(c[1]))].append(at)
+                else:
+                    res_part_list[(c[0],int(c[1]))]=c[3:]
+                count += 1
+
+    sm = count
+
+
     for i in res_part_list.keys():
+        res_part_list[i]=[res_part_list[i]]
         if len(res_part_list[i]) == 2:
             new_list = res_part_list[i][0] + res_part_list[i][1]
-            res_part_list[(i)]=new_list
-            
-        
+            res_part_list[(i)]=new_list        
         else: 
             new_list = res_part_list[i][0] 
             res_part_list[(i)]=new_list
@@ -155,6 +203,54 @@ def trim_pdb_models(sm,res_atom,res_info,pdb_res_name,pdb_res_atom,res_part_list
                     res_atom[key].append('C')
                     res_atom[(cha,res_id-1)] = ['CA','C','O','HA','HA2','HA3']
                     res_atom[(cha,res_id+1)] = ['CA','HA','HA2','HA3','N','H']
+                    # check for/connect CAs adjacent to ends of these new MCs
+                    if (cha,res_id+2) in res_atom.keys() and 'CA' in res_atom[(cha,res_id+2)]:
+                        for atom in ['C','O']:
+                            if atom not in res_atom[(cha,res_id+1)]:
+                                res_atom[(cha,res_id+1)].append(atom)
+                        for atom in ['N','H']:
+                            if atom not in res_atom[(cha,res_id+2)]:
+                                res_atom[(cha,res_id+2)].append(atom)
+                    if (cha,res_id-2) in res_atom.keys() and 'CA' in res_atom[(cha,res_id-2)]:
+                        for atom in ['C','O']:
+                            if atom not in res_atom[(cha,res_id-2)]:
+                                res_atom[(cha,res_id-2)].append(atom)
+                        for atom in ['N','H']:
+                            if atom not in res_atom[(cha,res_id-1)]:
+                                res_atom[(cha,res_id-1)].append(atom)
+    
+    ### DAW: check that prolines represented properly and all adjacent CAs are connected until nothing new added
+    change = 1
+    while change == 1:
+        change = 0
+        for key in sorted(res_atom.keys()):
+            if key not in sel_key and pdb_res_name[key] not in ('HOH', 'WAT','O'):
+                cha = key[0]
+                res_id = key[1]
+                # check if any prolines missing side chains
+                if pdb_res_name[key] == 'PRO' and 'N' in res_atom[key] and 'CB' not in res_atom[key]:
+                    change = 1
+                    for atom in ['N', 'CA', 'C', 'O', 'CB', 'CG', 'CD', 'HA', '2HB', '3HB', '2HG', '3HG', '2HD', '3HD']:
+                        if atom not in res_atom[key]:
+                            res_atom[key].append(atom)
+                    if (cha, res_id+1) in res_atom.keys():
+                        for atom in ['N', 'H', 'CA', 'HA']:
+                            if atom not in res_atom[(cha, res_id+1)]:
+                                res_atom[(cha, res_id+1)].append(atom)
+                    else:
+                        res_atom[(cha, res_id+1)] = ['N', 'H', 'CA', 'HA']
+            
+                # check if any new unconnected adjacent CAs
+                if 'CA' in res_atom[key]:
+                    if (cha,res_id+1) in res_atom.keys() and 'CA' in res_atom[(cha,res_id+1)]:
+                        for atom in ['C','O']:
+                            if atom not in res_atom[key]:
+                                res_atom[key].append(atom)
+                                change = 1
+                        for atom in ['N','H']:
+                            if atom not in res_atom[(cha,res_id+1)]:
+                                res_atom[(cha,res_id+1)].append(atom)
+                                change = 1
 
     ### Check frozen info ###
     for key in sorted(res_atom.keys()):
@@ -193,6 +289,7 @@ def trim_pdb_models(sm,res_atom,res_info,pdb_res_name,pdb_res_atom,res_part_list
     outf = 'res_%s.pdb'%str(sm)
     write_pdb(outf,res_pick)
 
+
 def get_ufree_atom(ufree):
     ufree_atoms = {}
     atoms = ufree.split(',')
@@ -218,6 +315,7 @@ if __name__ == '__main__':
     parser.add_argument('-cres', dest='cres', default='None', help='Noncanonical residue information')
     parser.add_argument('-unfrozen', dest='ufree', default='None', help='Seed canonical residue unfrozen CA/CB, chain:Resid:CACB,chain:Resid:CA')
     parser.add_argument('-model', dest='method', default='All', help='generate one or all trimmed models, if "7" is given, then will generate the 7th model, "max" for only maximal model')
+    parser.add_argument('-mustadd', dest='mustadd', default='None', help='Necessary non-seed fragments ([S]ide chain, [N]-term, [C]-term) e.g. "A:7:S+C,A:8:N"')
 
     args = parser.parse_args()
 
@@ -227,6 +325,8 @@ if __name__ == '__main__':
     cres  = args.cres
     ufree = args.ufree
     method = args.method
+    mustadd = args.mustadd
+
     if cres != 'None':
         cres_atoms_all, cres_atoms_sc = get_noncanonical_resinfo(cres)
     else:
@@ -246,9 +346,6 @@ if __name__ == '__main__':
     ### Find sequential of residues in the model ###
     #res_seq = gen_res_seq(atomf,sel_key)
 
-    res_atom = {}   # Residue atoms
-    res_info = {}   # Freeze idx for residues
-
     pdb_res_name = {}
     pdb_res_atom = {}
     for line in pdb:
@@ -261,17 +358,23 @@ if __name__ == '__main__':
             pdb_res_atom[key].append(line[2].strip())
 
     ### get res_atom info ###
-    res_part_list = {}
-    cha_res_list = {}
     Alist = [chr(i) for i in range(ord('A'),ord('Z')+1)]
-    l_res = len(iratoms)
     
-    
+    # get max and min size
+    if mustadd == 'None':
+        l_must = 0
+        lmax = len(iratoms)
+        lmin = len(sel_key) + 1
+    else:
+        l_must = len(mustadd.split(','))
+        lmax = len(iratoms) + l_must
+        lmin = lmin = len(sel_key) + l_must
+ 
     if method == 'All':
-        for i in range(len(sel_key),l_res):
-            trim_pdb_models(i+1,res_atom,res_info,pdb_res_name,pdb_res_atom,res_part_list,cha_res_list,Alist,ufree_atoms)
+        for i in range(lmin,lmax):
+            trim_pdb_models(i+1,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd)
     elif method == 'max':
-        trim_pdb_models(l_res,res_atom,res_info,pdb_res_name,pdb_res_atom,res_part_list,cha_res_list,Alist,ufree_atoms)
+        trim_pdb_models(lmax,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd)
     else:
         res_l = int(method)
-        trim_pdb_models(res_l,res_atom,res_info,pdb_res_name,pdb_res_atom,res_part_list,cha_res_list,Alist,ufree_atoms)
+        trim_pdb_models(res_l,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd)

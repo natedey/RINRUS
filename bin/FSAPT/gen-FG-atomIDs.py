@@ -20,7 +20,7 @@ FGlist = []
 #Grab seed info
 with open(args.p, 'r') as readfile:
     for line in readfile:
-        if line == "END\n" or line[0:6] == "CONECT": continue
+        if line == "END\n" or line[0:4] == "TER " or line[0:6] == "CONECT": continue
         if line[21]+":"+line[22:26].strip() in args.s.split(","):
             seedatoms.append(line[21]+"/"+line[22:26].strip()+"/"+line[12:16].strip())
         if line[0:4] == "ATOM" or line[0:6] == "HETATM": modelsize +=1

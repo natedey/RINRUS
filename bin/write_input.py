@@ -88,7 +88,7 @@ def gen_pdbfiles(wdir,step,tmppdb):
     os.chdir('%s'%wdir)
     pdb_name = []
     for pdbf in glob('%s/*.pdb'%new_dir):
-        m = re.search('(\d+).pdb',pdbf)
+        m = re.search(r'(\d+).pdb',pdbf)
         pdb_name.append( int(m.group(1)) )
     return max(pdb_name), new_dir
 
@@ -108,22 +108,27 @@ if __name__ == '__main__':
             'gauout: read outputwrite_modred_inp, input_template, write_second_inp, \n' +
             'pdb: read new pdb file, input_template, write_new_inp \n' +
             'replacecoords: read pdb1 and pdb2 for replacing the fragment in pdb1 with pdb2 coordinates and write new input')
-    parser.add_argument('-wdir', dest='output_dir', default=os.path.abspath('./'), help='working dir')
-    parser.add_argument('-tmp', dest='tmp_pdb', default=None, help='template_pdb_file')
-    parser.add_argument('-noh', dest='no_h_pdb', default=None, help='trimmed_pdb_file')
-    parser.add_argument('-adh', dest='h_add_pdb', default=None, help='hadded_pdb_file')
-    parser.add_argument('-pdb', dest='new_pdb', default=None, help='new_pdb_file')
-    parser.add_argument('-intmp', dest='input_tmp', default=None, help='template_for_write_input')
-    parser.add_argument('-outf', dest='gau_out', default='1.out', help='output_name')
-    parser.add_argument('-inpn', dest='inp_name', default='1.inp', help='input_name')
-    parser.add_argument('-ckp', dest='check_point', default=None, help='check_file_frame')
+    # general options
     parser.add_argument('-m', dest='multiplicity', default=1, type=int, help='multiplicity')
     parser.add_argument('-c', dest='ligand_charge', default=0, type=int, help='charge_of_ligand')
+    parser.add_argument('-format',dest='fmat',default=None,help="input_file_format eg.'gaussian','qchem','gau-xtb'")
+    parser.add_argument('-intmp', dest='input_tmp', default=None, help='template_for_write_input')
+    parser.add_argument('-inpn', dest='inp_name', default='1.inp', help='input_name')
+    parser.add_argument('-basisinfo',dest='basisinfo',default=None,help="basis library file")
+    parser.add_argument('-wdir', dest='output_dir', default=os.path.abspath('./'), help='working dir')
+    parser.add_argument('-tmp', dest='tmp_pdb', default=None, help='template_pdb_file')
+    # type = pdb
+    parser.add_argument('-pdb', dest='new_pdb', default=None, help='new_pdb_file')
+    # type = hopt
+    parser.add_argument('-noh', dest='no_h_pdb', default=None, help='trimmed_pdb_file')
+    parser.add_argument('-adh', dest='h_add_pdb', default=None, help='hadded_pdb_file')
+    # type = gauout
+    parser.add_argument('-outf', dest='gau_out', default='1.out', help='output_name')
+    parser.add_argument('-ckp', dest='check_point', default=None, help='check_file_frame')
+    # type = replacecoords
     parser.add_argument('-pdb1', dest='pdb1', default=None, help='minima_pdb_file')
     parser.add_argument('-pdb2', dest='pdb2', default=None, help='ts_pdb_file')
     parser.add_argument('-parts', dest='parts', default=None, help='ts_frag_indo')
-    parser.add_argument('-format',dest='fmat',default=None,help="input_file_format eg.'gaussian','qchem','gau-xtb'")
-    parser.add_argument('-basisinfo',dest='basisinfo',default=None,help="basis library file")
 #    parser.print_help()
 
     args = parser.parse_args()
@@ -199,14 +204,26 @@ if __name__ == '__main__':
                parts.append(line.split())
         pic_atom, tot_charge = pdb_replace(pdb1,pdb2,parts)    
         res_count = args.pdb1
+        # write the modified pdb so it can be checked
+        pdb1name = pdb1.split('/')[-1]
+        pdb1name = pdb1name.split('.')[0]
+        write_pdb('%s/%s_mod_parts.pdb'%(wdir,pdb1name),pic_atom)
 
     if ifmat == "gaussian":
-        write_gau_input('%s/%s'%(wdir,inp_name),int_tmp,charge,multi,pic_atom,tot_charge,res_count,basisinfo)
+        if int_tmp = None:
+            int_tmp = '$HOME/git/RINRUS/bin/gaussian_input_template.txt'
+        write_gau_input('%s/%s'%(wdir,inp_name),int_tmp,charge,multi,pic_atom,tot_charge,res_count,basisinfo,hopt)
     elif ifmat == "qchem":
+        if int_tmp = None:
+            int_tmp = '$HOME/git/RINRUS/bin/qchem_input_template.txt'
         write_qchem_input('%s/%s'%(wdir,inp_name),int_tmp,charge,multi,pic_atom,tot_charge,res_count)
     elif ifmat == "gau-xtb":
+        if int_tmp = None:
+            int_tmp = '$HOME/git/RINRUS/bin/xtb_input_template.txt'
         write_xtb_input('%s/%s'%(wdir,inp_name),int_tmp,charge,multi,pic_atom,tot_charge,res_count)
     elif ifmat == "orca":
+        if int_tmp = None:
+            int_tmp = '$HOME/git/RINRUS/bin/orca_input_template.txt'
         write_orca_input('%s/%s'%(wdir,inp_name),int_tmp,charge,multi,pic_atom,tot_charge,res_count,hopt)
     else:
         print("ERROR: ifmat not set. Please provide an input format for your calculations!")

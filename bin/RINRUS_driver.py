@@ -14,6 +14,7 @@ def driver_file_reader(file,logger):
     pdb = ''
     Seed = []
     seed = ''
+    must_include = ''
     RIN_program = ''
   #  Histidine = ''
     model_num = ''
@@ -26,45 +27,46 @@ def driver_file_reader(file,logger):
     path_to_RIN = ''
     with open(file,'r') as fp:
         data = fp.readlines()
-        for line in data:
-            #print(line)
-            if '#' in line:
-                line
-            else:
-                if 'PDB' in line:
-                    pdb += line.replace('PDB:','').replace('\n','').replace(' ','')
-                if 'Protonate_initial' in line:
-                    red = line.replace('Protonate_initial:','').replace('\n','').replace(' ','')
-                if 'Seed:' in line:
-                    if ',' in line:
-                        line = line.replace('Seed:','').replace('\n','').replace(' ','')
-                        seed+= line
-                        line = line.split(',')
-                        for i in line:
-                            if i=='':
-                                pass
-                            else:
-                                Seed.append(i)
-                        
-                    else:
-                        seed+= line.replace('Seed:','').replace('\n','').replace(' ','')
-                        Seed.append(line.replace('Seed:','').replace('\n','').replace(' ',''))
-                if 'RIN_program' in line:
-                    RIN_program += line.replace('RIN_program:','').replace('\n','').replace(' ','')
-                if 'Seed_charge' in line:
-                    charge += line.replace('Seed_charge:','').replace('\n','').replace(' ','')
-                if 'Multiplicity' in line:
-                    multi+= line.replace('Multiplicity:','').replace('\n','').replace(' ','')
-                if 'Computational_program' in line:
-                    Computational_program += line.replace('Computational_program:','').replace('\n','').replace(' ','')
-                if 'input_template_path' in line:
-                    template_path += line.replace('input_template_path:','').replace('\n','').replace(' ','')
-                if 'basisset_library' in line:
-                    basis_set_library += line.replace('basisset_library:','').replace('\n','').replace(' ','')
-                if 'Model(s)' in line:
-                    model_num += line.replace('Model(s):','').replace('\n','').replace(' ','')
-                if 'path_to_type_of_RIN:' in line:
-                    path_to_RIN += line.replace('path_to_type_of_RIN:', '').replace('\n','').replace(' ','')
+    for line in data:
+        if '#' in line:
+            line
+        else:
+            if 'path_to_scripts:' in line:
+                path_to_RIN += line.replace('path_to_scripts:', '').replace('\n','').replace(' ','')
+            if 'PDB' in line:
+                pdb += line.replace('PDB:','').replace('\n','').replace(' ','')
+            if 'Protonate_initial' in line:
+                red = line.replace('Protonate_initial:','').replace('\n','').replace(' ','')
+            if 'Seed:' in line:
+                if ',' in line:
+                    line = line.replace('Seed:','').replace('\n','').replace(' ','')
+                    seed+= line
+                    line = line.split(',')
+                    for i in line:
+                        if i=='':
+                            pass
+                        else:
+                            Seed.append(i)
+                    
+                else:
+                    seed+= line.replace('Seed:','').replace('\n','').replace(' ','')
+                    Seed.append(line.replace('Seed:','').replace('\n','').replace(' ',''))
+            if 'Must_include' in line:
+                must_include += line.replace('Must_include:','').replace('\n','').replace(' ','')
+            if 'RIN_program' in line:
+                RIN_program += line.replace('RIN_program:','').replace('\n','').replace(' ','')
+            if 'Seed_charge' in line:
+                charge += line.replace('Seed_charge:','').replace('\n','').replace(' ','')
+            if 'Multiplicity' in line:
+                multi+= line.replace('Multiplicity:','').replace('\n','').replace(' ','')
+            if 'Computational_program' in line:
+                Computational_program += line.replace('Computational_program:','').replace('\n','').replace(' ','')
+            if 'input_template_path' in line:
+                template_path += line.replace('input_template_path:','').replace('\n','').replace(' ','')
+            if 'basisset_library' in line:
+                basis_set_library += line.replace('basisset_library:','').replace('\n','').replace(' ','')
+            if 'Model(s)' in line:
+                model_num += line.replace('Model(s):','').replace('\n','').replace(' ','')
     
     
     if red.lower() in ['false', 'f', '0', 'n']:
@@ -72,30 +74,38 @@ def driver_file_reader(file,logger):
     elif red.lower() in ['true', 't', '1', 'y']:
         red = 'True'
 
+    logger.info('Path to the RINRUS scripts bin directory: ' + str(path_to_RIN))
     logger.info('PDB Name: ' + pdb)
     logger.info('Protonate initial PDB: ' + red)
     logger.info('RIN program: ' + RIN_program)
-    logger.info('Substrate Charge: ' + str(charge))
+    logger.info('Seed: ' + str(seed))
+    logger.info('Seed Charge: ' + str(charge))
+    logger.info('Fragments that must be included: ' + str(must_include))
     logger.info('Multiplicity: ' + str(multi))
+    logger.info('Model number selection: ' + str(model_num))
     logger.info('Computational Program: ' + str(Computational_program))
     logger.info('Path to the input template file: ' + str(template_path))
     logger.info('Path to the basis set library: ' + str(basis_set_library))
-    logger.info('Seed: ' + str(seed))
-    logger.info('Model number selection: ' + str(model_num))
-    logger.info('Path to the RINRUS scripts bin directory: ' + str(path_to_RIN))
     
-    return pdb,red,Seed,RIN_program,charge,multi,Computational_program,template_path,basis_set_library,seed,model_num,path_to_RIN
+    return pdb,red,Seed,must_include,RIN_program,charge,multi,Computational_program,template_path,basis_set_library,seed,model_num,path_to_RIN
 
 
-def res_atom_count(filename):
-    num = 0
+def res_atom_count(filename,must_include):
+    # residues in res_atoms
+    resnum = 0
     with open(filename,'r') as fp:
         data = fp.readlines()
-        num += len(data)
+        #num += len(data)
         for i in data:
-            if i == '':
-                num -= 1
-    return num
+            if i != '':
+                resnum += 1
+    # must_include fragments
+    if must_include != '':
+        addnum = len(must_include.split(','))
+    else:
+        addnum = 0
+    totnum = resnum + addnum
+    return resnum,addnum,totnum
 
 
 def run_reduce(pdb,logger,path_to_RIN):
@@ -187,9 +197,9 @@ def select_by_arpeggio(pdb,seed,path_to_RIN,logger):
     return
     
 
-def trim_model(seed,pdb,selfile,model_num,path_to_RIN,RIN_program,logger):
+def trim_model(seed,must_include,pdb,selfile,model_num,path_to_RIN,RIN_program,logger):
     path = os.path.expanduser(path_to_RIN+'/rinrus_trim2_pdb.py')
-    args = [sys.executable,path, '-s',str(seed).replace('\n',''), '-pdb',str(pdb),'-c',str(selfile), '-model', str(model_num)]
+    args = [sys.executable,path, '-s',str(seed).replace('\n',''), '-pdb',str(pdb),'-c',str(selfile), '-model', str(model_num), '-mustadd', str(must_include)]
     result = subprocess.run(args)
     logger.info('Model trimming run as: ' + str(' '.join(args)))
     return
@@ -237,7 +247,7 @@ def run_rinrus_driver(file):
     logger.info('PARSING DRIVER INPUT FILE:')
     driver_input_file = file
     logger.info('Inputs from: ' + file)
-    pdb,red,Seed,RIN_program,charge,multi,Computational_program,template_path,basis_set_library,seed,model_num,path_to_RIN = driver_file_reader(file,logger)
+    pdb,red,Seed,must_include,RIN_program,charge,multi,Computational_program,template_path,basis_set_library,seed,model_num,path_to_RIN = driver_file_reader(file,logger)
     RIN_program = RIN_program.lower()
     amountofseed = len(Seed)
     model_num = model_num.strip()
@@ -275,18 +285,23 @@ def run_rinrus_driver(file):
         selfile = 'res_atom-%.2f.dat'%cut
     elif RIN_program.lower() == 'manual':
         selfile = 'res_atoms.dat'
-    print('Using ' + str(selfile) + 'as active site selection for trimming procedure')
-    logger.info('Using ' + str(selfile) + 'as active site selection for trimming procedure')
+    print('Using ' + str(selfile) + ' as active site selection for trimming procedure')
+    logger.info('Using ' + str(selfile) + ' as active site selection for trimming procedure')
     logger.info('section done\n')
         
         
     ### TRIMMING AND CAPPING MODEL, WRITING INPUT FILE
     logger.info('CREATING MODEL AND WRITING INPUT FILE:')
-    num_lines = res_atom_count(selfile)
-    logger.info('Size of maximal model is: ' + str(num_lines))
-    print('Size of maximal model is: ' + str(num_lines))
+    resnum,addnum,totnum = res_atom_count(selfile,must_include)
+    if addnum == 0:
+        minsize = amountofseed+1
+    else:
+        minsize = amountofseed+addnum
+
+    logger.info('Size of maximal model is: ' + str(totnum))
+    print('Size of maximal model is: ' + str(totnum))
     
-    option = list(range(amountofseed+1,num_lines+1))
+    option = list(range(minsize,totnum+1))
     option.append('all')
     x = False
     logger.info('Valid options for building models ' + str(option))
@@ -295,14 +310,14 @@ def run_rinrus_driver(file):
     
     if (model_num.strip().isnumeric() == True and int(model_num) in option) or model_num.lower() in ['all','max','maximal']:
         if model_num.lower() in ['max','maximal']:
-            model_num = num_lines
+            model_num = totnum
         x = True
     else:
         print('Model selected in input file is not a valid option. Valid options are:')
         print(option)
         logger.info("The user did not input a correct model number in driver_input file. Requesting input.")    
     while x != True:
-        model_num = input('Which model would you like (max = ' + str(num_lines) + ')?\n')
+        model_num = input('Which model would you like (max = ' + str(totnum) + ')?\n')
         if model_num.isnumeric() == True and int(model_num) in option:
             logger.info('The user selected the model: '+ str(model_num))
             x = True
@@ -328,16 +343,17 @@ def run_rinrus_driver(file):
     logger.info('Residues excluded from protonation: '+ freeze)
 
     if model_num=='all':
-        tot = []
-        for num in range(amountofseed+1,num_lines+1):
-            tot.append(num)
-            trim_model(seed,mod_pdb,selfile,num,path_to_RIN,RIN_program,logger)
+        #tot = []
+        #for num in range(amountofseed+1,num_lines+1):
+        for num in range(minsize,totnum+1):
+            #tot.append(num)
+            trim_model(seed,must_include,mod_pdb,selfile,num,path_to_RIN,RIN_program,logger)
             protonate_model(freeze,num,path_to_RIN,logger)
             create_input_file(template_path,Computational_program,basis_set_library,charge,str(num),path_to_RIN,logger)
             shutil.copy('1.inp',str(num)+'.inp')
             shutil.copy('template.pdb','template_'+str(num)+'.pdb')
     else:
-        trim_model(seed,mod_pdb,selfile,model_num,path_to_RIN,RIN_program,logger)
+        trim_model(seed,must_include,mod_pdb,selfile,model_num,path_to_RIN,RIN_program,logger)
         protonate_model(freeze,model_num,path_to_RIN,logger)
         create_input_file(template_path,Computational_program,basis_set_library,charge,str(model_num),path_to_RIN,logger)       
         

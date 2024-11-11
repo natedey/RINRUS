@@ -16,9 +16,11 @@ python $HOME/git/RINRUS/bin/RINRUS_driver.py -i driver_input
 ### Input file
 The `driver_input` file should contain the following details:
 ```
+path_to_scripts: [path to RINRUS bin directory]
 PDB: [starting pdb file name]
 Protonate_initial: [true/t/y or false/f/n]
 Seed: [seed residues]
+Must_include: [non-seed fragments (SC, N-term. and/or C-term. of residue) that need to be in model, e.g. A:6:C,A:7:S+C+N,A:8:N]
 RIN_program: [probe/arpeggio/distance/manual]
 Model(s): [model number or maximal or all] 
 Seed_charge: [overall charge of seed]
@@ -26,7 +28,6 @@ Multiplicity: [model multiplicity]
 Computational_program: [gaussian/gau-xtb/orca/qchem]
 input_template_path: [path to input file template]
 basisset_library: [path to Gaussian basis set file]
-path_to_type_of_RIN: [path to RINRUS bin directory]
 ```
 
 ### Log file
@@ -51,7 +52,7 @@ $HOME/git/RINRUS/bin/arpeggio2rins.py -f PDB.contacts -s [seed residues]
 $HOME/git/RINRUS/bin/pdb_dist_rank.py -pdb PDB_h.pdb -s [seed residues] -cut [cutoff] -type [avg/mass]
 
 # Model trimming and capping
-$HOME/git/RINRUS/bin/rinrus_trim2_pdb.py -s [seed residues] -pdb PDB_h.pdb -model N -c [res_atoms.dat/contact_counts.dat/res_atom-X.dat depending on RIN program]
+$HOME/git/RINRUS/bin/rinrus_trim2_pdb.py -s [seed residues] -pdb PDB_h.pdb -model N -c [res_atoms.dat/contact_counts.dat/res_atom-X.dat depending on RIN program] -mustadd [must_include fragments]
 $HOME/git/RINRUS/bin/pymol_protonate.py -ignore_ids [excluded ids] -pdb res_N.pdb
 
 # Input file creation
@@ -299,11 +300,14 @@ python3 ~/git/RINRUS/bin/rinrus_trim2_pdb.py -pdb 3bwm_h.pdb -s A:300,A:301,A:30
 -c FILE         atom info file (default: res_atoms.dat)
 -unfrozen ATS   residues to unfreeze (Chain:resID:<CA/CB/CACB>)
 -model N        specify which model to create (number or 'max')
+-mustadd	fragment(s) that must be in model (Chain:resID:<S/N/C/S+N/S+C/N+C/S+N+C>)
 ```
 
 If no model is specified, the script will generate the entire "ladder" of possible models by adding residues based on their order in `res_atoms.dat`, otherwise only the model containing N residues will be created (or the maximal model if 'max' is specified). For each model, the files `res_N.pdb`, `res_N_froz_info.dat` and `res_N_atom_info.dat` are created. 
 
 If canonical residues are included in the seed, you can unfreeze CA and/or CB in these residues with the unfrozen flag. Specify the carbon atoms to unfreeze as CA, CB or CACB.
+
+The mustadd flag is used to define groups that must be in the model but are not part of the seed (e.g. metal coordinating residues or groups covalently bonded to the seed). These are included independently of what is in `res_atoms.dat` so the model numbers might double count some groups. 
 
 
 ### Capping the truncation sites with hydrogens
@@ -328,7 +332,7 @@ Use `write_input.py` to generate input files for quantum chemistry packages. Cur
 Basic usage of `write_input.py` to create an input file to do a geometry optimisation + frequency calculation with a given cluster model `res_N_h.pdb`:
 ```bash
 # Example usage of write_input: Gaussian
-python3 $HOME/git/RINRUS/bin/write_input.py -pdb res_N_h.pdb -c 2 -format gaussian -intmp $HOME/git/RINRUS/bin/gaussian_input_template.txt -basisinfo ~/git/RINRUS/template_files/basisinfo
+python3 $HOME/git/RINRUS/bin/write_input.py -pdb res_N_h.pdb -c 2 -format gaussian -intmp $HOME/git/RINRUS/bin/gaussian_input_template.txt [-basisinfo ~/git/RINRUS/template_files/basisinfo]
 
 # Example usage of write_input: xTB (in Gaussian)
 python3 $HOME/git/RINRUS/bin/write_input.py -pdb res_N_h.pdb -c 2 -format gau-xtb -intmp $HOME/git/RINRUS/bin/xtb_input_template.txt
@@ -344,9 +348,9 @@ python3 $HOME/git/RINRUS/bin/write_input.py -pdb res_N_h.pdb -c 2 -format qchem 
 -m MULT          model multiplicity
 -c LIGCHRG       ligand charge
 -format PROG     software package (gaussian/gau-xtb/orca/qchem)
--intmp FILE      input template for selected software package
+-intmp FILE      input template for selected software package (defaults to the ones in $HOME/git/RINRUS/bin/ if none specified)
 -inpn NAME       name of input file (default: 1.inp)
--basisinfo FILE  basis library file (only needed for Gaussian calculations)
+-basisinfo FILE  basis library file (only needed for Gaussian calculations if not using the basis sets defined in the input template)
 ```
 <br> 
 
@@ -356,9 +360,9 @@ Full set of arguments for using `write_input.py`:
 -m MULT          model multiplicity
 -c LIGCHRG       ligand charge
 -format PROG     software package (gaussian/gau-xtb/orca)
--intmp FILE      input template for selected software package
+-intmp FILE      input template for selected software package (defaults to the ones in $HOME/git/RINRUS/bin/ if none specified)
 -inpn NAME       name of input file (default: 1.inp)
--basisinfo FILE  basis library file (only needed for Gaussian calculations)
+-basisinfo FILE  basis library file (only needed for Gaussian calculations if not using the basis sets defined in the input template)
 -wdir PATH       working directory
 -type TYPE       type of structure processing for input file:
                  'pdb': use pdb file normally (default)
@@ -372,15 +376,14 @@ Full set of arguments for using `write_input.py`:
 # If using -type 'hopt', these are required:
 -noh FILE        cluster model pdb file before H added (e.g. res_N.pdb)
 -adh FILE        cluster model pdb file after H added (e.g. res_N_h.pdb)
--tmp FILE        template pdb file
 
 # If using -type 'gauout', these are required:
--tmp FILE        template pdb file
+-tmp FILE        template pdb file for creating new pdb from output
 -outf FILE       Gaussian output file
 -ckp FILE        Gaussian checkpoint file
 
 # If using -type 'replacecoords', these are required:
 -pdb1 FILE       starting pdb file
--pdb2 FILE       section of structure with new coordinates in pdb format
+-pdb2 FILE       pdb to take coordinates from
 -parts FILE      text file containing species in pdb1 to be replaced with pdb2 coordinates
 ```
