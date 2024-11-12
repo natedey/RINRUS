@@ -359,7 +359,7 @@ Full set of arguments for using `write_input.py`:
 # General arguments:
 -m MULT          model multiplicity
 -c LIGCHRG       ligand charge
--format PROG     software package (gaussian/gau-xtb/orca)
+-format PROG     software package (gaussian/gau-xtb/orca/qchem/psi4-fsapt)
 -intmp FILE      input template for selected software package (defaults to the ones in $HOME/git/RINRUS/bin/ if none specified)
 -inpn NAME       name of input file (default: 1.inp)
 -basisinfo FILE  basis library file (only needed for Gaussian calculations if not using the basis sets defined in the input template)
@@ -386,4 +386,7 @@ Full set of arguments for using `write_input.py`:
 -pdb1 FILE       starting pdb file
 -pdb2 FILE       pdb to take coordinates from
 -parts FILE      text file containing species in pdb1 to be replaced with pdb2 coordinates
+
+# If using -format 'psi4-fsapt', these are required:
+-seed SEED       seed to define as fragment A, rest of enzyme will be fragment B
 ```

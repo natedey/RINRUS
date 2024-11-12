@@ -1,0 +1,5 @@
+memory: 150GB
+set_num_threads: 16
+molecule: units angstrom, no_reorient, symmetry c1
+set_globals: basis jun-cc-pvdz, df_basis_scf jun-cc-pvdz-jkfit, df_basis_sapt jun-cc-pvdz-ri, guess sad, scf_type df, freeze_core true
+energy: fisapt0

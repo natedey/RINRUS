@@ -107,7 +107,8 @@ if __name__ == '__main__':
             help='hopt: read noh, addh pdbs, write_final_pdb and read input_template write_first_inp, \n' + 
             'gauout: read outputwrite_modred_inp, input_template, write_second_inp, \n' +
             'pdb: read new pdb file, input_template, write_new_inp \n' +
-            'replacecoords: read pdb1 and pdb2 for replacing the fragment in pdb1 with pdb2 coordinates and write new input')
+            'replacecoords: read pdb1 and pdb2 for replacing the fragment in pdb1 with pdb2 coordinates and write new input\n' +
+            'fsapt: F-SAPT0 calculation (psi4 only, ignores format specification)')
     # general options
     parser.add_argument('-m', dest='multiplicity', default=1, type=int, help='multiplicity')
     parser.add_argument('-c', dest='ligand_charge', default=0, type=int, help='charge_of_ligand')
@@ -129,6 +130,8 @@ if __name__ == '__main__':
     parser.add_argument('-pdb1', dest='pdb1', default=None, help='minima_pdb_file')
     parser.add_argument('-pdb2', dest='pdb2', default=None, help='ts_pdb_file')
     parser.add_argument('-parts', dest='parts', default=None, help='ts_frag_indo')
+    # type = fsapt
+    parser.add_argument('-seed', dest='seed', default=None, help='seed')
 #    parser.print_help()
 
     args = parser.parse_args()
@@ -210,21 +213,28 @@ if __name__ == '__main__':
         write_pdb('%s/%s_mod_parts.pdb'%(wdir,pdb1name),pic_atom)
 
     if ifmat == "gaussian":
-        if int_tmp = None:
+        if int_tmp == None:
             int_tmp = '$HOME/git/RINRUS/bin/gaussian_input_template.txt'
         write_gau_input('%s/%s'%(wdir,inp_name),int_tmp,charge,multi,pic_atom,tot_charge,res_count,basisinfo,hopt)
     elif ifmat == "qchem":
-        if int_tmp = None:
+        if int_tmp == None:
             int_tmp = '$HOME/git/RINRUS/bin/qchem_input_template.txt'
         write_qchem_input('%s/%s'%(wdir,inp_name),int_tmp,charge,multi,pic_atom,tot_charge,res_count)
     elif ifmat == "gau-xtb":
-        if int_tmp = None:
+        if int_tmp == None:
             int_tmp = '$HOME/git/RINRUS/bin/xtb_input_template.txt'
         write_xtb_input('%s/%s'%(wdir,inp_name),int_tmp,charge,multi,pic_atom,tot_charge,res_count)
     elif ifmat == "orca":
-        if int_tmp = None:
+        if int_tmp == None:
             int_tmp = '$HOME/git/RINRUS/bin/orca_input_template.txt'
         write_orca_input('%s/%s'%(wdir,inp_name),int_tmp,charge,multi,pic_atom,tot_charge,res_count,hopt)
+    elif ifmat == "psi4-fsapt":
+        if int_tmp == None:
+            int_tmp = '$HOME/git/RINRUS/bin/psi4_fsapt_input_template.txt'
+        if inp_name == "1.inp":
+            inp_name = "input.dat"
+        seed = args.seed
+        write_psi4_fsapt_input('%s/%s'%(wdir,inp_name),int_tmp,charge,multi,pic_atom,tot_charge,res_count,seed)
     else:
         print("ERROR: ifmat not set. Please provide an input format for your calculations!")
 

@@ -398,3 +398,73 @@ def write_orca_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,r
     inp.write("*\n")
 
     inp.close()
+
+"""
+write psi4 fsapt input file
+"""
+def write_psi4_fsapt_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,res_count,seed):
+    ### From input_template file ###
+    ### memory
+    ### set_num_threads
+    ### molecule
+    ### set_globals
+    ### set_sapt
+    ### energy
+
+    with open(inp_temp) as f:
+        lines = f.readlines()
+    for line in lines:
+        if line.startswith('#'): continue
+        if line.startswith('memory'):
+            memory = line.split(':')[1].strip()
+        if line.startswith('set_num_threads'):
+            threads = line.split(':')[1].strip()
+        if line.startswith('molecule'):
+            mol = line.split(':')[1].split(',')
+        if line.startswith('set_globals'):
+            setglob = line.split(':')[1].split(',')
+        if line.startswith('energy'):
+            energy = line.split(':')[1].strip()
+
+    # parse seed, separate fragments
+    seedlist = []
+    seed = seed.split(',')
+    for i in seed:
+        i = i.split(':')
+        seedlist.append((i[0],int(i[1])))
+    seedatoms = []
+    enzatoms = []
+    for i in range(len(pic_atom)):
+        atom = pic_atom[i]
+        if (atom[5],int(atom[6])) in seedlist:
+            seedatoms.append(atom)
+        else:
+            enzatoms.append(atom)
+
+    ## write input
+    inp = open('%s'%inp_name,'w')
+    inp.write("memory %s\n\n"%memory)
+    inp.write("set_num_threads(%s)\n\n"%threads)
+    inp.write("molecule frame {\n")
+    inp.write("%s %s\n"%(charge,multiplicity))
+    for i in range(len(seedatoms)):
+        atom = seedatoms[i]
+        inp.write("%1s %8.3f %8.3f %8.3f\n"%(atom[14].strip(),atom[8],atom[9],atom[10]))
+    inp.write("--\n")
+    inp.write("%s 1\n"%tot_charge)
+    for i in range(len(enzatoms)):
+        atom = enzatoms[i]
+        inp.write("%1s %8.3f %8.3f %8.3f\n"%(atom[14].strip(),atom[8],atom[9],atom[10]))
+    inp.write("\n")
+    for m in mol:
+        inp.write("\t%s\n"%m)
+    inp.write("} \n \n")
+    inp.write("set globals {\n")
+    for g in setglob:
+        inp.write("\t%s\n"%g)
+    inp.write("} \n \n")
+    inp.write("set sapt print 1\n\n")
+    inp.write("energy('%s')\n"%energy)
+
+    inp.close()
+
