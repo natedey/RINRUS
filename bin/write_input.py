@@ -9,7 +9,8 @@ from numpy import *
 import argparse
 from read_write_pdb import *
 from glob import glob
-from input_suite import *
+from DAW_input_suite import *
+from pathlib import Path
 
 
 def system_run(cmd):
@@ -115,7 +116,7 @@ if __name__ == '__main__':
     parser.add_argument('-format',dest='fmat',default=None,help="input_file_format eg.'gaussian','qchem','gau-xtb'")
     parser.add_argument('-intmp', dest='input_tmp', default=None, help='template_for_write_input')
     parser.add_argument('-inpn', dest='inp_name', default='1.inp', help='input_name')
-    parser.add_argument('-basisinfo',dest='basisinfo',default=None,help="basis library file")
+    parser.add_argument('-basisinfo',dest='basisinfo',default=None,help="'intmp' if in template file, use dictionary otherwise")
     parser.add_argument('-wdir', dest='output_dir', default=os.path.abspath('./'), help='working dir')
     parser.add_argument('-tmp', dest='tmp_pdb', default=None, help='template_pdb_file')
     # type = pdb
@@ -212,29 +213,24 @@ if __name__ == '__main__':
         pdb1name = pdb1name.split('.')[0]
         write_pdb('%s/%s_mod_parts.pdb'%(wdir,pdb1name),pic_atom)
 
+    if int_tmp == None:
+        tmpltdir = Path.home() / 'git' / 'RINRUS' / 'template_files'
+        int_tmp = tmpltdir / f'{ifmat}_input_template.txt'
+        print("Using default opt+freq input template: "+str(int_tmp))
+
     if ifmat == "gaussian":
-        if int_tmp == None:
-            int_tmp = '$HOME/git/RINRUS/bin/gaussian_input_template.txt'
         write_gau_input('%s/%s'%(wdir,inp_name),int_tmp,charge,multi,pic_atom,tot_charge,res_count,basisinfo,hopt)
     elif ifmat == "qchem":
-        if int_tmp == None:
-            int_tmp = '$HOME/git/RINRUS/bin/qchem_input_template.txt'
         write_qchem_input('%s/%s'%(wdir,inp_name),int_tmp,charge,multi,pic_atom,tot_charge,res_count)
     elif ifmat == "gau-xtb":
-        if int_tmp == None:
-            int_tmp = '$HOME/git/RINRUS/bin/xtb_input_template.txt'
         write_xtb_input('%s/%s'%(wdir,inp_name),int_tmp,charge,multi,pic_atom,tot_charge,res_count)
     elif ifmat == "orca":
-        if int_tmp == None:
-            int_tmp = '$HOME/git/RINRUS/bin/orca_input_template.txt'
         write_orca_input('%s/%s'%(wdir,inp_name),int_tmp,charge,multi,pic_atom,tot_charge,res_count,hopt)
     elif ifmat == "psi4-fsapt":
-        if int_tmp == None:
-            int_tmp = '$HOME/git/RINRUS/bin/psi4_fsapt_input_template.txt'
         if inp_name == "1.inp":
             inp_name = "input.dat"
         seed = args.seed
         write_psi4_fsapt_input('%s/%s'%(wdir,inp_name),int_tmp,charge,multi,pic_atom,tot_charge,res_count,seed)
     else:
-        print("ERROR: ifmat not set. Please provide an input format for your calculations!")
+        print("ERROR: 'ifmat' not set. Please provide an input format for your calculations!")
 

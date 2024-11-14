@@ -8,6 +8,7 @@ from numpy import *
 import argparse
 from read_write_pdb import *
 from glob import glob
+from gaussian_basis_dict import *
 
 """
 write gaussian input files using gaussian template file
@@ -24,9 +25,7 @@ def write_gau_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,re
     ### input_template line6: iop
     ### input_template line7: scf_info
     ### input_template line8: scrf_info
-    ### after the basis sets there needs to be an empty line in the end
-
-    
+    ### after the basis sets there needs to be an empty line in the end    
 
     print("charge= %d, tot_charge_without'-c'= %d"%(charge,tot_charge))
     with open(inp_temp) as f:
@@ -42,9 +41,26 @@ def write_gau_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,re
     inp.write("%s%dGB\n"%(mem_line,int(v[1])))
     inp.write("#P ")      
 
-    if lines[1][0] != '#':
-        inp.write("%s "%lines[1].strip())      
+    ### get atom list and work out if ECPs needed
+    atomlist = []
+    for atom in pic_atom:
+        if atom[14].strip() not in atomlist:
+            atomlist.append(atom[14].strip())
+    ecplist = []
+    for i in atomlist:
+        if i not in ['H','He','Li','Be','B','C','N','O','F','Ne','Na','Mg','Al','Si','P','S','Cl','Ar']:
+            ecplist.append(i)
+    print(atomlist)
+    print(ecplist)
 
+    if lines[1][0] != '#':
+        method = lines[1].strip().split('/')
+        if len(ecplist) > 0:
+            inp.write("%s/genecp "%method[0])
+        else:
+            inp.write("%s/gen "%method[0])
+        #inp.write("%s "%lines[1].strip())
+        
     if lines[2][0] != '#':
         optl = lines[2].split()
         inp.write("%s "%optl[0])
@@ -70,8 +86,7 @@ def write_gau_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,re
     inp.write("%d %d\n"%(charge+tot_charge,multiplicity))
 
     if lines[5][0] == '#':
-        ### For pre-optmization where all heavy atoms kept frozen with "-1" except H atoms
-        #if lines[1][0] != '#' and 'sto-3g' in lines[1] and lines[2].strip() == 'opt':
+        ### For pre-optimization where all heavy atoms kept frozen with "-1" except H atoms
         if hopt == 1:
             for atom in pic_atom:
                 if atom[14].strip() == 'H':
@@ -92,46 +107,24 @@ def write_gau_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,re
             inp.write("%s\n"%modred_code)
             count += l
         inp.write("\n")
-    
-    if basisinfo == None:
+
+    ### use basis info from template if specified otherwise use basis dictionary
+    if basisinfo == 'intmp':
         if lines[10][0] != '#' and 'basis' in lines[10]:
             for l in lines[11:]:
                 inp.write("%s"%l)
             if len(lines) <= 10:
                 inp.write('\n')
-    if basisinfo != None:
-        atomlist = []
-        for atom in pic_atom:
-            atomlist.append(atom[14])
-            used = set()
-            unique = [x for x in atomlist if x not in used and (used.add(x) or True)]
-        usednospace = [x.strip(' ') for x in used]
-        usednospace.sort()
-        for i in range(len(usednospace)):
-            usednospace[i] = usednospace[i].title()
-        basis = []
-        with open(basisinfo, 'r') as fo:
-            lines1= fo.readlines()
-            for i in range(len(lines1)):
-                line = lines1[i]
-                if "basis:" in line:           
-                    basis.append(i+1)
-                if "****" in line:
-                    basis.append(i+1)
-            for i in range(len(lines1)):   
-                if i in basis:                
-                    if (lines1[i].split(" ")[0].title()) in usednospace:
-                        for l in lines1[basis[basis.index(i)]:basis[basis.index(i)+1]]:
-                            inp.writelines(l)
-            inp.write("%s"%"\n")
-            except_lanl2dz=["C","H","O","N","S","Li","LI","F"]
-            for i in range(len(lines1)):   
-                if i in basis:
-                    if (lines1[i].split(" ")[0].title()) in usednospace:
-                        if (lines1[i].split(" ")[0].title()) not in except_lanl2dz:
-                            inp.writelines(lines1[i].split(" ")[0].title())
-                            inp.writelines("\nlanl2dz\n")                         
-    inp.write("%s"%"\n")
+    else:
+        for atom in atomlist:
+            basis = basis_dict[atom]
+            inp.write(basis+'\n')
+        if len(ecplist) > 0:
+            inp.write('\n')
+            for atom in ecplist:
+                ecp = ecp_dict[atom]
+                inp.write(ecp+'\n')
+        inp.write('\n')
 
     if lines[8][0] != '#' and 'scrf' in lines[8]:
         inp.write('radii=uff\nalpha=1.2\neps=4.0\n\n')

@@ -329,64 +329,64 @@ The "ignore_ids" and "ignore_ats" flags are used to specify residue IDs and atom
 
 Use `write_input.py` to generate input files for quantum chemistry packages. Currently input files can be created for Gaussian, xTB (through Gaussian), ORCA and Q-Chem. Some of the options for this script are specific to our QM-cluster modelling workflow and may not be relevant to other users.
 
-Basic usage of `write_input.py` to create an input file to do a geometry optimisation + frequency calculation with a given cluster model `res_N_h.pdb`:
+Basic usage of `write_input.py` to create an input file to do a basic geometry optimisation + frequency calculation with a given cluster model `res_N_h.pdb`:
 ```bash
 # Example usage of write_input: Gaussian
-python3 $HOME/git/RINRUS/bin/write_input.py -pdb res_N_h.pdb -c 2 -format gaussian -intmp $HOME/git/RINRUS/bin/gaussian_input_template.txt [-basisinfo ~/git/RINRUS/template_files/basisinfo]
+python3 $HOME/git/RINRUS/bin/write_input.py -pdb res_N_h.pdb -c 2 -format gaussian
 
 # Example usage of write_input: xTB (in Gaussian)
-python3 $HOME/git/RINRUS/bin/write_input.py -pdb res_N_h.pdb -c 2 -format gau-xtb -intmp $HOME/git/RINRUS/bin/xtb_input_template.txt
+python3 $HOME/git/RINRUS/bin/write_input.py -pdb res_N_h.pdb -c 2 -format gau-xtb
 
 # Example usage of write_input: ORCA
-python3 $HOME/git/RINRUS/bin/write_input.py -pdb res_N_h.pdb -c 2 -format orca -intmp $HOME/git/RINRUS/bin/orca_input_template.txt 
+python3 $HOME/git/RINRUS/bin/write_input.py -pdb res_N_h.pdb -c 2 -format orca
 
 # Example usage of write_input: Q-Chem
-python3 $HOME/git/RINRUS/bin/write_input.py -pdb res_N_h.pdb -c 2 -format qchem -intmp $HOME/git/RINRUS/bin/qchem_input_template.txt 
+python3 $HOME/git/RINRUS/bin/write_input.py -pdb res_N_h.pdb -c 2 -format qchem
 
 # Useful arguments for basic usage of write_input:
--pdb FILE        pdb file to use as structure in input file
--m MULT          model multiplicity
--c LIGCHRG       ligand charge
--format PROG     software package (gaussian/gau-xtb/orca/qchem)
--intmp FILE      input template for selected software package (defaults to the ones in $HOME/git/RINRUS/bin/ if none specified)
--inpn NAME       name of input file (default: 1.inp)
--basisinfo FILE  basis library file (only needed for Gaussian calculations if not using the basis sets defined in the input template)
+-pdb FILE           pdb file to use as structure in input file
+-m MULT             model multiplicity
+-c LIGCHRG          ligand charge
+-format PROG        software package (gaussian/gau-xtb/orca/qchem)
+-intmp FILE         input template for selected software package (if none specified, the ones in $HOME/git/RINRUS/template_files/ are used)
+-inpn NAME          name of input file (default: 1.inp)
+-basisinfo 'intmp' (Gaussian only) use basis set info from the input template file instead of the library in $HOME/git/RINRUS/lib3/gaussian_basis_dict.py
 ```
 <br> 
 
 Full set of arguments for using `write_input.py`:
 ```bash
 # General arguments:
--m MULT          model multiplicity
--c LIGCHRG       ligand charge
--format PROG     software package (gaussian/gau-xtb/orca/qchem/psi4-fsapt)
--intmp FILE      input template for selected software package (defaults to the ones in $HOME/git/RINRUS/bin/ if none specified)
--inpn NAME       name of input file (default: 1.inp)
--basisinfo FILE  basis library file (only needed for Gaussian calculations if not using the basis sets defined in the input template)
--wdir PATH       working directory
--type TYPE       type of structure processing for input file:
-                 'pdb': use pdb file normally (default)
-                 'hopt': freeze all heavy atoms so only hydrogen atoms optimized
-                 'gauout': take structure from Gaussian output
-                 'replacecoords': update selected atom coords e.g. to create TS guess
+-m MULT            model multiplicity
+-c LIGCHRG         ligand charge
+-format PROG       software package (gaussian/gau-xtb/orca/qchem/psi4-fsapt)
+-intmp FILE        input template for selected software package (defaults to the ones in $HOME/git/RINRUS/template_files/ if none specified)
+-inpn NAME         name of input file (default: 1.inp or input.dat for psi4-fsapt)
+-basisinfo 'intmp' (Gaussian only) use basis set info from the input template file instead of default RINRUS basis set library
+-wdir PATH         working directory
+-type TYPE         type of structure processing for input file:
+                   'pdb': use pdb file normally (default)
+                   'hopt': freeze all heavy atoms so only hydrogen atoms optimized
+                   'gauout': take structure from Gaussian output
+                   'replacecoords': update selected atom coords e.g. to create TS guess
 
 # If using -type 'pdb' (default if no type specified), these are required:
--pdb FILE        pdb file
+-pdb FILE          pdb file
 
 # If using -type 'hopt', these are required:
--noh FILE        cluster model pdb file before H added (e.g. res_N.pdb)
--adh FILE        cluster model pdb file after H added (e.g. res_N_h.pdb)
+-noh FILE          cluster model pdb file before H added (e.g. res_N.pdb)
+-adh FILE          cluster model pdb file after H added (e.g. res_N_h.pdb)
 
 # If using -type 'gauout', these are required:
--tmp FILE        template pdb file for creating new pdb from output
--outf FILE       Gaussian output file
--ckp FILE        Gaussian checkpoint file
+-tmp FILE          template pdb file for creating new pdb from output
+-outf FILE         Gaussian output file
+-ckp FILE          Gaussian checkpoint file
 
 # If using -type 'replacecoords', these are required:
--pdb1 FILE       starting pdb file
--pdb2 FILE       pdb to take coordinates from
--parts FILE      text file containing species in pdb1 to be replaced with pdb2 coordinates
+-pdb1 FILE         starting pdb file
+-pdb2 FILE         pdb to take coordinates from
+-parts FILE        text file containing species in pdb1 to be replaced with pdb2 coordinates
 
 # If using -format 'psi4-fsapt', these are required:
--seed SEED       seed to define as fragment A, rest of enzyme will be fragment B
+-seed SEED         seed to define as fragment A, rest of enzyme will be fragment B
 ```
