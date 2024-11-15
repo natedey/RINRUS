@@ -18,12 +18,14 @@ import collections
 import logging
 #import math
 import operator
-from functools import reduce
+import functools
 try:
     import resource
 except ImportError:
     logging.info('Resource module not available, resource usage info won\'t be logged.')
 import sys
+import warnings
+warnings.filterwarnings("ignore")
 
 from collections import OrderedDict
 
@@ -36,7 +38,8 @@ from Bio.PDB.Atom import Atom
 from Bio.PDB.Residue import Residue
 from Bio.PDB.Polypeptide import PPBuilder
 
-import openbabel as ob
+#import openbabel as ob
+from openbabel import openbabel as ob
 
 #############
 # CONSTANTS #
@@ -92,7 +95,8 @@ def int2(x):
     Can accept a list/tuple of 0s and 1s.
     '''
 
-    if isinstance(x, collections.Iterable):
+    #if isinstance(x, collections.Iterable):
+    if isinstance(x, collections.abc.Iterable):
         x = ''.join([str(k) for k in x])
     else:
         x = str(x)
@@ -106,7 +110,8 @@ def int3(x):
     Can accept a list/tuple of 0s, 1s and 2s.
     '''
 
-    if isinstance(x, collections.Iterable):
+#    if isinstance(x, collections.Iterable):
+    if isinstance(x, collections.abc.Iterable):
         x = ''.join([str(k) for k in x])
     else:
         x = str(x)
@@ -292,7 +297,7 @@ def get_single_bond_neighbour(ob_atom):
 
         current_neighbour = bond.GetNbrAtom(ob_atom)
 
-        if current_neighbour.IsHydrogen():
+        if current_neighbour.GetAtomicNum() == ob.Hydrogen:
             continue
 
         return current_neighbour
@@ -824,7 +829,7 @@ Dependencies:
             if matches:
 
                 # REDUCE TO A SINGLE LIST
-                matches = set(reduce(operator.add, matches))
+                matches = set(functools.reduce(operator.add, matches))
 
                 #logging.info('Set reduce matches: {}'.format(smarts))
 
@@ -875,23 +880,27 @@ Dependencies:
     for ob_atom in ob.OBMolAtomIter(mol):
 
         if not input_has_hydrogens:
-            if ob_atom.IsHydrogen():
+            if ob_atom.GetAtomicNum() == ob.Hydrogen:
                 continue
 
         # `http://openbabel.org/api/2.3/classOpenBabel_1_1OBAtom.shtml`
         # CURRENT NUMBER OF EXPLICIT CONNECTIONS
-        valence = ob_atom.GetValence()
+        #valence = ob_atom.GetValence()
+        valence = ob_atom.GetExplicitDegree()
 
         # MAXIMUM NUMBER OF CONNECTIONS EXPECTED
-        implicit_valence = ob_atom.GetImplicitValence()
+        #implicit_valence = ob_atom.GetImplicitValence()
+        implicit_valence = ob_atom.GetImplicitHCount()
 
         # BOND ORDER
-        bond_order = ob_atom.BOSum()
+#        bond_order = ob_atom.BOSum()
+        bond_order = ob_atom.GetExplicitValence()
 
         # NUMBER OF BOUND HYDROGENS
         num_hydrogens = ob_atom.ExplicitHydrogenCount()
 
         # ELEMENT NUMBER
+        #atomic_number = ob_atom.GetAtomicNum()
         atomic_number = ob_atom.GetAtomicNum()
 
         # FORMAL CHARGE
@@ -1109,12 +1118,12 @@ Dependencies:
     all_terminal_residues = []
 
     try:
-        all_chain_break_residues = reduce(operator.add, chain_break_residues.values())
+        all_chain_break_residues = functools.reduce(operator.add, chain_break_residues.values())
     except TypeError:
         pass
 
     try:
-        all_terminal_residues = reduce(operator.add, chain_termini.values())
+        all_terminal_residues = functools.reduce(operator.add, chain_termini.values())
     except TypeError:
         pass
 
@@ -1272,7 +1281,7 @@ Dependencies:
 
         for ob_atom in ob.OBMolAtomIter(mol):
 
-            if not ob_atom.IsHydrogen():
+            if not ob_atom.GetAtomicNum() == ob.Hydrogen:
                 constraints.AddAtomConstraint(ob_atom.GetIdx())
 
         logging.info('Constrained non-hydrogen atoms.')
@@ -1329,7 +1338,7 @@ Dependencies:
 
             # GET THE BONDED ATOMS OF THE OBATOM
             for atom_neighbour in ob.OBAtomAtomIter(atom):
-                if atom_neighbour.IsHydrogen():
+                if atom_neighbour.GetAtomicNum() == 1:
 
                     # APPEND THE HYDROGEN COORDINATES TO THE BIOPYTHON ATOM 'h_coords' ATTRIBUTE
                     biopython_atom.h_coords.append(np.array([atom_neighbour.GetX(), atom_neighbour.GetY(), atom_neighbour.GetZ()]))
@@ -1344,14 +1353,16 @@ Dependencies:
     # ADD VDW RADII TO ENTITY ATOMS
     # USING OPENBABEL VDW RADII
     for atom in entity:
-        atom.vdw_radius = ob.etab.GetVdwRad(mol.GetAtomById(bio_to_ob[atom]).GetAtomicNum())
+        #atom.vdw_radius = ob.etab.GetVdwRad(mol.GetAtomById(bio_to_ob[atom]).GetAtomicNum())
+        atom.vdw_radius = ob.GetVdwRad(mol.GetAtomById(bio_to_ob[atom]).GetAtomicNum())
 
     logging.info('Added VdW radii.')
 
     # ADD COVALENT RADII TO ENTITY ATOMS
     # USING OPENBABEL VDW RADII
     for atom in entity:
-        atom.cov_radius = ob.etab.GetCovalentRad(mol.GetAtomById(bio_to_ob[atom]).GetAtomicNum())
+        #atom.cov_radius = ob.etab.GetCovalentRad(mol.GetAtomById(bio_to_ob[atom]).GetAtomicNum())
+        atom.cov_radius = ob.GetCovalentRad(mol.GetAtomById(bio_to_ob[atom]).GetAtomicNum())
 
     logging.info('Added covalent radii.')
 
