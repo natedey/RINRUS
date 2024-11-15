@@ -11,6 +11,34 @@ import logging
 import io
 from datetime import datetime
 
+#log header info, takes details of commit
+def log_header():
+    gitpath = str(Path(__file__).resolve().parents[1])
+    pwd = os.getcwd()
+    gitver = subprocess.run(f"cd {gitpath}; git show -s --pretty='format:%h'; cd {pwd}",shell=True,stdout=PIPE,stderr=STDOUT,universal_newlines=True)
+    gitver = gitver.stdout
+    fetch = subprocess.run(f'stat -c %y {gitpath}/.git/FETCH_HEAD',shell=True,stdout=PIPE,stderr=STDOUT,universal_newlines=True)
+    fetchdate = fetch.stdout[0:10]
+    fetchtime = fetch.stdout[11:16]
+    headtxt = ('--------------------------------------------------------------------------------------\n'
+    '              RINRUS: The Residue Interaction Network ResidUe Selector                \n'
+    '--------------------------------------------------------------------------------------\n'
+    f'(C) 2018-2024. Using version {gitver}, pulled from github on {fetchdate} at {fetchtime}.      \n'
+    'Developed in the group of Prof. Nathan DeYonker at the University of Memphis, TN USA. \n'
+    'Contributors: Q. Cheng, N. DeYonker, D. Wappett, T. Summers, D. Agbaglo, T. Suhagia,  \n'
+    '    T. Santaloci, J. Bachega.                                                         \n'
+    'Acknowledge RINRUS by citing: github.com/natedey/RINRUS, DOI:10.1016/j.bpj.2021.07.029\n'
+    '    and DOI:10.1039/D3CP06100K                                                        \n'
+    '--------------------------------------------------------------------------------------' )
+
+    clbanner = ('--------------------------------------------------------------------------------------\n'
+    '           Running RINRUS: The Residue Interaction Network ResidUe Selector           \n'
+    'Developed in the group of Prof. Nathan DeYonker at the University of Memphis, TN USA. \n'
+    f'(C) 2018-2024. Using version {gitver}, pulled from github on {fetchdate} at {fetchtime}.      \n'
+    '--------------------------------------------------------------------------------------\n')
+
+    return headtxt,clbanner
+
 def driver_file_reader(file,logger):
     path_to_RIN = ''
     red = 'True'
@@ -263,18 +291,22 @@ def create_input_file(template,format,basisinfo,charge,model_num,path_to_RIN,log
 def run_rinrus_driver(file):
     ### SET UP LOGGING
     dt = datetime.now().strftime("%Y-%m-%d")
-    #logging.basicConfig(filename="rinrus_log.out",
-    #                format='%(asctime)s %(message)s',
-    #                filemode='w')
     lf = f"rinrus_log_{dt}.out"
     logging.basicConfig(level=logging.DEBUG,
                     filename=lf,
-                    format='%(asctime)s %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S',
+                    format='%(message)s',
                     filemode='w')
     logger = logging.getLogger()
+
+    #write header 
+    header,clbanner = log_header()
+    logger.info(header+'\n\n')
+    print(clbanner)
+
+    #change to date + message format for main part of log
+    logger.handlers[0].setFormatter(logging.Formatter(fmt='%(asctime)s %(message)s',datefmt='%Y-%m-%d %H:%M:%S'))
     logger.info('RUNNING RINRUS DRIVER:')
-    logger.info('Python executable being used: ' + sys.executable + '\n')
+    logger.info('Python executable being used: ' + sys.executable + '\n\n')
 
     
     ### PARSE INPUTS
@@ -285,14 +317,14 @@ def run_rinrus_driver(file):
     RIN_program = RIN_program.lower()
     amountofseed = len(Seedlist)
     model_num = model_num.strip()
-    logger.info('section done\n')
+    logger.info('section done\n\n')
 
     
     ### INITIAL PROTONATION
     if red == 'True':
         logger.info('PROTONATION OF INITIAL PDB:')
         mod_pdb = run_reduce(pdb,logger,path_to_RIN)
-        logger.info('section done\n')
+        logger.info('section done\n\n')
     elif red == 'False':
         mod_pdb = pdb
 
@@ -324,7 +356,7 @@ def run_rinrus_driver(file):
             selfile = 'res_atoms.dat'
     print('Using ' + str(selfile) + ' as active site selection for trimming procedure')
     logger.info('Using ' + str(selfile) + ' as active site selection for trimming procedure')
-    logger.info('section done\n')
+    logger.info('section done\n\n')
         
         
     ### TRIMMING AND CAPPING MODEL, WRITING INPUT FILE
