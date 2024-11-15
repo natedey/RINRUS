@@ -16,18 +16,20 @@ python $HOME/git/RINRUS/bin/RINRUS_driver.py -i driver_input
 ### Input file
 The `driver_input` file should contain the following details:
 ```
-path_to_scripts: [path to RINRUS bin directory]
+Path_to_scripts: [path to RINRUS bin directory]
 PDB: [starting pdb file name]
 Protonate_initial: [true/t/y or false/f/n]
 Seed: [seed residues]
-Must_include: [non-seed fragments (SC, N-term. and/or C-term. of residue) that need to be in model, e.g. A:6:C,A:7:S+C+N,A:8:N]
 RIN_program: [probe/arpeggio/distance/manual]
-Model(s): [model number or maximal or all] 
+Model(s): [model number or maximal or all]
 Seed_charge: [overall charge of seed]
 Multiplicity: [model multiplicity]
 Computational_program: [gaussian/gau-xtb/orca/qchem]
-input_template_path: [path to input file template]
-basisset_library: [path to Gaussian basis set file]
+# optional lines:
+Must_include: [any non-seed fragments (SC, N-term. and/or C-term. of residue) that need to be in model, e.g. A:6:C,A:7:S+C+N,A:8:N]
+RIN_info_file: [file to use with manual RIN input, default 'res_atoms.dat']
+input_template_path: [path to input file template if not using standard templates]
+Gaussian_basis_intmp: [true/t/y to use basis set info from Gaussian template rather than default basis sets]
 ```
 
 ### Log file
@@ -56,7 +58,7 @@ $HOME/git/RINRUS/bin/rinrus_trim2_pdb.py -s [seed residues] -pdb PDB_h.pdb -mode
 $HOME/git/RINRUS/bin/pymol_protonate.py -ignore_ids [excluded ids] -pdb res_N.pdb
 
 # Input file creation
-$HOME/git/RINRUS/bin/write_input.py -intmp input_template_path -format computational_program -basisinfo basisset_library -c seed_charge -type hopt -noh res_N.pdb -adh res_N_h.pdb
+$HOME/git/RINRUS/bin/write_input.py -format computational_program -c seed_charge -type hopt -noh res_N.pdb -adh res_N_h.pdb (if specified: -intmp input_template_path) (if specified: -basisinfo intmp)
 ```
 </details>
 

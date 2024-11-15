@@ -50,8 +50,6 @@ def write_gau_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,re
     for i in atomlist:
         if i not in ['H','He','Li','Be','B','C','N','O','F','Ne','Na','Mg','Al','Si','P','S','Cl','Ar']:
             ecplist.append(i)
-    print(atomlist)
-    print(ecplist)
 
     if lines[1][0] != '#':
         method = lines[1].strip().split('/')

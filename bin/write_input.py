@@ -9,7 +9,7 @@ from numpy import *
 import argparse
 from read_write_pdb import *
 from glob import glob
-from DAW_input_suite import *
+from input_suite import *
 from pathlib import Path
 
 
@@ -213,7 +213,7 @@ if __name__ == '__main__':
         pdb1name = pdb1name.split('.')[0]
         write_pdb('%s/%s_mod_parts.pdb'%(wdir,pdb1name),pic_atom)
 
-    if int_tmp == None:
+    if int_tmp == None or int_tmp == '':
         tmpltdir = Path.home() / 'git' / 'RINRUS' / 'template_files'
         int_tmp = tmpltdir / f'{ifmat}_input_template.txt'
         print("Using default opt+freq input template: "+str(int_tmp))

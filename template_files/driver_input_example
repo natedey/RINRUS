@@ -1,13 +1,13 @@
-path_to_scripts: ~/git/RINRUS/bin
+Path_to_scripts: ~/git/RINRUS/bin
 PDB: 2cht_h_corrected_new.pdb
-Protonate_initial: True
+Protonate_initial: False
 Seed: A:203 
 Must_include: A:7:N, A:6:C+S
-RIN_program: probe 
-Histidine: 
+RIN_program: probe
+RIN_info_file: res_atoms.dat
 Model(s): maximal
 Seed_charge: -2
 Multiplicity: 1
-Computational_program: orca
-input_template_path: ~/git/RINRUS/bin/orca_input_template.txt
-basisset_library: ~/git/RINRUS/template_files/basisinfo
+Computational_program: gaussian
+Input_template_path: ~/git/RINRUS/template_files/gaussian_input_template.txt
+Gaussian_basis_intmp: False

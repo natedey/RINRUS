@@ -12,12 +12,14 @@ import io
 from datetime import datetime
 
 def driver_file_reader(file,logger):
+    path_to_RIN = ''
     red = 'True'
     pdb = ''
-    Seed = []
+    Seedlist = []
     seed = ''
     must_include = ''
     RIN_program = ''
+    selatom_file = ''
   #  Histidine = ''
     model_num = ''
     charge = ''
@@ -26,49 +28,61 @@ def driver_file_reader(file,logger):
     Computational_program = ''
     template_path = ''
     basis_set_library = ''
-    path_to_RIN = ''
     with open(file,'r') as fp:
         data = fp.readlines()
+
+    # print input verbatim
+    rawinp = ''
+    for line in data:
+        rawinp += '> ' + line
+    logger.info('Inputs being read from: '+file+'\n'+f'----------raw contents----------\n'+rawinp+'--------------------------------')
+
+    # process inputs
     for line in data:
         if '#' in line:
             line
         else:
-            if 'path_to_scripts:' in line:
-                path_to_RIN += line.replace('path_to_scripts:', '').replace('\n','').replace(' ','')
+            if 'Path_to_scripts:' in line:
+                path_to_RIN = line.replace('Path_to_scripts:', '').replace('\n','').replace(' ','')
             if 'PDB' in line:
-                pdb += line.replace('PDB:','').replace('\n','').replace(' ','')
-            if 'Protonate_initial' in line:
+                pdb = line.replace('PDB:','').replace('\n','').replace(' ','')
+            if 'Protonate_initial:' in line:
                 red = line.replace('Protonate_initial:','').replace('\n','').replace(' ','')
             if 'Seed:' in line:
-                if ',' in line:
-                    line = line.replace('Seed:','').replace('\n','').replace(' ','')
-                    seed+= line
-                    line = line.split(',')
+                seed = line.replace('Seed:','').replace('\n','').replace(' ','')
+                if ',' in seed:
+                    line = seed.split(',')
                     for i in line:
                         if i=='':
                             pass
                         else:
-                            Seed.append(i)
-                    
+                            Seedlist.append(i)
                 else:
-                    seed+= line.replace('Seed:','').replace('\n','').replace(' ','')
-                    Seed.append(line.replace('Seed:','').replace('\n','').replace(' ',''))
+                    Seedlist.append(seed)
             if 'Must_include' in line:
-                must_include += line.replace('Must_include:','').replace('\n','').replace(' ','')
-            if 'RIN_program' in line:
-                RIN_program += line.replace('RIN_program:','').replace('\n','').replace(' ','')
-            if 'Seed_charge' in line:
-                charge += line.replace('Seed_charge:','').replace('\n','').replace(' ','')
-            if 'Multiplicity' in line:
-                multi+= line.replace('Multiplicity:','').replace('\n','').replace(' ','')
-            if 'Computational_program' in line:
-                Computational_program += line.replace('Computational_program:','').replace('\n','').replace(' ','')
-            if 'input_template_path' in line:
-                template_path += line.replace('input_template_path:','').replace('\n','').replace(' ','')
-            if 'basisset_library' in line:
-                basis_set_library += line.replace('basisset_library:','').replace('\n','').replace(' ','')
-            if 'Model(s)' in line:
-                model_num += line.replace('Model(s):','').replace('\n','').replace(' ','')
+                must_include = line.replace('Must_include:','').replace('\n','').replace(' ','')
+            if 'RIN_program:' in line:
+                RIN_program = line.replace('RIN_program:','').replace('\n','').replace(' ','')
+            if 'RIN_info_file:' in line:
+                selatom_file = line.replace('RIN_info_file:','').replace('\n','').replace(' ','')
+            if 'Seed_charge:' in line:
+                charge = line.replace('Seed_charge:','').replace('\n','').replace(' ','')
+            if 'Multiplicity:' in line:
+                multi = line.replace('Multiplicity:','').replace('\n','').replace(' ','')
+            if 'Computational_program:' in line:
+                Computational_program = line.replace('Computational_program:','').replace('\n','').replace(' ','')
+            if 'Input_template_path:' in line:
+                template_path = line.replace('Input_template_path:','').replace('\n','').replace(' ','')
+            if 'Gaussian_basis_intmp:' in line:
+                gbtmp = line.replace('Gaussian_basis_intmp:','').replace('\n','').replace(' ','')
+                if gbtmp.lower() in ['true', 't', '1', 'y']:
+                    basis_set_library = 'intmp'
+                else:
+                    basis_set_library = 'default_dict'
+            #if 'Basisset_library:' in line:
+            #    basis_set_library = line.replace('basisset_library:','').replace('\n','').replace(' ','')
+            if 'Model(s):' in line:
+                model_num = line.replace('Model(s):','').replace('\n','').replace(' ','')
     
     
     if red.lower() in ['false', 'f', '0', 'n']:
@@ -80,16 +94,26 @@ def driver_file_reader(file,logger):
     logger.info('PDB Name: ' + pdb)
     logger.info('Protonate initial PDB: ' + red)
     logger.info('RIN program: ' + RIN_program)
+    if RIN_program.lower() == 'manual':
+        logger.info('Manual RIN info file: ' + selatom_file)
     logger.info('Seed: ' + str(seed))
     logger.info('Seed Charge: ' + str(charge))
-    logger.info('Fragments that must be included: ' + str(must_include))
+    if must_include == '':
+        logger.info('Fragments that must be included: none')
+    else:
+        logger.info('Fragments that must be included: ' + str(must_include))
     logger.info('Multiplicity: ' + str(multi))
     logger.info('Model number selection: ' + str(model_num))
     logger.info('Computational Program: ' + str(Computational_program))
-    logger.info('Path to the input template file: ' + str(template_path))
-    logger.info('Path to the basis set library: ' + str(basis_set_library))
+    if template_path == '':
+        logger.info('Path to the input template file (default): ~/git/RINRUS/template_files/'+str(Computational_program)+'_input_template.txt')
+    else:
+        logger.info('Path to the input template file (specified): ' + str(template_path))
+    if Computational_program.lower() == 'gaussian':
+        logger.info('Source of basis sets for Gaussian: ' + str(basis_set_library)) 
+    #logger.info('Path to the basis set library: ' + str(basis_set_library))
     
-    return pdb,red,Seed,must_include,RIN_program,charge,multi,Computational_program,template_path,basis_set_library,seed,model_num,path_to_RIN
+    return pdb,red,Seedlist,must_include,RIN_program,selatom_file,charge,multi,Computational_program,template_path,basis_set_library,seed,model_num,path_to_RIN
 
 
 def res_atom_count(filename,must_include):
@@ -218,10 +242,18 @@ def protonate_model(freeze,model_num,path_to_RIN,logger):
 
 def create_input_file(template,format,basisinfo,charge,model_num,path_to_RIN,logger):
     path = os.path.expanduser(path_to_RIN+'/write_input.py')
-    path_2 =os.path.expanduser(basisinfo.replace('\n','').replace(' ','')) 
+    #path_2 = os.path.expanduser(basisinfo.replace('\n','').replace(' ',''))
     noh =  ' res_'+model_num+'.pdb '
     adh = ' res_'+model_num+'_h.pdb'
-    arg= [sys.executable, path ,'-intmp',str(template),'-format',str(format),'-basisinfo',path_2,'-c',str(charge),'-type', 'hopt','-noh',str(noh).replace(' ',''),'-adh',str(adh).replace(' ','')]
+    #arg= [sys.executable, path ,'-intmp',str(template),'-format',str(format),'-basisinfo',path_2,'-c',str(charge),'-type', 'hopt','-noh',str(noh).replace(' ',''),'-adh',str(adh).replace(' ','')]
+    #arg= [sys.executable, path ,'-intmp',str(template),'-format',str(format),'-basisinfo',basisinfo,'-c',str(charge),'-type', 'hopt','-noh',str(noh).replace(' ',''),'-adh',str(adh).replace(' ','')]
+    arg = [sys.executable, path ,'-format',str(format),'-c',str(charge),'-type', 'hopt','-noh',str(noh).replace(' ',''),'-adh',str(adh).replace(' ','')]
+    if template != '' and template != None:
+        arg.append('-intmp')
+        arg.append(str(template))
+    if format.lower() == 'gaussian' and basisinfo == 'intmp':
+        arg.append('-basisinfo')
+        arg.append(basisinfo)
     result = subprocess.run(arg)
     logger.info('Write_input run as: '+ str(' '.join(arg)))
     return
@@ -246,12 +278,12 @@ def run_rinrus_driver(file):
 
     
     ### PARSE INPUTS
-    logger.info('PARSING DRIVER INPUT FILE:')
+    logger.info('READING DRIVER INPUT FILE:')
     driver_input_file = file
-    logger.info('Inputs from: ' + file)
-    pdb,red,Seed,must_include,RIN_program,charge,multi,Computational_program,template_path,basis_set_library,seed,model_num,path_to_RIN = driver_file_reader(file,logger)
+    #logger.info('Inputs from: ' + file)
+    pdb,red,Seedlist,must_include,RIN_program,selatom_file,charge,multi,Computational_program,template_path,basis_set_library,seed,model_num,path_to_RIN = driver_file_reader(file,logger)
     RIN_program = RIN_program.lower()
-    amountofseed = len(Seed)
+    amountofseed = len(Seedlist)
     model_num = model_num.strip()
     logger.info('section done\n')
 
@@ -286,7 +318,10 @@ def run_rinrus_driver(file):
         cut = float(cut)
         selfile = 'res_atom-%.2f.dat'%cut
     elif RIN_program.lower() == 'manual':
-        selfile = 'res_atoms.dat'
+        if selatom_file != '':
+            selfile = selatom_file
+        else:
+            selfile = 'res_atoms.dat'
     print('Using ' + str(selfile) + ' as active site selection for trimming procedure')
     logger.info('Using ' + str(selfile) + ' as active site selection for trimming procedure')
     logger.info('section done\n')
@@ -331,7 +366,7 @@ def run_rinrus_driver(file):
             logger.info("The user did not input a correct model number. Trying again.")
 
     seed_name = ''
-    for i in Seed:
+    for i in Seedlist:
         seed_name+=i + ','
     
     print('Should anything be avoided in the capping protonation step? Typically the seed (' + seed_name[0:-1] + ') is avoided')
