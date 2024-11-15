@@ -9,7 +9,7 @@ from numpy import *
 import argparse
 from read_write_pdb import *
 from glob import glob
-from DAW_input_suite import *
+from input_suite import *
 from pathlib import Path
 
 
