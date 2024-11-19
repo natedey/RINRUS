@@ -19,11 +19,11 @@ https://doi.org/10.1016/j.jmb.2016.12.004.
 (http://www.sciencedirect.com/science/article/pii/S0022283616305332)
 
 ## PLEASE NOTE
-Arpeggio appears to no longer be in active development. The version packaged with RINRUS has been modified (by NJD) to work with OpenBabel 3.x
+Arpeggio appears to no longer be in active development. The version packaged with RINRUS has been modified (by NJD) to work with OpenBabel 3.x.
 Installing or using Docker is no longer necessary. 
-We also included Harry Jubb's unmodified and very useful clean_pdb.py script in /RINRUS/bin
+We also included Harry Jubb's unmodified and very useful clean_pdb.py script in /RINRUS/bin.
 Instructions below are for installing and using arpeggio as a standalone application to create residue interaction networks. 
-Use cases with RINRUS are provided in /RINRUS/bin
+Use cases with RINRUS are provided in /RINRUS/bin.
 
 ## Getting Started
 
