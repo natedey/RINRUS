@@ -19,27 +19,52 @@ def system_run(cmd):
 
 import argparse
 
+##########
+# SYNTAX examples:
+# -pdb res_12.pdb
+# -ignore_ids A:25,A:26
+# -ignore_atoms A:25:C+O,A:26:N
+# -ignore_atnames NH1,NH2
+##########
+
 parser = argparse.ArgumentParser()
 parser.add_argument("-pdb", nargs="+")
 parser.add_argument("-ignore_ids")
-parser.add_argument("-ignore_ats")
+parser.add_argument("-ignore_atoms")
+parser.add_argument("-ignore_atnames")
 args = parser.parse_args()
 ignoreid = args.ignore_ids
-ignoreat = args.ignore_ats
+ignoreatom = args.ignore_atoms
+ignoreatname = args.ignore_atnames
 
 # Process ignore ids and atoms
-ignoreid = ignoreid.split(',')
 notres = ""
-for i in ignoreid:
-    res_id = i.split(':')
-    res = f" and not (chain {res_id[0]} and resi {int(res_id[1])})"
-    notres += res
-notat = "name NH1 or name NH2"
-if ignoreat is not None:
-    ignoreat = ignoreat.split(',')
-    for i in ignoreat:
+if ignoreid != None and ignoreid != '' and ignoreid != ' ':
+    ignoreid = ignoreid.split(',')
+    for i in ignoreid:
+        res_id = i.split(':')
+        res = f" and not (chain {res_id[0]} and resi {int(res_id[1])})"
+        notres += res
+
+notats = ""
+if ignoreatom != None and ignoreatom != '' and ignoreatom != ' ':
+    notats = ""
+    ignoreatom = ignoreatom.split(',')
+    for i in ignoreatom:
+        res_id = i.split(':')
+        atlist = res_id[2].split('+')
+        ats = "name " + str(atlist[0])
+        for a in atlist[1:]:
+            ats += f" or name {a}"
+        res = f" and not (chain {res_id[0]} and resi {int(res_id[1])} and ({ats}))"
+        notats += res
+        
+notatn = "name NH1 or name NH2"
+if ignoreatname != None and ignoreatname != '' and ignoreatname != ' ':
+    ignoreatname = ignoreatname.split(',')
+    for i in ignoreatname:
         atom = f" or name {i}"
-        notat += atom
+        notatn += atom
 
 with open("log.pml", "w") as logf:
     for pdbfilename in args.pdb:
@@ -48,7 +73,7 @@ with open("log.pml", "w") as logf:
         logf.write(f"load {pdbfilename}\n")
         if args.ignore_ids is not None:
             logf.write(
-                f'cmd.select("sel","{name}{notres} and not ({notat})")\n'
+                f'cmd.select("sel","{name}{notres}{notats} and not ({notatn})")\n'
             )
             logf.write('cmd.h_add("sel")\n')
         else:

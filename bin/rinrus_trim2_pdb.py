@@ -80,7 +80,7 @@ def trim_pdb_models(sm,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd):
                     ats.append("O")
                 if "N" in groups: #add N terminus
                     ats.append("N")
-                addatoms.append(f"{addat[0]} {addat[1]} {" ".join(ats)}")
+                addatoms.append(f"{addat[0]} {addat[1]} {' '.join(ats)}")
         for i in range(len(addatoms)):
             c = addatoms[i].split()
             res_part_list[(c[0],int(c[1]))]=c[2:]

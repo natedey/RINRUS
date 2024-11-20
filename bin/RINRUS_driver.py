@@ -133,13 +133,14 @@ def driver_file_reader(file,logger):
     logger.info('Multiplicity: ' + str(multi))
     logger.info('Model number selection: ' + str(model_num))
     logger.info('Computational Program: ' + str(Computational_program))
-    if template_path == '':
-        logger.info('Path to the input template file (default): ~/git/RINRUS/template_files/'+str(Computational_program)+'_input_template.txt')
-    else:
-        logger.info('Path to the input template file (specified): ' + str(template_path))
-    if Computational_program.lower() == 'gaussian':
-        logger.info('Source of basis sets for Gaussian: ' + str(basis_set_library)) 
-    #logger.info('Path to the basis set library: ' + str(basis_set_library))
+    if Computational_program.lower() != 'none':
+        if template_path == '':
+            logger.info('Path to the input template file (default): ~/git/RINRUS/template_files/'+str(Computational_program)+'_input_template.txt')
+        else:
+            logger.info('Path to the input template file (specified): ' + str(template_path))
+        if Computational_program.lower() == 'gaussian':
+            logger.info('Source of basis sets for Gaussian: ' + str(basis_set_library)) 
+        #logger.info('Path to the basis set library: ' + str(basis_set_library))
     
     return pdb,red,Seedlist,must_include,RIN_program,selatom_file,charge,multi,Computational_program,template_path,basis_set_library,seed,model_num,path_to_RIN
 
@@ -262,7 +263,16 @@ def trim_model(seed,must_include,pdb,selfile,model_num,path_to_RIN,RIN_program,l
 def protonate_model(freeze,model_num,path_to_RIN,logger):
     path = os.path.expanduser(path_to_RIN+'/pymol_protonate.py')
     name = 'res_' + str(model_num)+'.pdb'
-    arg= [sys.executable,path, '-ignore_ids',str(freeze),'-pdb', name]
+    arg= [sys.executable,path,'-pdb', name]
+    if freeze[0] != '':
+        arg.append('-ignore_ids')
+        arg.append(str(freeze[0]))
+    if freeze[1] != '':
+        arg.append('-ignore_atoms')
+        arg.append(str(freeze[1]))
+    if freeze[2] != '':
+        arg.append('-ignore_atnames')
+        arg.append(str(freeze[2]))
     out = subprocess.run(arg)
     logger.info('Model protonation run as: '+ str(' '.join(arg)))
     return
@@ -402,14 +412,22 @@ def run_rinrus_driver(file):
         seed_name+=i + ','
     
     print('Should anything be avoided in the capping protonation step? Typically the seed (' + seed_name[0:-1] + ') is avoided')
-    freezeinp = input('Exclusion options: nothing/seed/[give specific list] \n')
+    freezeinp = input('Exclusion options: nothing/seed/manual \n')
     if freezeinp.lower() == 'nothing':
-        freeze = ''
+        freeze = ['','','']
     elif freezeinp.lower() == 'seed':
-        freeze = seed_name[0:-1]
+        freeze = [seed_name[0:-1],'','']
     else:
-        freeze = freezeinp
-    logger.info('Residues excluded from protonation: '+ freeze)
+        print('Manual input of exclusions (see documentation for pymol_protonate.py for help):')
+        freezeid = input('-ignore_ids (whole residues to ignore): ')
+        freezeat = input('-ignore_atoms (specific atoms to ignore): ')
+        freezename = input('-ignore_atnames (atom types to ignore): ')
+        freeze = [freezeid, freezeat, freezename]
+    logger.info('Residues excluded from protonation: '+ str(freeze[0]))
+    if freeze[1] != '':
+        logger.info('Specific atoms excluded from protonation: '+ str(freeze[1]))
+    if freeze[2] != '':
+        logger.info('Atom types excluded from protonation: '+ str(freeze[2]))
 
     if model_num=='all':
         #tot = []
@@ -418,13 +436,15 @@ def run_rinrus_driver(file):
             #tot.append(num)
             trim_model(seed,must_include,mod_pdb,selfile,num,path_to_RIN,RIN_program,logger)
             protonate_model(freeze,num,path_to_RIN,logger)
-            create_input_file(template_path,Computational_program,basis_set_library,charge,str(num),path_to_RIN,logger)
-            shutil.copy('1.inp',str(num)+'.inp')
-            shutil.copy('template.pdb','template_'+str(num)+'.pdb')
+            if Computational_program.lower() != 'none':
+                create_input_file(template_path,Computational_program,basis_set_library,charge,str(num),path_to_RIN,logger)
+                shutil.copy('1.inp',str(num)+'.inp')
+                shutil.copy('template.pdb','template_'+str(num)+'.pdb')
     else:
         trim_model(seed,must_include,mod_pdb,selfile,model_num,path_to_RIN,RIN_program,logger)
         protonate_model(freeze,model_num,path_to_RIN,logger)
-        create_input_file(template_path,Computational_program,basis_set_library,charge,str(model_num),path_to_RIN,logger)       
+        if Computational_program.lower() != 'none':
+            create_input_file(template_path,Computational_program,basis_set_library,charge,str(model_num),path_to_RIN,logger)       
         
     logger.info('section done\n')
          

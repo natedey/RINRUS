@@ -24,7 +24,7 @@ RIN_program: [probe/arpeggio/distance/manual]
 Model(s): [model number or maximal or all]
 Seed_charge: [overall charge of seed]
 Multiplicity: [model multiplicity]
-Computational_program: [gaussian/gau-xtb/orca/qchem]
+Computational_program: [gaussian/gau-xtb/orca/qchem/none]
 # optional lines:
 Must_include: [any non-seed fragments (SC, N-term. and/or C-term. of residue) that need to be in model, e.g. A:6:C,A:7:S+C+N,A:8:N]
 RIN_info_file: [file to use with manual RIN input, default 'res_atoms.dat']
@@ -55,9 +55,9 @@ $HOME/git/RINRUS/bin/pdb_dist_rank.py -pdb PDB_h.pdb -s [seed residues] -cut [cu
 
 # Model trimming and capping
 $HOME/git/RINRUS/bin/rinrus_trim2_pdb.py -s [seed residues] -pdb PDB_h.pdb -model N -c [res_atoms.dat/contact_counts.dat/res_atom-X.dat depending on RIN program] -mustadd [must_include fragments]
-$HOME/git/RINRUS/bin/pymol_protonate.py -ignore_ids [excluded ids] -pdb res_N.pdb
+$HOME/git/RINRUS/bin/pymol_protonate.py -pdb res_N.pdb (if specified: -ignore_ids residues) (if specified: -ignore_atoms atoms) (if specified: -ignore_atnames atomtypes)
 
-# Input file creation
+# Input file creation (if computational program not set to 'none')
 $HOME/git/RINRUS/bin/write_input.py -format computational_program -c seed_charge -type hopt -noh res_N.pdb -adh res_N_h.pdb (if specified: -intmp input_template_path) (if specified: -basisinfo intmp)
 ```
 </details>
@@ -320,12 +320,13 @@ Use `pymol_protonate.py` to add capping hydrogens to each `res_N.pdb` file where
 python3 $HOME/git/RINRUS/bin/pymol_protonate.py -pdb res_N.pdb -ignore_ids "A:300,A:301,A:302" 
 
 # All arguments for pymol_scripts
--pdb FILE           pdb of model to be protonated
--ignore_ids CH:ID   fragment(s) to exclude from protonation (e.g. all seed fragments)
--ignore_ats ATOMS   atom name(s) to exclude (e.g. "ND1,NE2" to avoid changing histidine protonation. Be very careful with this!)
+-pdb FILE               pdb of model to be protonated
+-ignore_ids CH:ID       fragment(s) to exclude from protonation (e.g. all seed fragments)
+-ignore_atoms CH:ID:AT  specific atom(s) to exclude from protonation (e.g. A:25:C+O,A:25:N) 
+-ignore_atnames ATOMS   atom type(s) to exclude (e.g. "ND1,NE2" to avoid changing histidine protonation. Be very careful with this!)
 ```
 
-The "ignore_ids" and "ignore_ats" flags are used to specify residue IDs and atom types that should not be protonated. You will most likely want to put the seed fragments in the "ignore_ids" list, otherwise PyMOL might reprotonate your noncanonical amino acids/substrate molecules (and make very poor decisions). By default the script avoids re-protonating the end nitrogens in arginine (NH1 and NH2). If you use "ignore_ats" to avoid any other atom types (for example the nitrogens in histidine side chains), check your models carefully before proceeding!
+The "ignore_ids", "ignore_atoms" and "ignore_atnames" flags are used to specify residue IDs, specific atoms and atom types that should not be protonated. You will most likely want to put the seed fragments in the "ignore_ids" list, otherwise PyMOL might reprotonate your noncanonical amino acids/substrate molecules (and make very poor decisions). By default the script avoids re-protonating the end nitrogens in arginine (NH1 and NH2). If you use "ignore_ats" to avoid any other atom types generally (for example the nitrogens in histidine side chains), check your models carefully before proceeding!
 
 ## 4. Generating input files
 
