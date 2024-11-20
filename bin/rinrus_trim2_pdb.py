@@ -316,7 +316,7 @@ if __name__ == '__main__':
     parser.add_argument('-cres', dest='cres', default='None', help='Noncanonical residue information')
     parser.add_argument('-unfrozen', dest='ufree', default='None', help='Seed canonical residue unfrozen CA/CB, chain:Resid:CACB,chain:Resid:CA')
     parser.add_argument('-model', dest='method', default='All', help='generate one or all trimmed models, if "7" is given, then will generate the 7th model, "max" for only maximal model')
-    parser.add_argument('-mustadd', dest='mustadd', default='None', help='Necessary non-seed fragments ([S]ide chain, [N]-term, [C]-term) e.g. "A:7:S+C,A:8:N"')
+    parser.add_argument('-mustadd', dest='mustadd', default=None, help='Necessary non-seed fragments ([S]ide chain, [N]-term, [C]-term) e.g. "A:7:S+C,A:8:N"')
 
     args = parser.parse_args()
 
@@ -362,7 +362,7 @@ if __name__ == '__main__':
     Alist = [chr(i) for i in range(ord('A'),ord('Z')+1)]
     
     # get max and min size
-    if mustadd == 'None':
+    if mustadd == None or mustadd == '':
         l_must = 0
         lmax = len(iratoms)
         lmin = len(sel_key) + 1
