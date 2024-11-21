@@ -281,11 +281,11 @@ def protonate_model(freeze,model_num,path_to_RIN,logger):
 def create_input_file(template,format,basisinfo,charge,model_num,path_to_RIN,logger):
     path = os.path.expanduser(path_to_RIN+'/write_input.py')
     #path_2 = os.path.expanduser(basisinfo.replace('\n','').replace(' ',''))
-    noh =  ' res_'+model_num+'.pdb '
-    adh = ' res_'+model_num+'_h.pdb'
-    #arg= [sys.executable, path ,'-intmp',str(template),'-format',str(format),'-basisinfo',path_2,'-c',str(charge),'-type', 'hopt','-noh',str(noh).replace(' ',''),'-adh',str(adh).replace(' ','')]
-    #arg= [sys.executable, path ,'-intmp',str(template),'-format',str(format),'-basisinfo',basisinfo,'-c',str(charge),'-type', 'hopt','-noh',str(noh).replace(' ',''),'-adh',str(adh).replace(' ','')]
-    arg = [sys.executable, path ,'-format',str(format),'-c',str(charge),'-type', 'hopt','-noh',str(noh).replace(' ',''),'-adh',str(adh).replace(' ','')]
+    noh = f'res_{model_num}.pdb'
+    adh = f'res_{model_num}_h.pdb'
+    inpn = f'{model_num}.inp'
+    tmp = f'template_{model_num}.pdb'
+    arg = [sys.executable,path,'-format',str(format),'-c',str(charge),'-type','hopt','-noh',noh,'-adh',adh,'-inpn',inpn,'-tmp',tmp]
     if template != '' and template != None:
         arg.append('-intmp')
         arg.append(str(template))
@@ -438,8 +438,8 @@ def run_rinrus_driver(file):
             protonate_model(freeze,num,path_to_RIN,logger)
             if Computational_program.lower() != 'none':
                 create_input_file(template_path,Computational_program,basis_set_library,charge,str(num),path_to_RIN,logger)
-                shutil.copy('1.inp',str(num)+'.inp')
-                shutil.copy('template.pdb','template_'+str(num)+'.pdb')
+                #shutil.copy('1.inp',str(num)+'.inp')
+                #shutil.copy('template.pdb','template_'+str(num)+'.pdb')
     else:
         trim_model(seed,must_include,mod_pdb,selfile,model_num,path_to_RIN,RIN_program,logger)
         protonate_model(freeze,model_num,path_to_RIN,logger)
