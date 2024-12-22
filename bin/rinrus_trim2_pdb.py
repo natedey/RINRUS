@@ -69,7 +69,7 @@ def trim_pdb_models(sm,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd):
         for i in mustadd:
             addat = i.split(':')
             if len(addat)==2:
-                allats=pdb_res_atom[(addat[0],int(addat[1]))]
+                allats=' '.join(pdb_res_atom[(addat[0],int(addat[1]))])
                 addatoms.append(f"{addat[0]} {addat[1]} {allats}")
             else:
                 groups=addat[2].split("+")
@@ -148,15 +148,15 @@ def trim_pdb_models(sm,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd):
         if key not in sel_key and pdb_res_name[key] not in ('HOH', 'WAT','O'):
         ### Check one residue before according to "N and H" ###
             if bool(set(res_atom[key])&set(['N','H'])) and (cha,res_id-1) in pdb_res_name.keys():
-                if (cha,res_id-1) not in res_atom.keys():
+                if (cha,res_id-1) not in res_atom.keys() and pdb_res_name[(cha,res_id-1)] not in ('HOH', 'WAT','O'):
                     res_atom[(cha,res_id-1)] = ['CA','C','O','HA','HA2','HA3']
-                else:
+                elif pdb_res_name[(cha,res_id-1)] not in ('HOH', 'WAT','O'):
                     for atom in ['CA','C','O','HA','HA2','HA3']:
                         if atom not in res_atom[(cha,res_id-1)]:
                             res_atom[(cha,res_id-1)].append(atom)
         ### Check one residue after according to "C and O" ###
             if bool(set(res_atom[key])&set(['C','O'])) and (cha, res_id+1) in pdb_res_name.keys():
-                if (cha,res_id+1) not in res_atom.keys():
+                if (cha,res_id+1) not in res_atom.keys() and pdb_res_name[(cha,res_id+1)] not in ('HOH', 'WAT','O'):
                     ### DAW: Check if next residue is proline ###
                     if pdb_res_name[(cha,res_id+1)] == 'PRO':
                         res_atom[(cha,res_id+1)] = ['N', 'CA', 'C', 'O', 'CB', 'CG', 'CD', 'HA', '2HB', '3HB', '2HG', '3HG', '2HD', '3HD']
@@ -169,7 +169,7 @@ def trim_pdb_models(sm,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd):
                                     res_atom[(cha,res_id+2)].append(atom)
                     else:
                         res_atom[(cha,res_id+1)] = ['CA','HA','HA2','HA3','N','H']
-                else:
+                elif pdb_res_name[(cha,res_id+1)] not in ('HOH', 'WAT','O'):
                     for atom in ['CA','HA','HA2','HA3','N','H']:
                         if atom not in res_atom[(cha,res_id+1)]:
                             res_atom[(cha,res_id+1)].append(atom)

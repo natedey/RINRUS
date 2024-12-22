@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Clean PDB Script
 # ================
 # 

@@ -6,10 +6,10 @@ from read_write_pdb import *
 import argparse
 
 if __name__ == '__main__':
-    """ Usage: orcaxyz_to_pdb.py -o orca.xyz -p template.pdb """
+    """ Usage: orcaxyz_to_pdb.py -xyz orca.xyz -pdb template.pdb """
     parser = argparse.ArgumentParser(description='generate pdbfiles from orca xyz file')
-    parser.add_argument('-o', dest='output',default='orca.xyz',help='output xyz file')
-    parser.add_argument('-p', dest='pdbf',default='template.pdb',help='template pdb file')
+    parser.add_argument('-xyz', dest='output',default='orca.xyz',help='output xyz file')
+    parser.add_argument('-pdb', dest='pdbf',default='template.pdb',help='template pdb file')
 
     args = parser.parse_args()
     pdbf = args.pdbf
@@ -21,7 +21,7 @@ if __name__ == '__main__':
     
     xyz = []
     for atom in lines:
-        xyz.append(["%.3f"%atom[0],"%.3f"%atom[1],"%.3f"%atom[2]])
+        xyz.append([float("%.3f"%atom[0]),float("%.3f"%atom[1]),float("%.3f"%atom[2])])
 
     if "/" in output:
         output = output.split('/')[-1]
