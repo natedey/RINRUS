@@ -118,12 +118,12 @@ if __name__ == '__main__':
     parser.add_argument('-inpn', dest='inp_name', default='1.inp', help='input_name')
     parser.add_argument('-basisinfo',dest='basisinfo',default=None,help="'intmp' if in template file, use dictionary otherwise")
     parser.add_argument('-wdir', dest='output_dir', default=os.path.abspath('./'), help='working dir')
-    parser.add_argument('-tmp', dest='tmp_pdb', default=None, help='template_pdb_file')
     # type = pdb
     parser.add_argument('-pdb', dest='new_pdb', default=None, help='new_pdb_file')
     # type = hopt
     parser.add_argument('-noh', dest='no_h_pdb', default=None, help='trimmed_pdb_file')
     parser.add_argument('-adh', dest='h_add_pdb', default=None, help='hadded_pdb_file')
+    parser.add_argument('-tmp', dest='tmp_pdb', default=None, help='template_pdb_file')
     # type = gauout
     parser.add_argument('-outf', dest='gau_out', default='1.out', help='output_name')
     parser.add_argument('-ckp', dest='check_point', default=None, help='check_file_frame')
@@ -158,9 +158,9 @@ if __name__ == '__main__':
     hopt = 0
 
     if step == 'hopt':
-        pic_atom, tot_charge = pdb_after_addh(nohpdb,adhpdb)
-        res_count = adhpdb.split('_')[1]
-        write_pdb('%s'%tmp_pdb,pic_atom,res_count)
+        #pic_atom, tot_charge = pdb_after_addh(nohpdb,adhpdb)
+        #res_count = adhpdb.split('_')[1]
+        #write_pdb('%s'%tmp_pdb,pic_atom,res_count)
         hopt = 1
     elif step == 'gauout':
         i_name = []

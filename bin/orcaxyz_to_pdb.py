@@ -25,7 +25,7 @@ if __name__ == '__main__':
 
     if "/" in output:
         output = output.split('/')[-1]
-    name = output.split('.')[0]+'.pdb' 
+    name = output.replace('.xyz','.pdb')
 
     sel_atom = update_xyz(pdb,xyz)
     write_pdb(name,sel_atom)

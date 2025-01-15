@@ -365,15 +365,15 @@ if __name__ == '__main__':
     if mustadd == None or mustadd == '':
         l_must = 0
         lmax = len(iratoms)
-        lmin = len(sel_key) + 1
+        lmin = len(sel_key)
     else:
         l_must = len(mustadd.split(','))
         lmax = len(iratoms) + l_must
         lmin = lmin = len(sel_key) + l_must
  
     if method == 'All':
-        for i in range(lmin,lmax):
-            trim_pdb_models(i+1,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd)
+        for i in range(lmin,lmax+1):
+            trim_pdb_models(i,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd)
     elif method == 'max':
         trim_pdb_models(lmax,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd)
     else:

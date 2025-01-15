@@ -4,41 +4,70 @@ from read_write_pdb import *
 from numpy import *
 from itertools import *
 
-def compare_2(idx1,idx2,pdb1,pdb2):
-        heavy = 0
-        count = 0
-        for i in range(len(pdb1)):
-            if 'H' not in pdb1[i][2]:
-                heavy += 1
-                if pdb1[i][2] == pdb2[i][2]:
-                    count += 1
-        if heavy == count:
-            print("%s and %s probably are the same, please double check!"%(idx1,idx2))
-
-
 if __name__ == '__main__':
-    files = []
-    with open(sys.argv[1]) as f:
-        lines = f.readlines()
-    pdb_key = []
-    pdb_dic = []
-    pdb_res = []
-    pdb_chg = []
-    for i in range(len(lines)):
-        pdb_key.append(lines[i].strip())
-        f = '%s/template.pdb'%lines[i].strip()
-        pdb, res_info, tot_charge_t = read_pdb(f)
-        pdb_dic.append(pdb)
-        pdb_res.append(res_info)
-        pdb_chg.append(tot_charge_t)
+    ### Compare pdbs to each other
+    ### usage:  check_duplicate_models.py model1.pdb model2.pdb ...
     
-    pdb_len = []
-    for i in range(len(lines)):
-        pdb_len.append(len(pdb_dic[i]))
+    pdbfiles=sys.argv[1:]
+    pdblengths=[]
+    pdbdictsall=[]
+    pdbdictsheavy=[]
 
-    overlap = list(set([x for x in pdb_len if pdb_len.count(x) > 1]))    
-    pdb_len = array(pdb_len)
-    for i in range(len(overlap)):
-        idx = where(pdb_len==overlap[i])[0]
-        for pair in combinations(idx,2):
-            compare_2(pdb_key[pair[0]],pdb_key[pair[1]],pdb_dic[pair[0]],pdb_dic[pair[1]])
+    for f in pdbfiles:
+        pdb, res_info, tot_charge_t = read_pdb(f)
+        pdblengths.append(len(pdb))
+        pdbats={}
+        pdbheavy={}
+        for i in range(len(pdb)):
+            reskey=(pdb[i][5],int(pdb[i][6]))
+            atom=pdb[i][2].strip()
+            if reskey not in pdbats.keys():
+                pdbats[reskey]=[atom]
+            else:
+                pdbats[reskey].append(atom)
+            if atom[0] != 'H':
+                if reskey not in pdbheavy.keys():
+                    pdbheavy[reskey]=[atom]
+                else:
+                    pdbheavy[reskey].append(atom)
+        pdbdictsall.append(pdbats)
+        pdbdictsheavy.append(pdbheavy)
+
+    matches=0
+    maybes=0
+    for i in range(len(pdbfiles)):
+        pdb1=pdbfiles[i]
+        for j in range(i+1,len(pdbfiles)):
+            pdb2=pdbfiles[j]
+            checklen=0
+            checkres=0
+            checkheavy=0
+            checkall=0
+            #compare lengths
+            if pdblengths[i] != pdblengths[j]:
+                continue
+            #compare res ids
+            if sorted(pdbdictsall[i].keys()) != sorted(pdbdictsall[j].keys()) or sorted(pdbdictsheavy[i].keys()) != sorted(pdbdictsheavy[j].keys()):
+                continue
+            #compare heavy atoms for each res id
+            mismatch=0
+            for key in pdbdictsheavy[i].keys():
+                if sorted(pdbdictsheavy[i][key]) != sorted(pdbdictsheavy[j][key]):
+                    mismatch+1
+            if mismatch > 0:
+               continue 
+            #compare all atoms for each res id
+            mismatch=0
+            for key in pdbdictsall[i].keys():
+                if sorted(pdbdictsall[i][key]) != sorted(pdbdictsall[j][key]):
+                    mismatch+=1
+            if mismatch == 0:
+                print(f"{pdb1} and {pdb2} are the same model")
+                matches+=1
+            else:
+                print(f"{pdb1} and {pdb2} only differ in the hydrogens")
+                maybes+=1
+
+    if matches == 0 and maybes == 0:
+        print("all these models are distinct")
+

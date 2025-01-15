@@ -278,15 +278,19 @@ def protonate_model(freeze,model_num,path_to_RIN,logger):
     logger.info('Model protonation run as: '+ str(' '.join(arg)))
     return
 
+def make_temp_pdb(model_num,path_to_RIN,logger):
+    path = os.path.expanduser(path_to_RIN+'/make_template_pdb.py')
+    name = 'res_'+str(model_num)
+    arg = [sys.executable,path,'-name',name]
+    out = subprocess.run(arg)
+    logger.info('Creation of template pdb run as: '+ str(' '.join(arg)))
+    return
 
 def create_input_file(template,format,basisinfo,charge,model_num,path_to_RIN,logger):
     path = os.path.expanduser(path_to_RIN+'/write_input.py')
-    #path_2 = os.path.expanduser(basisinfo.replace('\n','').replace(' ',''))
-    noh = f'res_{model_num}.pdb'
-    adh = f'res_{model_num}_h.pdb'
+    modpdb = f'model_{model_num}_template.pdb'
     inpn = f'{model_num}.inp'
-    tmp = f'template_{model_num}.pdb'
-    arg = [sys.executable,path,'-format',str(format),'-c',str(charge),'-type','hopt','-noh',noh,'-adh',adh,'-inpn',inpn,'-tmp',tmp]
+    arg = [sys.executable,path,'-format',str(format),'-c',str(charge),'-pdb',modpdb,'-inpn',inpn]
     if template != '' and template != None:
         arg.append('-intmp')
         arg.append(str(template))
@@ -437,6 +441,7 @@ def run_rinrus_driver(file):
             #tot.append(num)
             trim_model(seed,must_include,mod_pdb,selfile,num,path_to_RIN,RIN_program,logger)
             protonate_model(freeze,num,path_to_RIN,logger)
+            make_temp_pdb(num,path_to_RIN,logger)
             if Computational_program.lower() != 'none':
                 create_input_file(template_path,Computational_program,basis_set_library,charge,str(num),path_to_RIN,logger)
                 #shutil.copy('1.inp',str(num)+'.inp')
@@ -444,6 +449,7 @@ def run_rinrus_driver(file):
     else:
         trim_model(seed,must_include,mod_pdb,selfile,model_num,path_to_RIN,RIN_program,logger)
         protonate_model(freeze,model_num,path_to_RIN,logger)
+        make_temp_pdb(model_num,path_to_RIN,logger)
         if Computational_program.lower() != 'none':
             create_input_file(template_path,Computational_program,basis_set_library,charge,str(model_num),path_to_RIN,logger)       
         
