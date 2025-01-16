@@ -64,7 +64,12 @@ def write_model_building(seedlist,mlist,seednamed):
 
     with open('seq_model_contents.dat', 'w') as f:
         f.write(tab.to_string())
-        f.write('\n')
+        f.write('\n\n')
+
+        for i in range(len(tab.columns)):
+            for j in range(i+1,len(tab.columns)):
+                if tab.iloc[:,i].equals(tab.iloc[:,j]):
+                    f.write(f'Models {mlist[i]} and {mlist[j]} are the same!\n')
 
     return
 
