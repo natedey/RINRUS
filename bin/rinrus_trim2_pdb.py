@@ -11,6 +11,8 @@ from read_write_pdb import *
 from copy import *
 from check_residue_atom import *
 import argparse
+import pandas as pd
+from model_details import *
 
 ######################################   Example   #############################################################
 ### python3 rinrus_trim2_pdb.py -pdb 3bwm_h_mg.ent -s "A:300,A:301,A:302" -c contact_counts.dat -model 7
@@ -372,8 +374,13 @@ if __name__ == '__main__':
         lmin = lmin = len(sel_key) + l_must
  
     if method == 'All':
+        mlist=[]
         for i in range(lmin,lmax+1):
             trim_pdb_models(i,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd)
+            mlist.append(i)
+        ### write sequential model contents file
+        seednamed=[(f'{s[0]}:{s[1]}',pdb_res_name[s]) for s in sel_key]
+        write_model_building(sel_key,mlist,seednamed)
     elif method == 'max':
         trim_pdb_models(lmax,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd)
     else:
