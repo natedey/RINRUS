@@ -211,7 +211,7 @@ if __name__ == '__main__':
         # write the modified pdb so it can be checked
         pdb1name = pdb1.split('/')[-1]
         pdb1name = pdb1name.split('.')[0]
-        write_pdb('%s/%s_mod_parts.pdb'%(wdir,pdb1name),pic_atom)
+        write_pdb('%s/input_parts_replaced.pdb'%wdir,pic_atom)
 
     if int_tmp == None or int_tmp == '':
         tmpltdir = Path.home() / 'git' / 'RINRUS' / 'template_files'

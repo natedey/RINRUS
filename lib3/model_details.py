@@ -60,7 +60,8 @@ def write_model_building(seedlist,mlist,seednamed):
 
     tab=pd.DataFrame(tab)
     tab.index=[f'{fg[0]}:{fg[1]}' for fg in allfgs]
-    tab.columns=[f'mod{m}' for m in mlist]
+    #tab.columns=[f'mod{m}' for m in mlist]
+    tab.columns=mlist
 
     with open('seq_model_contents.dat', 'w') as f:
         f.write(tab.to_string())
