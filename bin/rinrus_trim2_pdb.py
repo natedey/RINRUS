@@ -346,8 +346,8 @@ if __name__ == '__main__':
     sel_key = get_sel_keys(seed)
     with open(atomf) as f:
         iratoms = f.readlines()
-    ### Find sequential of residues in the model ###
-    #res_seq = gen_res_seq(atomf,sel_key)
+    # remove any comment lines from res_atoms
+    iratoms = [line for line in iratoms if not line.startswith('#')]
 
     pdb_res_name = {}
     pdb_res_atom = {}
