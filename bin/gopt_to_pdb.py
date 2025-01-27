@@ -22,7 +22,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
     pdbf = args.pdbf
     output = args.output
-    fname = args.name.replace('.pdb','')
+    if args.name != None:
+        fname = args.name.replace('.pdb','')
+    else:
+        fname = args.name
 
     pdb, res_info, tot_charge = read_pdb(pdbf)
 #    map, xyz_i = get_ca(pdb)
