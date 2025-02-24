@@ -12,9 +12,9 @@ import argparse
 from read_gout import *
 
 if __name__ == '__main__':
-    """ Usage: gopt_to_pdb.py -out ../1.out -pdb ../template.pdb """
+    """ Usage: gopt_to_pdb.py -out 1.out -pdb ../template.pdb """
     parser = argparse.ArgumentParser(description='generate pdbfiles from 1.out')
-    parser.add_argument('-out', dest='output',default='../1.out',help='output file')
+    parser.add_argument('-out', dest='output',default='1.out',help='output file')
     parser.add_argument('-pdb', dest='pdbf',default='../template.pdb',help='template pdb file')
     parser.add_argument('-f', dest='frame',default=-1,help='select frame: -1 (final=default) or integer or \"all\"')
     parser.add_argument('-name', dest='name',default=None,help='filename for output pdb')
