@@ -14,6 +14,7 @@ def read_pdb(pdbfile,TER=False):
     res_info = []
     tot_charge = 0
     for line in f:
+        line = line.replace('\n','')
         record = line[:6]
         if ( record != 'ATOM  ' and record != 'HETATM' ): continue
         serial = int( line[6:11] )
