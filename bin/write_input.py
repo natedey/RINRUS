@@ -161,6 +161,9 @@ if __name__ == '__main__':
         #pic_atom, tot_charge = pdb_after_addh(nohpdb,adhpdb)
         #res_count = adhpdb.split('_')[1]
         #write_pdb('%s'%tmp_pdb,pic_atom,res_count)
+        newpdb = args.new_pdb
+        pic_atom, res_info, tot_charge = read_pdb(newpdb)
+        res_count = args.new_pdb
         hopt = 1
     elif step == 'gauout':
         i_name = []

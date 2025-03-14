@@ -82,9 +82,7 @@ def driver_file_reader(file,logger):
                 if ',' in seed:
                     line = seed.split(',')
                     for i in line:
-                        if i=='':
-                            pass
-                        else:
+                        if i != '':
                             Seedlist.append(i)
                 else:
                     Seedlist.append(seed)
@@ -146,14 +144,15 @@ def driver_file_reader(file,logger):
     return pdb,red,Seedlist,must_include,RIN_program,selatom_file,charge,multi,Computational_program,template_path,basis_set_library,seed,model_num,path_to_RIN
 
 
-def res_atom_count(filename,must_include):
+def res_atom_count(filename,must_include,Seedlist):
+    seednum = len(Seedlist)
     # residues in res_atoms
     resnum = 0
     with open(filename,'r') as fp:
         data = fp.readlines()
-        #num += len(data)
         for i in data:
-            if i != '':
+            key = i.split()[0] + ':' + i.split()[1]
+            if i != '' and not i.startswith('#'):
                 resnum += 1
     # must_include fragments
     if must_include != '':
@@ -161,7 +160,7 @@ def res_atom_count(filename,must_include):
     else:
         addnum = 0
     totnum = resnum + addnum
-    return resnum,addnum,totnum
+    return seednum,resnum,addnum,totnum
 
 
 def run_reduce(pdb,logger,path_to_RIN):
@@ -205,35 +204,30 @@ def select_by_probe(pdb,seed,logger,path_to_RIN):
     probe = pdb.replace('.pdb','')
     args = [path_to_RIN+'/probe -unformated -MC -self "all" -Quiet '+ pdb +' > '+ probe + '.probe']
     probe = probe + '.probe'
-    out = subprocess.run(args,shell=True,stdout=PIPE,stderr=STDOUT,universal_newlines=True)
     logger.info('Probe run as: '+ str(' '.join(args)))
+    out = subprocess.run(args,shell=True,stdout=PIPE,stderr=STDOUT,universal_newlines=True)
     logger.info('Return code: '+ str(out.returncode))
     logger.info('Output from Probe: '+ out.stdout)
 
     print('Analyzing probe RIN')
     path = os.path.expanduser(path_to_RIN+'/probe2rins.py')
     args =  sys.executable + ' ~/git/RINRUS/bin/probe2rins.py -f '+ str(probe)+ ' -s ' + seed
-    out = subprocess.run(args,shell=True,stdout=PIPE,stderr=STDOUT,universal_newlines=True)
     logger.info('RIN analysis run as: '+ str(args))
+    out = subprocess.run(args,shell=True,stdout=PIPE,stderr=STDOUT,universal_newlines=True)
     logger.info('Return code= '+ str(out.returncode))
     #logger.info('Output: \n'+ out.stdout)
     return probe
     
 
 def select_by_distance(calc_type,hydro,pdb,seed,cut,logger,path_to_RIN):
-    path = os.path.expanduser(path_to_RIN+'/pdb_dist_rank.py')
-    if hydro.lower() == "nohydro":
-        arg = [sys.executable, path ,'-pdb',str(pdb),'-s',str(seed),'-cut',cut,'-type',calc_type,'-nohydro']
-        result = subprocess.run(arg)
-        logger.info('Distance selection run as: '+ str(' '.join(args)))
-        logger.info('Return code: '+ str(result.returncode))
-        logger.info('Output:\n'+ str(result.stdout))
-    else:
-        arg = [sys.executable, path ,'-pdb',str(pdb),'-s',str(seed),'-cut',cut,'-type',calc_type]
-        result = subprocess.run(arg)
-        logger.info('Distance selection run as: '+ str(' '.join(args)))
-        logger.info('Return code=: '+ str(result.returncode))
-        logger.info('Output:\n'+ str(result.stdout))
+    path = os.path.expanduser(path_to_RIN+'/dist_rank.py')
+    arg = [sys.executable, path ,'-pdb',str(pdb),'-s',str(seed),'-max',cut,'-type',calc_type]
+    if hydro.lower() == "no":
+        arg.append('-noH')
+    logger.info('Distance selection run as: '+ str(' '.join(arg)))
+    result = subprocess.run(arg)
+    logger.info('Return code: '+ str(result.returncode))
+    logger.info('Output:\n'+ str(result.stdout))
     return
 
 
@@ -330,7 +324,6 @@ def run_rinrus_driver(file):
     #logger.info('Inputs from: ' + file)
     pdb,red,Seedlist,must_include,RIN_program,selatom_file,charge,multi,Computational_program,template_path,basis_set_library,seed,model_num,path_to_RIN = driver_file_reader(file,logger)
     RIN_program = RIN_program.lower()
-    amountofseed = len(Seedlist)
     model_num = model_num.strip()
     logger.info('section done\n\n')
 
@@ -355,15 +348,15 @@ def run_rinrus_driver(file):
     elif RIN_program.lower() == 'distance':
         print('Distance based selection scheme needs some more details')
         logger.info('Distance based selection scheme selected. Getting user input.')
-        calc_type = input("Do you want distance based calc to use average Cartesian coordinates or center of mass of the seed? (avg or mass): \n")
+        #calc_type = input("Do you want distance based calc to use average Cartesian coordinates or center of mass of the seed? (avg or mass): \n")
+        calc_type = input("What type of distance? closest or avg or mass: \n")
         logger.info('Selected calc_type: '+ str(calc_type))
-        hydro = input("Do you want to include protons in the distance calc? (yes=hydro, no=nohydro) \n")
-        logger.info('Selected proton option (nohydro or hydro): '+ str(hydro))
+        hydro = input("Do you want to include protons in the distance calc? yes or no \n")
+        logger.info('Protons included in distance calc: '+ str(hydro))
         cut = input("What is the cutoff distance in angstroms? \n")
         logger.info('Selected cut off distance: '+ str(cut))
         select_by_distance(calc_type,hydro,pdb,seed,cut,logger,path_to_RIN)
-        cut = float(cut)
-        selfile = 'res_atom-%.2f.dat'%cut
+        selfile = 'res_atoms_by_FG.dat'
     elif RIN_program.lower() == 'manual':
         if selatom_file != '':
             selfile = selatom_file
@@ -376,11 +369,11 @@ def run_rinrus_driver(file):
         
     ### TRIMMING AND CAPPING MODEL, WRITING INPUT FILE
     logger.info('CREATING MODEL AND WRITING INPUT FILE:')
-    resnum,addnum,totnum = res_atom_count(selfile,must_include)
+    seednum,resnum,addnum,totnum = res_atom_count(selfile,must_include,Seedlist)
     if addnum == 0:
-        minsize = amountofseed+1
+        minsize = seednum+1
     else:
-        minsize = amountofseed+addnum
+        minsize = seednum+addnum
 
     logger.info('Size of maximal model is: ' + str(totnum))
     print('Size of maximal model is: ' + str(totnum))
@@ -436,7 +429,6 @@ def run_rinrus_driver(file):
 
     if model_num=='all':
         #tot = []
-        #for num in range(amountofseed+1,num_lines+1):
         for num in range(minsize,totnum+1):
             #tot.append(num)
             trim_model(seed,must_include,mod_pdb,selfile,num,path_to_RIN,RIN_program,logger)

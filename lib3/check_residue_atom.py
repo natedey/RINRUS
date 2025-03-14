@@ -54,7 +54,7 @@ def check_sc(res,value,cres_atoms_sc):
                 if i not in value:
                     value.append(i)
     else:   
-        print("Residue %s is either canonical or nocanonical, please check!"%res)
+        print("Residue %s seems to be noncanonical and might be trimmed incorrectly, please check!"%res)
     return value
 
 def get_noncanonical_resinfo(cres):

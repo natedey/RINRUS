@@ -56,9 +56,10 @@ $HOME/git/RINRUS/bin/pdb_dist_rank.py -pdb PDB_h.pdb -s [seed residues] -cut [cu
 # Model trimming and capping
 $HOME/git/RINRUS/bin/rinrus_trim2_pdb.py -s [seed residues] -pdb PDB_h.pdb -model N -c [res_atoms.dat/contact_counts.dat/res_atom-X.dat depending on RIN program] -mustadd [must_include fragments]
 $HOME/git/RINRUS/bin/pymol_protonate.py -pdb res_N.pdb (if specified: -ignore_ids residues) (if specified: -ignore_atoms atoms) (if specified: -ignore_atnames atomtypes)
+$HOME/git/RINRUS/bin/make_template_pdb.py -name res_N
 
 # Input file creation (if computational program not set to 'none')
-$HOME/git/RINRUS/bin/write_input.py -format computational_program -c seed_charge -type hopt -noh res_N.pdb -adh res_N_h.pdb (if specified: -intmp input_template_path) (if specified: -basisinfo intmp)
+$HOME/git/RINRUS/bin/write_input.py -format computational_program -c seed_charge -type hopt -pdb model_N_template.pdb (if specified: -intmp input_template_path) (if specified: -basisinfo intmp)
 ```
 </details>
 
@@ -160,25 +161,25 @@ This produces the files `contact_counts.dat`, `contype_counts.dat` and, `node_in
   <summary> <b><font size="+1">2C. Using distance ranking</font></b> </summary>
 
 There are two key options that determine how RINRUS calculates the distance between residues and the seed for distance-based selection and ranking. 
-* Seed centre: centre of mass or the average of the Cartesian coordinates.
-* Hydrogens: distances can be calculated using all atoms or only heavy atoms (no hydrogens)
+* Distance type: distance can be calculated to the seed's centre of mass or average Cartesian coordinates, or the closest seed atom.
+* Hydrogens: distances can be calculated using all atoms or only heavy atoms (all hydrogens are ignored)
 
-Use `pdb_dist_rank.py` to select all fragments with any atoms within a cutoff radius of the seed centre. The seed centre can be determined from only a few atoms instead of the full fragments by using the "-satom" flag instead of "-s".
+Use `dist_rank.py` to select all fragments with any atoms within a cutoff radius of the seed. A limited set of seed atoms can be selected for the distance calculations by using the '-satom' flag instead of '-s'.
 ```bash
-# Example usage of pdb_dist_rank selecting residues within 5A of the full seed COM
-python3 ~/git/RINRUS/bin/pdb_dist_rank.py -pdb 3bwm_h.pdb -s A:300,A:301,A:302 -cut 5 -type mass
+# Example usage of dist_rank selecting residues within 5A of the full seed COM
+python3 ~/git/RINRUS/bin/dist_rank.py -pdb 3bwm_h.pdb -s A:300,A:301,A:302 -max 5 -type mass
 
-# All arguments for pdb_dist_rank
--type CENTRE  how to determine centre of seed ("mass" or "avg")
--nohydro      ignore hydrogen atoms (true if flag present)
--cut COFF     cut off distance (default: 3 Å)
+# All arguments for dist_rank
+-type TYPE    how to calculate distance from seed ('closest' or 'avg' or 'mass')
+-noH          ignore hydrogen atoms (true if flag present)
+-max CUTOFF   cut off distance in Å (default: 5)
 -s SEED       seed fragment(s) (e.g. A:300,A:301,A:302)
 -satom ATOMS  seed atoms (e.g. A:301:C8,A:301:N9,A:302:C1,A:302:N1)
 ```
 
-This produces the files `res_atom-[COFF].dat`, `res_atom-[COFF]_new.dat`, `res_atom-[COFF]_new.csv` and `data_analysis_output_[COFF].csv`. The latter 3 files separate out the side chain atoms and main chain atoms of each residue. This is currently not an ideal functional group-based partitioning and an updated workflow is in development.
+This produces a file `all_atoms_[type]_[max].dat` listing all atoms within the cutoff distance, which are then grouped by residue IDs to give `sorted_residues_[type]_[max].dat` and `res_atoms_by_residue.dat`. The atom list is also grouped by functional groups (matching the SC/MC partitioning used for F-SAPT) to give `sorted_FGs_[type]_[max].dat` and `res_atoms_by_FG.dat`.
 
-**Use `res_atom-[COFF].dat` as the input for the trimming procedure in part 3.**
+**Use `res_atoms_by_residue.dat` or `res_atoms_by_FG.dat` as the input for the trimming procedure in part 3.**
 
 </details>
 
@@ -188,8 +189,8 @@ This produces the files `res_atom-[COFF].dat`, `res_atom-[COFF]_new.dat`, `res_a
   <summary> <b><font size="+1">2D. Manual selection and ranking</font></b> </summary>
 
 You can generate your own `res_atoms.dat` file using an existing `res_atoms.dat` file as a template or from scratch.
-* The first two columns should list the chain and residue ID of a given residue
-* The third column should contain an arbitrary ranking value
+* The first two columns should list the chain and residue ID of a given residue.
+* The third column is where the ranking value would go. This isn't actually used by the trimming script so the value doesn't matter as long as something is there.
 * The rest of the line should be the selected atom(s). 
 
 The residues should be listed in the order you want them to be added to the model.
@@ -328,23 +329,37 @@ python3 $HOME/git/RINRUS/bin/pymol_protonate.py -pdb res_N.pdb -ignore_ids "A:30
 
 The "ignore_ids", "ignore_atoms" and "ignore_atnames" flags are used to specify residue IDs, specific atoms and atom types that should not be protonated. You will most likely want to put the seed fragments in the "ignore_ids" list, otherwise PyMOL might reprotonate your noncanonical amino acids/substrate molecules (and make very poor decisions). By default the script avoids re-protonating the end nitrogens in arginine (NH1 and NH2). If you use "ignore_ats" to avoid any other atom types generally (for example the nitrogens in histidine side chains), check your models carefully before proceeding!
 
+### Making template model pdb files
+
+Use `make_template_pdb.py` to reformat the protonated model pdbs. This makes the file `model_N_template.pdb` which encodes the frozen atom info into the last column of each line. Important for correctly applying constraints in the QM input files made in the next step!
+```bash
+# Usage of make_template_pdb with standard name formats (res_N.pdb and res_N_h.pdb)
+python3 $HOME/git/RINRUS/bin/make_template_pdb.py -name res_N
+
+# Usage of make_template_pdb by specifying both files separately
+python3 $HOME/git/RINRUS/bin/make_template_pdb.py -noh res_N.pdb -addh res_N_h.pdb
+```
+
+
 ## 4. Generating input files
 
 Use `write_input.py` to generate input files for quantum chemistry packages. Currently input files can be created for Gaussian, xTB (through Gaussian), ORCA and Q-Chem. Some of the options for this script are specific to our QM-cluster modelling workflow and may not be relevant to other users.
 
-Basic usage of `write_input.py` to create an input file to do a basic geometry optimisation + frequency calculation with a given cluster model `res_N_h.pdb`:
+**Make sure to use a model pdb file that has the frozen atom info encoded (see template pdb section above) to ensure the atom constraints are applied properly**
+
+Basic usage of `write_input.py` to create an input file to do a basic geometry optimisation + frequency calculation:
 ```bash
 # Example usage of write_input: Gaussian
-python3 $HOME/git/RINRUS/bin/write_input.py -pdb res_N_h.pdb -c 2 -format gaussian
+python3 $HOME/git/RINRUS/bin/write_input.py -pdb model_N_template.pdb -c 2 -format gaussian
 
 # Example usage of write_input: xTB (in Gaussian)
-python3 $HOME/git/RINRUS/bin/write_input.py -pdb res_N_h.pdb -c 2 -format gau-xtb
+python3 $HOME/git/RINRUS/bin/write_input.py -pdb model_N_template.pdb -c 2 -format gau-xtb
 
 # Example usage of write_input: ORCA
-python3 $HOME/git/RINRUS/bin/write_input.py -pdb res_N_h.pdb -c 2 -format orca
+python3 $HOME/git/RINRUS/bin/write_input.py -pdb model_N_template.pdb -c 2 -format orca
 
 # Example usage of write_input: Q-Chem
-python3 $HOME/git/RINRUS/bin/write_input.py -pdb res_N_h.pdb -c 2 -format qchem
+python3 $HOME/git/RINRUS/bin/write_input.py -pdb model_N_template.pdb -c 2 -format qchem
 
 # Useful arguments for basic usage of write_input:
 -pdb FILE           pdb file to use as structure in input file
@@ -373,12 +388,8 @@ Full set of arguments for using `write_input.py`:
                    'gauout': take structure from Gaussian output
                    'replacecoords': update selected atom coords e.g. to create TS guess
 
-# If using -type 'pdb' (default if no type specified), these are required:
+# If using -type 'pdb' (default if no type specified) or 'hopt', these are required:
 -pdb FILE          pdb file
-
-# If using -type 'hopt', these are required:
--noh FILE          cluster model pdb file before H added (e.g. res_N.pdb)
--adh FILE          cluster model pdb file after H added (e.g. res_N_h.pdb)
 
 # If using -type 'gauout', these are required:
 -tmp FILE          template pdb file for creating new pdb from output
