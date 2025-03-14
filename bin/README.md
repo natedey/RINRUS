@@ -162,7 +162,7 @@ This produces the files `contact_counts.dat`, `contype_counts.dat` and, `node_in
 
 There are two key options that determine how RINRUS calculates the distance between residues and the seed for distance-based selection and ranking. 
 * Distance type: distance can be calculated to the seed's centre of mass or average Cartesian coordinates, or the closest seed atom.
-* Hydrogens: distances can be calculated using all atoms or only heavy atoms (all hydrogens are ignored)
+* Hydrogens: distances can be calculated using all atoms or only heavy atoms (all hydrogens are ignored). This applies to both the residue-seed distance calculation and calculation of the seed COM/average centre.
 
 Use `dist_rank.py` to select all fragments with any atoms within a cutoff radius of the seed. A limited set of seed atoms can be selected for the distance calculations by using the '-satom' flag instead of '-s'.
 ```bash
