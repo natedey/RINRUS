@@ -12,7 +12,7 @@ import io
 from datetime import datetime
 
 #log header info, takes details of commit
-def log_header():
+def log_header(year):
     gitpath = str(Path(__file__).resolve().parents[1])
     pwd = os.getcwd()
     #gitver = subprocess.run(f"cd {gitpath}; git show -s --pretty='format:%h'; cd {pwd}",shell=True,stdout=PIPE,stderr=STDOUT,universal_newlines=True)
@@ -24,7 +24,7 @@ def log_header():
     headtxt = ('--------------------------------------------------------------------------------------\n'
     '              RINRUS: The Residue Interaction Network ResidUe Selector                \n'
     '--------------------------------------------------------------------------------------\n'
-    f'(C) 2018-2024. Using version {gitver[0]}, published on github {gitver[1]} at {gitver[2]}.        \n'
+    f'(C) 2018-{year}. Using version {gitver[0]}, published on github {gitver[1]} at {gitver[2]}.        \n'
     'Developed in the group of Prof. Nathan DeYonker at the University of Memphis, TN USA. \n'
     'Contributors: Q. Cheng, N. DeYonker, D. Wappett, T. Summers, D. Agbaglo, T. Suhagia,  \n'
     '    T. Santaloci, J. Bachega.                                                         \n'
@@ -35,7 +35,7 @@ def log_header():
     clbanner = ('--------------------------------------------------------------------------------------\n'
     '           Running RINRUS: The Residue Interaction Network ResidUe Selector           \n'
     'Developed in the group of Prof. Nathan DeYonker at the University of Memphis, TN USA. \n'
-    f'(C) 2018-2024. Using version {gitver[0]}, published on github {gitver[1]} at {gitver[2]}.        \n'
+    f'(C) 2018-{year}. Using version {gitver[0]}, published on github {gitver[1]} at {gitver[2]}.        \n'
     '--------------------------------------------------------------------------------------\n')
 
     return headtxt,clbanner
@@ -152,14 +152,14 @@ def res_atom_count(filename,must_include,Seedlist):
         data = fp.readlines()
         for i in data:
             key = i.split()[0] + ':' + i.split()[1]
-            if i != '' and not i.startswith('#'):
+            if i != '' and not i.startswith('#') and key not in Seedlist:
                 resnum += 1
     # must_include fragments
     if must_include != '':
         addnum = len(must_include.split(','))
     else:
         addnum = 0
-    totnum = resnum + addnum
+    totnum = seednum + resnum + addnum
     return seednum,resnum,addnum,totnum
 
 
@@ -219,9 +219,13 @@ def select_by_probe(pdb,seed,logger,path_to_RIN):
     return probe
     
 
-def select_by_distance(calc_type,hydro,pdb,seed,cut,logger,path_to_RIN):
+def select_by_distance(calc_type,hydro,pdb,dseed,cut,logger,path_to_RIN):
     path = os.path.expanduser(path_to_RIN+'/dist_rank.py')
-    arg = [sys.executable, path ,'-pdb',str(pdb),'-s',str(seed),'-max',cut,'-type',calc_type]
+    #arg = [sys.executable, path ,'-pdb',str(pdb),'-s',str(seed),'-max',cut,'-type',calc_type]
+    if dseed[0] == 'seed':
+        arg = [sys.executable, path ,'-pdb',str(pdb),'-s',dseed[1],'-max',cut,'-type',calc_type]
+    elif dseed[0] == 'satom':
+        arg = [sys.executable, path ,'-pdb',str(pdb),'-satom',dseed[1],'-max',cut,'-type',calc_type]
     if hydro.lower() == "no":
         arg.append('-noH')
     logger.info('Distance selection run as: '+ str(' '.join(arg)))
@@ -308,7 +312,7 @@ def run_rinrus_driver(file):
     logger = logging.getLogger()
 
     #write header 
-    header,clbanner = log_header()
+    header,clbanner = log_header(dt[0:4])
     logger.info(header+'\n\n')
     print(clbanner)
 
@@ -351,11 +355,18 @@ def run_rinrus_driver(file):
         #calc_type = input("Do you want distance based calc to use average Cartesian coordinates or center of mass of the seed? (avg or mass): \n")
         calc_type = input("What type of distance? closest or avg or mass: \n")
         logger.info('Selected calc_type: '+ str(calc_type))
+        stype = input("Calculate distance from whole seed or only some atoms? seed or satom \n")
+        if stype == 'seed':
+            dseed = ['seed',str(seed)]
+        elif stype == 'satom':
+            satom = input("Which atoms for satom? Format like A:301:C8,A:301:N9,A:302:C1,A:302:N1 \n")
+            dseed = ['satom',satom]
+        logger.info('Seed selection for calculating distances: '+ str(dseed))
         hydro = input("Do you want to include protons in the distance calc? yes or no \n")
         logger.info('Protons included in distance calc: '+ str(hydro))
         cut = input("What is the cutoff distance in angstroms? \n")
         logger.info('Selected cut off distance: '+ str(cut))
-        select_by_distance(calc_type,hydro,pdb,seed,cut,logger,path_to_RIN)
+        select_by_distance(calc_type,hydro,pdb,dseed,cut,logger,path_to_RIN)
         selfile = 'res_atoms_by_FG.dat'
     elif RIN_program.lower() == 'manual':
         if selatom_file != '':

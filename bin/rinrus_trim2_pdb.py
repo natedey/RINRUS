@@ -363,15 +363,17 @@ if __name__ == '__main__':
     ### get res_atom info ###
     Alist = [chr(i) for i in range(ord('A'),ord('Z')+1)]
     
+    # count lines of res_atoms that aren't seed
+    l_non_seed = len([line for line in iratoms if (line.split()[0],int(line.split()[1])) not in sel_key])
     # get max and min size
     if mustadd == None or mustadd == '':
         l_must = 0
-        lmax = len(iratoms)
+        lmax = len(sel_key) + l_non_seed
         lmin = len(sel_key)
     else:
         l_must = len(mustadd.split(','))
-        lmax = len(iratoms) + l_must
-        lmin = lmin = len(sel_key) + l_must
+        lmax = len(sel_key) + l_non_seed + l_must
+        lmin = len(sel_key) + l_must
  
     if method == 'All':
         mlist=[]
