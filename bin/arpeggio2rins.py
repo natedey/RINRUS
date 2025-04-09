@@ -101,7 +101,9 @@ def de_contacts(contactsf,seed,opt):
     f1.close()
 
     f2 = open('contype_counts.dat','w')
+    f2.write(f'# selected/ranked residues by arpeggio: contact file {cf}; seed {seeds_in}; contact types\n')
     f3 = open('contact_counts.dat','w')
+    f3.write(f'# selected/ranked residues by arpeggio: contact file {cf}; seed {seeds_in}; contact counts\n')
 
     if opt == 0:
         newlist = sorted(resinfo.items(),key=lambda x:sum(x[1]),reverse=True)

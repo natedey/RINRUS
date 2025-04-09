@@ -202,8 +202,9 @@ def write_res_freq(res_list, res_acts, res_atoms):
     #print(df)
 
 
-def write_res_atom(res_atoms):
+def write_res_atom(res_atoms,probefile,sel_res):
     f_res = open('res_atoms.dat','w')
+    f_res.write(f'# selected/ranked residues by probe: probe file {probefile}; seed {sel_res}\n')
     for k in sorted(res_atoms, key=lambda k:len(res_atoms[k]),reverse=True):
         cha,res = k.split(':')
         f_res.write('%-4s %-8s %-8d'%(cha,res,len(res_atoms[k])))
@@ -252,5 +253,5 @@ if __name__ == "__main__":
     #res_dict = order_reslist(res_list)
     write_sif(siflines)
     write_rin(actions)
-    write_res_atom(res_atoms)
+    write_res_atom(res_atoms,probefile,sel_res)
     write_res_freq(res_list,res_acts,res_atoms)
