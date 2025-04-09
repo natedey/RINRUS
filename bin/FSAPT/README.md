@@ -64,7 +64,11 @@ This ranking is used along with the atom names/grouping stored in `fdict.pkl` to
 
 FG-partitioned contact counts can still be obtained with the old `gen-FG-analysis-probe.py` and `gen-FG-analysis-arpeggio.py` scripts, but the new `FG-SAPT-ranked.dat` file is not currently compatible with `compile-results.py`.
 
+3. Create new set of sequential models from `res_atoms_fsapt.dat`
 
+[See section 3 of the general usage instructions for info on model trimming and capping](https://github.com/natedey/RINRUS/blob/master/bin/README.md#3-trimming-and-capping-the-models)
+
+------------------------------------------------------------
 
 ## Old instructions (Last updated Sept 2022)
 Background: The user has a cluster model PDB file that has already been 
