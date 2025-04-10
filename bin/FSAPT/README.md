@@ -1,15 +1,13 @@
 # F(/I)-SAPT analysis and model fragment re-ranking
 
-### April 2025: New analysis scripts that are more versatile and robust
-
-These analysis scripts assume that the user has created a probe/arpeggio/distance maximal model and then run an F(/I)-SAPT calculation on it.
-
+These scripts and instructions assume that the user has created a probe/arpeggio/distance maximal model and then run an F(/I)-SAPT calculation on it.
 Generally fragment A should be the seed and fragment B should be the rest of the model. 
 If the seed is covalently bound to other stuff it's up to the user to decide whether to put that stuff into fragment A as well or do I-SAPT. 
-RINRUS I-SAPT support is currently very limited. Inputs cannot be prepared by `write_input.py` and must be made by hand. 
-Scripts can handle I-SAPT outputs but sensibility of results depends on user's choice of A/B/C partitioning.
 
-**Run scripts within the `fsapt/` output directory.**
+**RINRUS I-SAPT functionality and support is currently limited.** Significant testing on how to design and automate sensible choices of fragments A/B/C is in progress in the DeYonker group.
+Analysis scripts work for I-SAPT outputs but inputs must be made by hand and the usefulness of the results depends entirely on the user's definitions of A/B/C.
+
+### Run scripts within the `fsapt/` output directory.
 
 1. Use `define_fA_fB.py` to define the functional groups of the fragments
 ```bash
@@ -35,15 +33,14 @@ This generates the files `fA.dat`, `fB.dat`, `frag_atom_check.dat` and `fdict.pk
 Seed should be the seed selected for RINRUS generally, not necessarily the exact contents of fragment A in the F/I-SAPT calculation. This is just used to help sort the atoms for the final `res_atoms_fsapt.dat` file. 
 
 <details>
-    <summary>Tips for making fX.dat for I-SAPT analysis</summary>
+    <summary>If doing I-SAPT analysis, fX.dat must be made by hand. Click for more info.</summary>
 
-`fX.dat` specifies the atom numbers of the atoms in fragments A and B that connect to the linker fragment C. The file contents should look something like:
-```
-A 1
-B 20
-```
-To get the correct atom numbers, you can visualise the model pdb to find the pdb-ordered atom numbers and then get their input-ordered atom numbers from `frag_atom_check.dat`.
-
+> `fX.dat` specifies the atom numbers of the atoms in fragments A and B that are bound to the linker fragment C. The file contents should look something like:
+> ```
+> A 1
+> B 20
+> ```
+> To get the correct atom numbers, you can visualise the model pdb to find the pdb-ordered atom numbers and then get their input-ordered atom numbers from `frag_atom_check.dat`.
 </details>
 
 2. Use `fisapt_analysis.py` to do the fsapt processing, sort the FGs by |Eint|, and create `res_atoms_fsapt.dat`
