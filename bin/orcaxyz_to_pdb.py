@@ -10,24 +10,71 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='generate pdbfiles from orca xyz file')
     parser.add_argument('-xyz', dest='output',default='orca.xyz',help='output xyz file')
     parser.add_argument('-pdb', dest='pdbf',default='template.pdb',help='template pdb file')
+    parser.add_argument('-frame', dest='frame',default=-1,help='select frame: -1 (final=default) or integer (count starts at 0) or \"all\"')
+    parser.add_argument('-name', dest='name',default=None,help='filename for output pdb')
+    # NOTE: FRAME NUMBERING STARTS AT 0 TO MATCH PYTHON AND ORCA NUMBERING #
 
     args = parser.parse_args()
-    pdbf = args.pdbf
     output = args.output
 
-    pdb, res_info, tot_charge = read_pdb(pdbf)
+    ### if no name specified, use output file name
+    if args.name:
+        fname = args.name.replace('.pdb','')
+        dfltname = False
+    else:
+        fname = output.split('/')[-1].replace('.xyz','')
+        dfltname = True
 
-    lines = np.loadtxt(output, skiprows=2, usecols=range(1,4), dtype=float)
-    
-    xyz = []
-    for atom in lines:
-        xyz.append([float("%.3f"%atom[0]),float("%.3f"%atom[1]),float("%.3f"%atom[2])])
+    ### read xyz and pdb files
+    pdb, res_info, tot_charge = read_pdb(args.pdbf)
+    xyzf = open(output,'r').readlines()
 
-    if "/" in output:
-        output = output.split('/')[-1]
-    name = output.replace('.xyz','.pdb')
+    ### check xyz and pdb length match
+    numline = xyzf[0]
+    numcheck = int(numline.replace('\n',''))
+    if numcheck != len(pdb):
+        print('pdb and xyz lengths do not match, please check if specified pdb is correct.')
+        sys.exit()
 
-    sel_atom = update_xyz(pdb,xyz)
-    write_pdb(name,sel_atom)
+    ### extract set(s) of coords
+    strucs = []
+    for line in xyzf:
+        # when each header line reached, save previous struc to set and then reset list to collect the next one
+        if line == numline:
+            try:
+                strucs.append(newstruc)
+                newstruc = []
+            except:
+                newstruc = []
+            continue
+        # only collect lines that contain coords, skip everything else
+        try:
+            line = line.replace('\n','').split()
+            crd = [float("%.3f"%float(line[1])),float("%.3f"%float(line[2])),float("%.3f"%float(line[3]))]
+            newstruc.append(crd)
+        except:
+            continue
+    # add final struc to set
+    strucs.append(newstruc)
 
-    
+    ### get chosen frame
+    if args.frame == 'all':
+        for i in range(len(strucs)):
+            iname = fname+'.frame'+str(i)+'.pdb' 
+            sel_atom = update_xyz(pdb,strucs[i])
+            write_pdb(iname,sel_atom)
+    elif int(args.frame) == -1:
+        #specifically label as last frame if using same file name and xyz has multiple geometries
+        if dfltname and len(strucs)>1:
+            iname = fname+'.last.pdb'
+        else:
+            iname = fname+'.pdb'
+        sel_atom = update_xyz(pdb,strucs[-1])
+        write_pdb(iname,sel_atom)
+    elif int(args.frame) >= 0 and int(args.frame) < len(strucs):
+        iname = fname+'.frame'+args.frame+'.pdb'
+        sel_atom = update_xyz(pdb,strucs[int(args.frame)])
+        write_pdb(iname,sel_atom)
+    else:
+        print("Chosen frame doesn't exist!")
+
