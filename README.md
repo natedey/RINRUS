@@ -7,9 +7,9 @@ Residue Interaction Network-based ResidUe Selector (RINRUS) is a QM-cluster mode
 RINRUS is the first tool available that performs automated and algorithmic trimming and capping of enzyme models. Reproducibility is embedded into the model construction workflow, setting new community standards.
 
 A software review paper is in preparation. For now, the best way to acknowledge RINRUS is to cite:
-DOI: 10.1016/j.bpj.2021.07.029
+[DOI: 10.1016/j.bpj.2021.07.029](https://doi.org/10.1016/j.bpj.2021.07.029)
 and
-DOI: 10.1039/D3CP06100K
+[DOI: 10.1039/D3CP06100K](https://doi.org/10.1039/D3CP06100K)
 
 The development of RINRUS has been supported by the National Science Foundation Division of Biological Infrastructure
 (CAREER BIO-1846408) and the Department of Energy Basic Energy Sciences (SBIR DE-SC0021568).
@@ -18,10 +18,11 @@ Prof. Nathan DeYonker, Department of Chemistry, University of Memphis at ndyonke
 
 ## Installation
 
-Clone this repository, then add the library code under `lib3` to your `PYTHONPATH`. For example, in `~/git`:
+Clone this repository, then add `bin` to your `PATH` and library code under `lib3` to your `PYTHONPATH`. For example, in `~/git`:
 ``` bash
 cd ~/git
 git clone git@github.com:natedey/RINRUS.git
+export PATH="~/git/RINRUS/bin:$PATH"
 export PYTHONPATH="~/git/RINRUS/lib3:$PYTHONPATH"
 ```
 
@@ -32,17 +33,18 @@ export PYTHONPATH="~/git/RINRUS/lib3:$PYTHONPATH"
 - pymol
   - If installing via conda, it's under `-c conda-forge pymol-open-source`.
 - openbabel (required for Arpeggio)
+- BioPython (required for Arpeggio)
 - pandas
   
 For certain scripts (optional),
 - matplotlib
-- BioPython
+
 
 ### External dependencies
 
 - [probe](https://github.com/rlabduke/probe) - version 2.16.130520 is packaged with RINRUS
 - [reduce](https://github.com/rlabduke/reduce) - version 3.23 is packaged with RINRUS
-- [arpeggio](http://biosig.unimelb.edu.au/arpeggioweb)
+- [arpeggio](https://github.com/harryjubb/arpeggio) - packaged with RINRUS
 - obabel version = openbabel/2.4.1
 
 Currently, precompiled binaries of probe, reduce, and arpeggio are present in `bin/`.
@@ -52,7 +54,7 @@ which require
 - Any C/C++ compiler suite with C++11 support
 
 PDB HET groups (some ligands and noncanonical amino acids) can be protonated by reduce. 
-The connectivity table file is included with RINRIS: bin/reduce_wwPDB_het_dict.txt
+The connectivity table file is included with RINRUS: bin/reduce_wwPDB_het_dict.txt
 You must set a shell environment variable to allow reduce to use the reduce_wwPDB_het_dict file, 
 as the default location is /local:
 ```bash
@@ -62,7 +64,7 @@ or
 ```bash
 export REDUCE_HET_DICT=/home/$USER/git/RINRUS/bin/reduce_wwPDB_het_dict.txt
 ```
-Further preproccesing of ligands likely required!
+Further preprocessing of ligands likely required!
 
 
 ## How to use
@@ -76,4 +78,4 @@ Full usage instructions are described in [bin/](bin/README.md).
 This code was conceptualized in the DeYonker group at the University of Memphis Department of Chemistry.
 Prof. Qianyi Cheng was the primary contributor to early versions of RINRUS, who now runs her independent research group at University of Memphis.
 Additional code, conceptualization, and documentation have been provided by
-Prof. Nathan DeYonker, Dr. Dominique Wappett, Dr. Thomas Summers, Dr. Donatus Agbaglo, Tejas Suhagia, Dr. Taylor Santaloci, Prof. Jose Fernando Ruggiero Bachega, (Universidade Federal de Ciências da Saúde de Porto Alegre), and Dr. Eric Berquist (Q-Chem, Inc.)
+Prof. Nathan DeYonker, Dr. Dominique Wappett, Dr. Thomas Summers, Dr. Donatus Agbaglo, Dr. Tejas Suhagia, Dr. Taylor Santaloci, Prof. Jose Fernando Ruggiero Bachega, (Universidade Federal de Ciências da Saúde de Porto Alegre), and Dr. Eric Berquist (Q-Chem, Inc.)
