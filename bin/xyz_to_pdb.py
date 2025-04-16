@@ -6,16 +6,16 @@ from read_write_pdb import *
 import argparse
 
 if __name__ == '__main__':
-    """ Usage: orcaxyz_to_pdb.py -xyz orca.xyz -pdb template.pdb """
+    """ Usage: xyz_to_pdb.py -xyz orca.xyz -pdb template.pdb """
     parser = argparse.ArgumentParser(description='generate pdbfiles from orca xyz file')
-    parser.add_argument('-xyz', dest='output',default='orca.xyz',help='output xyz file')
+    parser.add_argument('-xyz', dest='xyz',default='orca.xyz',help='xyz structure file')
     parser.add_argument('-pdb', dest='pdbf',default='template.pdb',help='template pdb file')
     parser.add_argument('-frame', dest='frame',default=-1,help='select frame: -1 (final=default) or integer (count starts at 0) or \"all\"')
     parser.add_argument('-name', dest='name',default=None,help='filename for output pdb')
     # NOTE: FRAME NUMBERING STARTS AT 0 TO MATCH PYTHON AND ORCA NUMBERING #
 
     args = parser.parse_args()
-    output = args.output
+    output = args.xyz
 
     ### if no name specified, use output file name
     if args.name:
@@ -60,19 +60,15 @@ if __name__ == '__main__':
     ### get chosen frame
     if args.frame == 'all':
         for i in range(len(strucs)):
-            iname = fname+'.frame'+str(i)+'.pdb' 
+            iname = f'{fname}.f{i:03d}.pdb'
             sel_atom = update_xyz(pdb,strucs[i])
             write_pdb(iname,sel_atom)
     elif int(args.frame) == -1:
-        #specifically label as last frame if using same file name and xyz has multiple geometries
-        if dfltname and len(strucs)>1:
-            iname = fname+'.last.pdb'
-        else:
-            iname = fname+'.pdb'
+        iname = fname+'.pdb'
         sel_atom = update_xyz(pdb,strucs[-1])
         write_pdb(iname,sel_atom)
-    elif int(args.frame) >= 0 and int(args.frame) < len(strucs):
-        iname = fname+'.frame'+args.frame+'.pdb'
+    elif int(args.frame) >= 0 and int(args.frame) <= len(strucs):
+        iname = f'{fname}.f{args.frame:03d}.pdb'
         sel_atom = update_xyz(pdb,strucs[int(args.frame)])
         write_pdb(iname,sel_atom)
     else:

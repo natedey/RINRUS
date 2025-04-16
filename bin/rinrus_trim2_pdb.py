@@ -313,9 +313,9 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser(description='Trim large PDB file according to res_atoms.dat, write trimmed pdb in working directory')
     parser.add_argument('-pdb', dest='r_pdb', default='None', help='protonated pdbfile')
-    parser.add_argument('-s', dest='seed', default='None', help='Chain:Resid,Chain:Resid')
-    parser.add_argument('-c', dest='r_atom', default='res_atoms.dat', help='atom info for each residue')
-    parser.add_argument('-cres', dest='cres', default='None', help='Noncanonical residue information')
+    parser.add_argument('-s','-seed', dest='seed', default='None', help='Chain:Resid,Chain:Resid')
+    parser.add_argument('-ra', dest='r_atom', default='res_atoms.dat', help='res_atoms file containing atom info for each residue')
+    parser.add_argument('-ncres', dest='cres', default='None', help='Noncanonical residue information')
     parser.add_argument('-unfrozen', dest='ufree', default='None', help='Seed canonical residue unfrozen CA/CB, chain:Resid:CACB,chain:Resid:CA')
     parser.add_argument('-model', dest='method', default='All', help='generate one or all trimmed models, if "7" is given, then will generate the 7th model, "max" for only maximal model')
     parser.add_argument('-mustadd', dest='mustadd', default=None, help='Necessary non-seed fragments ([S]ide chain, [N]-term, [C]-term) e.g. "A:7:S+C,A:8:N"')

@@ -300,10 +300,11 @@ python3 ~/git/RINRUS/bin/rinrus_trim2_pdb.py -pdb 3bwm_h.pdb -s A:300,A:301,A:30
 # All arguments for rinrus_trim2_pdb
 -pdb FILE       pre-processed PDB file (e.g. 3bwm_h.pdb)
 -s SEED         seed fragment(s)) (e.g. A:300,A:301,A:302)
--c FILE         atom info file (default: res_atoms.dat)
--unfrozen ATS   residues to unfreeze (Chain:resID:<CA/CB/CACB>)
+-ra FILE        atom info file (default: res_atoms.dat)
 -model N        specify which model to create (number or 'max')
--mustadd	fragment(s) that must be in model (Chain:resID:<S/N/C/S+N/S+C/N+C/S+N+C>)
+-mustadd RES	fragment(s) that must be in model (Chain:resID:<S/N/C/S+N/S+C/N+C/S+N+C>)
+-unfrozen ATS   residues to unfreeze (Chain:resID:<CA/CB/CACB>)
+-ncres FILE	non-canonical res info (file containing lines of "Chain:resID [all atom names]")
 ```
 
 If no model is specified, the script will generate the entire "ladder" of possible models by adding residues based on their order in `res_atoms.dat`, otherwise only the model containing N residues will be created (or the maximal model if 'max' is specified). For each model, the files `res_N.pdb`, `res_N_froz_info.dat` and `res_N_atom_info.dat` are created. 
@@ -334,7 +335,7 @@ The "ignore_ids", "ignore_atoms" and "ignore_atnames" flags are used to specify 
 Use `make_template_pdb.py` to reformat the protonated model pdbs. This makes the file `model_N_template.pdb` which encodes the frozen atom info into the last column of each line. Important for correctly applying constraints in the QM input files made in the next step!
 ```bash
 # Usage of make_template_pdb with standard name formats (res_N.pdb and res_N_h.pdb)
-python3 $HOME/git/RINRUS/bin/make_template_pdb.py -name res_N
+python3 $HOME/git/RINRUS/bin/make_template_pdb.py -model N
 
 # Usage of make_template_pdb by specifying both files separately
 python3 $HOME/git/RINRUS/bin/make_template_pdb.py -noh res_N.pdb -addh res_N_h.pdb
@@ -404,3 +405,22 @@ Full set of arguments for using `write_input.py`:
 # If using -format 'psi4-fsapt', these are required:
 -seed SEED         seed to define as fragment A, rest of enzyme will be fragment B
 ```
+
+## (Optional) 5. Convert optimized coords back to pdb format
+
+Use `gopt_to_pdb.py` or `xyz_to_pdb.py` to convert coordinates from QM outputs into pdb format. 
+```bash
+# Example usage of gopt_to_pdb
+python3 $HOME/git/RINRUS/bin/gopt_to_pdb.py -gout 1.out -pdb model_N_template.pdb -name model_N_opt
+
+# Example usage of xyz_to_pdb
+python3 $HOME/git/RINRUS/bin/xyz_to_pdb.py -xyz orca.xyz -pdb model_N_template.pdb -name model_N_opt
+
+# Arguments for gopt_to_pdb/xyz_to_pdb
+-gout OUTFILE   Gaussian output file (gopt_to_pdb only)
+-xyz XYZFILE    XYZ file (xyz_to_pdb only)
+-frame FRAME    geometry to use: -1 for final (default), integer or "all". NOTE: COUNT STARTS AT 0.
+-name SAVENAME  name for new pdb file (defaults: "gopt" or base name of specified XYZ file)
+```
+If making only final frame, structures are saved as `[name].pdb`. If option for -frame is "all" or an integer, file(s) will be called `[name].f[num].pdb`.
+

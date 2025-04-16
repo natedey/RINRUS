@@ -33,25 +33,25 @@ def pdb_after_addh(tmppdb,newpdb):
 if __name__ == '__main__':
     ### create template pdb files for model
     ### two ways of specifying input
-    ### 1) make_template_model.py -name res_N                           (assumes that files have default res_N.pdb and res_N_h.pdb naming format)
-    ### 2) make_template_model.py -noh res_N.pdb -addh res_N_h.pdb      (specify each separately if format is different)
+    ### 1) make_template_model.py -model N                            (assumes that files have default res_N.pdb and res_N_h.pdb naming format)
+    ### 2) make_template_model.py -noh res_N.pdb -addh res_N_h.pdb    (specify each separately if format is different)
     parser = argparse.ArgumentParser(description='Prepare template PDB files',formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('-name', dest='modname', default=None, help='model base file name')
+    parser.add_argument('-model', dest='modname', default=None, help='model number')
     parser.add_argument('-noh', dest='no_h_pdb', default=None, help='trimmed_pdb_file')
     parser.add_argument('-addh', dest='h_add_pdb', default=None, help='hadded_pdb_file')
 
     args = parser.parse_args()
 
     if args.no_h_pdb == None and args.h_add_pdb == None and args.modname != None:
-        nohpdb = args.modname+'.pdb'
-        adhpdb = args.modname+'_h.pdb'
+        nohpdb = 'res_'+args.modname+'.pdb'
+        adhpdb = 'res_'+args.modname+'_h.pdb'
     elif args.no_h_pdb != None and args.h_add_pdb != None and args.modname == None:
         nohpdb = args.no_h_pdb
         adhpdb = args.h_add_pdb
     elif args.no_h_pdb == None and args.h_add_pdb == None and args.modname == None:
         print("No model specified!")
     else:
-        print("Mixed input syntax! Use either -name [basename] OR -noh [pdb] -addh [pdb]")
+        print("Mixed input syntax! Use either -model [num] OR -noh [pdb] -addh [pdb]")
 
     pdbnum = nohpdb.replace('res_','').replace('.pdb','')
     tmp_pdb = 'model_'+pdbnum+'_template.pdb'
