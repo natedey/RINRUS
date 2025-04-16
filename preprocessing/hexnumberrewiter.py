@@ -1,11 +1,13 @@
 #! /usr/bin/env python
+"""
+This is a program created by Dr. Tejaskumar Suhagia and the DeYonker research group
+at The University of Memphis.
+Date created 05.08.2024
+"""
+
 import argparse
 import sys
 
-"""
-This is a program written by Tejaskumar Suhgaia in Deyonker research group
-at university of memphis.
-"""
 
 def isNumber(s):    
     for i in range(len(s)):

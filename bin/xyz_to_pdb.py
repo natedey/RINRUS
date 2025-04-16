@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+"""
+This is a program created by Dr. Dominique Wappett and the DeYonker research group
+at The University of Memphis.
+Date created 10.04.2024
+"""
+
 
 import numpy as np
 import sys, re, os

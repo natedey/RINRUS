@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+"""
+This is a program created by Dr. Taylor Santaloci, Dr. Dominique Wappett and the DeYonker research group
+at The University of Memphis.
+Initial version created 04.03.2023
+Production version created 10.24.2024
+"""
 
 import os
 import argparse

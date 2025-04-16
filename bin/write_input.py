@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-This is a program written by Qianyi Cheng 
-at university of memphis.
-Date 8.10.2022
+This is a program created by Dr. Qianyi Cheng and the DeYonker research group
+at The University of Memphis.
+Date created 8.10.2022
 """
 import os, sys, re, filecmp
 from numpy import *

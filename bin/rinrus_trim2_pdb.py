@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 """
-This is a program written by Qianyi Cheng
-at university of memphis.
-RINRUS trimming scheme version 2 
-Read in rin information for trimming pdb mainchain/sidechain seperatable
-Date 7.20.2022
+This is a program created by Dr. Qianyi Cheng and the DeYonker research group
+at The University of Memphis.
+Date created 7.20.2022
 """
 import os, sys, re
 from read_write_pdb import *

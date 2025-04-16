@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+"""
+This is a program created by Dr. Dominique Wappett and the DeYonker research group
+at The University of Memphis.
+Date created 04.09.2025
+"""
 
 import sys, os, argparse
 import pickle

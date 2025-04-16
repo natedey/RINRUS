@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-This is a program written by qianyi cheng in deyonker research group
-at university of memphis.
+This is a program created by Dr. Qianyi Cheng and the DeYonker research group
+at The University of Memphis.
+Date created 06.12.2019
 """
 import os, sys, re
 from copy import *

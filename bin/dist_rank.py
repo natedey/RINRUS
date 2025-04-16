@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+"""
+This is a program created by Dr. Dominique Wappett and the DeYonker research group
+at The University of Memphis.
+Date created 03.14.2025
+"""
 import os, sys, re
 from numpy import *
 from read_write_pdb import *

@@ -1,12 +1,14 @@
 #! /usr/bin/env python
+"""
+This is a program created by Dr. Tejaskumar Suhagia and the DeYonker research group
+at The University of Memphis.
+Date created 05.08.2024
+"""
+
 import argparse
 import sys
 import os
 
-"""
-This is a program written by Tejaskumar Suhgaia in Deyonker research group
-at university of memphis.
-"""
 residuedict = {}
 lastreesidue = []
 used_chains = set()
@@ -15,9 +17,9 @@ used_chainID= set()
 lastOldNewchainID = {}
 
 if __name__ == '__main__':
-    """ Usage: water_renumber_83REAC.py -p template.pdb """
-    parser = argparse.ArgumentParser(description='renumber residue_id for hydrogen water from 0 to sorresponding oxygen from pdb file')
-    parser.add_argument('-p', dest='pdbf', default='83REAC_QChem1.pdb', help='pdb file')
+    """ Usage: water_renumber.py -p template.pdb """
+    parser = argparse.ArgumentParser(description='renumber residue_id for hydrogen water from 0 to corresponding oxygen from pdb file')
+    parser.add_argument('-p', dest='pdbf', help='pdb file')
     args = parser.parse_args()
     pdbf = args.pdbf
     output_file_path = 'waterid_ocrrected_'+pdbf  

@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+"""
+This is a program created by Dr. Qianyi Cheng and the DeYonker research group
+at The University of Memphis.
+Date created 08.12.2022
+"""
 
 import sys, os, argparse
 
