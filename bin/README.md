@@ -372,6 +372,15 @@ python3 $HOME/git/RINRUS/bin/write_input.py -pdb model_N_template.pdb -c 2 -form
 -basisinfo 'intmp' (Gaussian only) use basis set info from the input template file instead of the library in $HOME/git/RINRUS/lib3/gaussian_basis_dict.py
 ```
 <br> 
+F-SAPT input files can be set up in one of two ways:
+```bash
+# Specify format as psi4-fsapt
+python3 $HOME/git/RINRUS/bin/write_input.py -pdb model_N_template.pdb -c -2 -format psi4-fsapt -fA A:203
+
+# Specify fsapt as type (overwrites any format option to 'psi4-fsapt')
+python3 $HOME/git/RINRUS/bin/write_input.py -pdb model_N_template.pdb -c 2 -type fsapt -fA A:203
+```
+
 
 Full set of arguments for using `write_input.py`:
 ```bash
@@ -388,8 +397,9 @@ Full set of arguments for using `write_input.py`:
                    'hopt': freeze all heavy atoms so only hydrogen atoms optimized
                    'gauout': take structure from Gaussian output
                    'replacecoords': update selected atom coords e.g. to create TS guess
+		   'fsapt': write fsapt input with struc separated into fA and fB
 
-# If using -type 'pdb' (default if no type specified) or 'hopt', these are required:
+# If using -type 'pdb' (default if no type specified), 'hopt' or 'fsapt', these are required:
 -pdb FILE          pdb file
 
 # If using -type 'gauout', these are required:
@@ -402,8 +412,8 @@ Full set of arguments for using `write_input.py`:
 -pdb2 FILE         pdb to take coordinates from
 -parts FILE        text file containing species in pdb1 to be replaced with pdb2 coordinates
 
-# If using -format 'psi4-fsapt', these are required:
--seed SEED         seed to define as fragment A, rest of enzyme will be fragment B
+# If using -type 'fsapt' or -format 'psi4-fsapt', these are required:
+-fA SEED           res ID(s) to define as fragment A (e.g. A:203), rest of enzyme will be fragment B 
 ```
 
 ## (Optional) 5. Convert optimized coords back to pdb format

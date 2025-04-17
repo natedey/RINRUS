@@ -97,42 +97,39 @@ def gen_pdbfiles(wdir,step,tmppdb):
 if __name__ == '__main__':
 
     #########################################################################################################################################################
-    ### In working directory such as model9-ts-001 
-    ### Run: write_input.py -noh nohpdb -adh haddpdb -intmp relaxh_temp -c 2 (final_pdb is saved as "template.pdb", input is saved as "1.inp", default -m 1) 
-    ### Run: write_input.py -step 1 -intmp modred_temp -m 1 -c 2 (will take the last pdb from 1.out and write input as "1.inp")                      
-    ### Run: write_input.py -step 2 -intmp modred_temp -m 1 -c 2 -new step1pdbs/33.pdb (will take the selected pdb and write "1.inp")
+    ### Examples:
+    ### write_input.py -pdb model_N_template.pdb -c 2 -format gaussian
+    ### write_input.py -type replacecoords -pdb1 hopt.pdb -pdb2 ts.pdb -parts parts.txt -format orca -c -2
+    ### write_input.py -type fsapt -pdb template.pdb -c -2 -fA A:203
     #########################################################################################################################################################
 
     parser = argparse.ArgumentParser(description='Prepare template PDB files, write input files, save output PDB files in working directory',formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-type', dest='step', default='pdb', 
-            help='hopt: read noh, addh pdbs, write_final_pdb and read input_template write_first_inp, \n' + 
-            'gauout: read outputwrite_modred_inp, input_template, write_second_inp, \n' +
-            'pdb: read new pdb file, input_template, write_new_inp \n' +
-            'replacecoords: read pdb1 and pdb2 for replacing the fragment in pdb1 with pdb2 coordinates and write new input\n' +
-            'fsapt: F-SAPT0 calculation (psi4 only, ignores format specification)')
+            help='hopt: read pdb and write input with heavy atoms constrained, \n' + 
+            'gauout: read gaussian output and write new input with final structure, \n' +
+            'pdb: read pdb and write input \n' +
+            'replacecoords: read pdb1 and pdb2, put pdb2 coords into pdb1 for atoms specified in parts.txt, write input and save input_parts_replaced.pdb\n' +
+            'fsapt: read pdb and write input for F-SAPT0 calculation (psi4 only, overwrites -format)')
     # general options
     parser.add_argument('-m', dest='multiplicity', default=1, type=int, help='multiplicity')
-    parser.add_argument('-c', dest='ligand_charge', default=0, type=int, help='charge_of_ligand')
-    parser.add_argument('-format',dest='fmat',default=None,help="input_file_format eg.'gaussian','qchem','gau-xtb'")
-    parser.add_argument('-intmp', dest='input_tmp', default=None, help='template_for_write_input')
-    parser.add_argument('-inpn', dest='inp_name', default='1.inp', help='input_name')
+    parser.add_argument('-c', dest='ligand_charge', default=0, type=int, help='charge of ligand')
+    parser.add_argument('-format',dest='fmat',default=None,help="input file format eg.'gaussian','qchem','gau-xtb','orca','psi4-fsapt'")
+    parser.add_argument('-intmp', dest='input_tmp', default=None, help='input file template (uses ones in RINRUS/templates/ if not specified)')
+    parser.add_argument('-inpn', dest='inp_name', default='1.inp', help='input name')
     parser.add_argument('-basisinfo',dest='basisinfo',default=None,help="'intmp' if in template file, use dictionary otherwise")
     parser.add_argument('-wdir', dest='output_dir', default=os.path.abspath('./'), help='working dir')
-    # type = pdb
-    parser.add_argument('-pdb', dest='new_pdb', default=None, help='new_pdb_file')
-    # type = hopt
-    parser.add_argument('-noh', dest='no_h_pdb', default=None, help='trimmed_pdb_file')
-    parser.add_argument('-adh', dest='h_add_pdb', default=None, help='hadded_pdb_file')
-    parser.add_argument('-tmp', dest='tmp_pdb', default=None, help='template_pdb_file')
+    # type = pdb, hopt, fsapt
+    parser.add_argument('-pdb', dest='new_pdb', default=None, help='model pdb file')
     # type = gauout
-    parser.add_argument('-outf', dest='gau_out', default='1.out', help='output_name')
-    parser.add_argument('-ckp', dest='check_point', default=None, help='check_file_frame')
+    parser.add_argument('-tmp', dest='tmp_pdb', default=None, help='template pdb file')
+    parser.add_argument('-gout', dest='gau_out', default='1.out', help='gaussian output')
+    parser.add_argument('-ckp', dest='check_point', default=None, help='check file frame')
     # type = replacecoords
-    parser.add_argument('-pdb1', dest='pdb1', default=None, help='minima_pdb_file')
-    parser.add_argument('-pdb2', dest='pdb2', default=None, help='ts_pdb_file')
-    parser.add_argument('-parts', dest='parts', default=None, help='ts_frag_indo')
+    parser.add_argument('-pdb1', dest='pdb1', default=None, help='model pdb file')
+    parser.add_argument('-pdb2', dest='pdb2', default=None, help='pdb with new coords')
+    parser.add_argument('-parts', dest='parts', default=None, help='parts.txt listing atoms to replace')
     # type = fsapt
-    parser.add_argument('-seed', dest='seed', default=None, help='seed')
+    parser.add_argument('-fA', dest='seed', default=None, help='fragment A for F-SAPT calc')
 #    parser.print_help()
 
     args = parser.parse_args()
@@ -144,8 +141,6 @@ if __name__ == '__main__':
     else:
         tmp_pdb   = args.tmp_pdb
 
-    nohpdb   = args.no_h_pdb
-    adhpdb   = args.h_add_pdb
     int_tmp  = args.input_tmp
     gauout   = args.gau_out
     inp_name = args.inp_name
@@ -158,9 +153,6 @@ if __name__ == '__main__':
     hopt = 0
 
     if step == 'hopt':
-        #pic_atom, tot_charge = pdb_after_addh(nohpdb,adhpdb)
-        #res_count = adhpdb.split('_')[1]
-        #write_pdb('%s'%tmp_pdb,pic_atom,res_count)
         newpdb = args.new_pdb
         pic_atom, res_info, tot_charge = read_pdb(newpdb)
         res_count = args.new_pdb
@@ -192,9 +184,8 @@ if __name__ == '__main__':
                 print("check if the files are propagated correctly!")
 #                sys.exit()
         res_count = 'step-%s'%i_step
-        if step == 'gauout':
-            pdb_file, new_dir = gen_pdbfiles(wdir,i_step,tmp_pdb)
-            pic_atom, res_info, tot_charge = read_pdb('%s/%s.pdb'%(new_dir,pdb_file))
+        pdb_file, new_dir = gen_pdbfiles(wdir,i_step,tmp_pdb)
+        pic_atom, res_info, tot_charge = read_pdb('%s/%s.pdb'%(new_dir,pdb_file))
     elif step == 'pdb':
         newpdb = args.new_pdb
         pic_atom, res_info, tot_charge = read_pdb(newpdb)
@@ -215,6 +206,11 @@ if __name__ == '__main__':
         pdb1name = pdb1.split('/')[-1]
         pdb1name = pdb1name.split('.')[0]
         write_pdb('%s/input_parts_replaced.pdb'%wdir,pic_atom)
+    elif step == 'fsapt':
+        newpdb = args.new_pdb
+        pic_atom, res_info, tot_charge = read_pdb(newpdb)
+        res_count = args.new_pdb
+        ifmat = "psi4-fsapt"
 
     if int_tmp == None or int_tmp == '':
         tmpltdir = Path.home() / 'git' / 'RINRUS' / 'template_files'
@@ -230,10 +226,10 @@ if __name__ == '__main__':
     elif ifmat == "orca":
         write_orca_input('%s/%s'%(wdir,inp_name),int_tmp,charge,multi,pic_atom,tot_charge,res_count,hopt)
     elif ifmat == "psi4-fsapt":
+        seed = args.seed
         if inp_name == "1.inp":
             inp_name = "input.dat"
-        seed = args.seed
         write_psi4_fsapt_input('%s/%s'%(wdir,inp_name),int_tmp,charge,multi,pic_atom,tot_charge,res_count,seed)
     else:
-        print("ERROR: 'ifmat' not set. Please provide an input format for your calculations!")
+        print("ERROR: 'format' not set. Please provide an input format for your calculations!")
 
