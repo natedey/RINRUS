@@ -213,9 +213,10 @@ if __name__ == '__main__':
         ifmat = "psi4-fsapt"
 
     if int_tmp == None or int_tmp == '':
-        tmpltdir = Path.home() / 'git' / 'RINRUS' / 'template_files'
+        #tmpltdir = Path.home() / 'git' / 'RINRUS' / 'template_files'
+        tmpltdir = Path(__file__).parents[1] / 'template_files'
         int_tmp = tmpltdir / f'{ifmat}_input_template.txt'
-        print("Using default opt+freq input template: "+str(int_tmp))
+        print("Using default input template: "+str(int_tmp))
 
     if ifmat == "gaussian":
         write_gau_input('%s/%s'%(wdir,inp_name),int_tmp,charge,multi,pic_atom,tot_charge,res_count,basisinfo,hopt)

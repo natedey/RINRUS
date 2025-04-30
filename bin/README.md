@@ -7,59 +7,73 @@ The driver runs the entire RINRUS model building procedure from initial PDB stru
 
 ```bash
 # Usage of the RINRUS driver
-python $HOME/git/RINRUS/bin/RINRUS_driver.py -i driver_input
+python $HOME/git/RINRUS/bin/RINRUS_driver.py -i rinrus.inp
 
 # Arguments:
--i FILE    rinrus driver input file (default: driver_input)
+-i FILE    rinrus driver input file (default: rinrus.inp)
 ``` 
 
 ### Input file
-The `driver_input` file should contain the following details:
+The driver recognises the following (case independent) options in `rinrus.inp`.
 ```
-Path_to_scripts: [path to RINRUS bin directory]
-PDB: [starting pdb file name]
-Protonate_initial: [true/t/y or false/f/n]
-Seed: [seed residues]
-RIN_program: [probe/arpeggio/distance/manual]
-Model(s): [model number or maximal or all]
-Seed_charge: [overall charge of seed]
-Multiplicity: [model multiplicity]
-Computational_program: [gaussian/gau-xtb/orca/qchem/none]
-# optional lines:
-Must_include: [any non-seed fragments (SC, N-term. and/or C-term. of residue) that need to be in model, e.g. A:6:C,A:7:S+C+N,A:8:N]
-RIN_info_file: [file to use with manual RIN input, default 'res_atoms.dat']
-input_template_path: [path to input file template if not using standard templates]
-Gaussian_basis_intmp: [true/t/y to use basis set info from Gaussian template rather than default basis sets]
+# required
+pdb:                       starting PDB filename
+seed:                      ch:ID[,ch:ID,...]
+rin_program:               probe OR arpeggio OR distance OR manual
+model:                     all OR maximal OR max OR number
+
+# optional
+path_to_scripts:           path to RINRUS bin directory				defaults to same folder as RINRUS_driver.py
+protonate_initial:         true OR false 					defaults to false
+res_atoms_file:            filename 						only used with "rin_program: manual"
+arpeggio_rank:             contacts OR types 					only used with "rin_program: arpeggio"
+dist_type:                 avg OR com OR closest				only used with "rin_program: distance"
+dist_satom:                ch:ID:atom[,ch:ID:atom,...]				only used with "rin_program: distance"
+dist_max:                  number						only used with "rin_program: distance"
+dist_noh:                  true OR false					only used with "rin_program: distance"
+must_add:                  ch:ID[:S/:N/:C] etc
+model_prot_ignore_ids:     ch:ID[,ch:ID,...]
+model_prot_ignore_atoms:   ch:ID:atom[,ch:ID:atom,...]
+model_prot_ignore_atnames: atom[,atom,...]				
+qm_input_format:           gaussian OR orca OR qchem OR gau-xtb OR psi4-fsapt	if no value, no QM inputs and remaining options ignored
+qm_input_template:         filename						defaults to those in RINRUS/template_files/
+gaussian_basis_intmp:      [true/false]						defaults to false
+qm_calc_hopt:              [true/false]						defaults to false
+seed_charge:               integer						defaults to 0
+multiplicity:              integer						defaults to 1
+fsapt_fa:                  ch:ID[,ch:ID,...]
 ```
+A [template rinrus.inp file](../template_files/rinrus.inp) listing all options is provided in the template_files directory. Unneeded options can be deleted, commented out or just given no value. 
+
 
 ### Log file
 The driver writes a log file called `rinrus_log_[date].out` with the details of the run/commands called.
 
 <details>
-    <summary>Commands run by the driver:</summary>
+    <summary>Examples of commands run by the driver:</summary>
     
 ```bash
 # If reduce protonation selected
 $HOME/git/RINRUS/bin/reduce -NOFLIP -Quiet PDB.pdb > PDB_h.pdb 
 
 # If probe RIN selected:
-$HOME/git/RINRUS/bin/probe -unformated -MC -self "all" -Quiet PDB_h.pdb > PDB.probe
-$HOME/git/RINRUS/bin/probe2rins.py -f PDB.probe -s [seed residues]
+$HOME/git/RINRUS/bin/probe -unformated -MC -self "all" -Quiet PDB.pdb > PDB.probe
+$HOME/git/RINRUS/bin/probe2rins.py -f PDB.probe -s seed
 
 # If arpeggio RIN selected
-$HOME/git/RINRUS/bin/arpeggio/arpeggio.py PDB_h.pdb
-$HOME/git/RINRUS/bin/arpeggio2rins.py -f PDB.contacts -s [seed residues]
+$HOME/git/RINRUS/bin/arpeggio/arpeggio.py PDB.pdb
+$HOME/git/RINRUS/bin/arpeggio2rins.py -f PDB.contacts -s seed
 
 # If distance RIN selected
-$HOME/git/RINRUS/bin/pdb_dist_rank.py -pdb PDB_h.pdb -s [seed residues] -cut [cutoff] -type [avg/mass]
+$HOME/git/RINRUS/bin/dist_rank.py -pdb PDB.pdb -s seed -type dist_type [-max dist_max] [-satom dist_satom] [-noH]
 
 # Model trimming and capping
-$HOME/git/RINRUS/bin/rinrus_trim2_pdb.py -s [seed residues] -pdb PDB_h.pdb -model N -c [res_atoms.dat/contact_counts.dat/res_atom-X.dat depending on RIN program] -mustadd [must_include fragments]
-$HOME/git/RINRUS/bin/pymol_protonate.py -pdb res_N.pdb (if specified: -ignore_ids residues) (if specified: -ignore_atoms atoms) (if specified: -ignore_atnames atomtypes)
-$HOME/git/RINRUS/bin/make_template_pdb.py -name res_N
+$HOME/git/RINRUS/bin/rinrus_trim2_pdb.py -s seed -pdb PDB.pdb -model model -ra (res_atoms file for selected RIN program) [-mustadd most_add]
+$HOME/git/RINRUS/bin/pymol_protonate.py -pdb res_N.pdb [-ignore_ids model_prot_ignore_ids] [-ignore_atoms model_prot_ignore_atoms] [-ignore_atnames model_prot_ignore_atnames]
+$HOME/git/RINRUS/bin/make_template_pdb.py -model N
 
-# Input file creation (if computational program not set to 'none')
-$HOME/git/RINRUS/bin/write_input.py -format computational_program -c seed_charge -type hopt -pdb model_N_template.pdb (if specified: -intmp input_template_path) (if specified: -basisinfo intmp)
+# Input file creation (if QM_input_format defined)
+$HOME/git/RINRUS/bin/write_input.py -format qm_input_format -c seed_charge -pdb model_N_template.pdb [-intmp qm_input_template] [-basisinfo intmp] [-type hopt] [-fA fsapt_fa]
 ```
 </details>
 

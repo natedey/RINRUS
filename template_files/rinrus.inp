@@ -1,0 +1,34 @@
+### RINRUS driver input file ###
+# run `RINRUS_driver.py -opts` for help on values for each option
+
+path_to_scripts: ~/git/RINRUS/bin/ 
+
+### starting structure ###
+PDB: 2cht_h_corrected_new.pdb
+protonate_initial: False
+
+### active site selection and ranking ###
+seed: A:203 
+RIN_program: probe
+res_atoms_file:
+arpeggio_rank: 
+dist_type:
+dist_satom:
+dist_max:
+dist_noH:
+
+### model trimming and capping ###
+must_add: 
+model: maximal
+model_prot_ignore_ids: A:203
+model_prot_ignore_atoms:
+model_prot_ignore_atnames:
+
+### input writing ###
+QM_input_format: gaussian
+QM_input_template: 
+Gaussian_basis_intmp: False
+QM_calc_hopt: True
+seed_charge: -2
+multiplicity: 1
+fsapt_fA:
