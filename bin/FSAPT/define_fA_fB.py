@@ -8,6 +8,7 @@ Date created 04.09.2025
 import sys, os, argparse
 import pickle
 from read_write_pdb import *
+from res_atoms import *
 
 def addtodict(dct,key,num):
     try:
@@ -83,9 +84,9 @@ if __name__ == '__main__':
             # get FG name
             if atoms[a]['resn'] in ['WAT','HOH']:
                 key = f'{atoms[a]["chain"]}:{atoms[a]["id"]}:{atoms[a]["resn"]}'
-            elif atoms[a]["name"] in ['C','O']:
+            elif atoms[a]["name"] in ['C','O'] and atoms[a]['resn'] in res_atoms_sc.keys():
                 key = f'{atoms[a]["chain"]}:{atoms[a]["id"]}:MC'
-            elif atoms[a]["name"] in ['N','H']:
+            elif atoms[a]["name"] in ['N','H'] and atoms[a]['resn'] in res_atoms_sc.keys():
                 key = f'{atoms[a]["chain"]}:{atoms[a]["id"]-1}:MC'
             else:
                 key = f'{atoms[a]["chain"]}:{atoms[a]["id"]}:{atoms[a]["resn"]}'

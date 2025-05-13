@@ -201,10 +201,8 @@ if __name__ == '__main__':
            for line in plines:
                parts.append(line.split())
         pic_atom, tot_charge = pdb_replace(pdb1,pdb2,parts)    
-        res_count = args.pdb1
+        res_count = '%s/input_parts_replaced.pdb'%wdir
         # write the modified pdb so it can be checked
-        pdb1name = pdb1.split('/')[-1]
-        pdb1name = pdb1name.split('.')[0]
         write_pdb('%s/input_parts_replaced.pdb'%wdir,pic_atom)
     elif step == 'fsapt':
         newpdb = args.new_pdb
