@@ -40,7 +40,7 @@ def check_mc(res,value):
             value.append(i)
     return value
 
-def check_sc(res,value,cres_atoms_sc):
+def check_sc(res,value,ncres_atoms_sc):
     if res == 'PRO':
         value = res_atoms_all[res]
     elif res != 'PRO' and res in res_atoms_sc.keys():
@@ -48,89 +48,42 @@ def check_sc(res,value,cres_atoms_sc):
             for i in res_atoms_sc[res]:
                 if i not in value:
                     value.append(i)
-    elif res != 'PRO' and res in cres_atoms_sc.keys():
-        if bool(set(value)&set(cres_atoms_sc[res])):
-            for i in cres_atoms_sc[res]:
+    elif res != 'PRO' and res in ncres_atoms_sc.keys():
+        if bool(set(value)&set(ncres_atoms_sc[res])):
+            for i in ncres_atoms_sc[res]:
                 if i not in value:
                     value.append(i)
     else:   
-        print("Residue %s seems to be noncanonical and might be trimmed incorrectly, please check!"%res)
+        print("Residue %s not recognized so it might be trimmed incorrectly, please check!"%res)
     return value
 
-def get_noncanonical_resinfo(cres):
-    with open(cres) as f:
+def get_noncanonical_resinfo(ncres):
+    with open(ncres) as f:
         lines = f.readlines()
-    cres_atoms_all = {}
-    cres_atoms_sc = {}
-    for i in range(len(lines)):
-        c = lines[i].split()
-        if c[0] not in cres_atoms_all.keys():
-            cres_atoms_all[c[0]] = []
-            for j in range(1,len(c)):
-                cres_atoms_all[c[0]].append(c[j])
-        else:
-            if c[0] not in cres_atoms_sc.keys():
-                cres_atoms_sc[c[0]] = []
-                for j in range(1,len(c)):
-                    cres_atoms_sc[c[0]].append(c[j])
-    return cres_atoms_all, cres_atoms_sc
-
-def final_pick(pdb,res_atom,res_info,sel_key):
-    list_cb = ['ARG','LYS','GLU','GLN','MET','TRP','TYR','PHE']
-    res_pick = []
-    for line in pdb:
-        if (line[5],line[6]) in res_atom.keys() and line[2].strip() in res_atom[(line[5],line[6])]:
-            if line[2].strip() == 'CA':
-                res_pick.append( [line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],'-1'] )
-                if (line[5],line[6]) not in res_info.keys():
-                    res_info[(line[5],line[6])] = ['CA']
-                else:
-                    if 'CA' not in res_info[(line[5],line[6])]:
-                        res_info[(line[5],line[6])].append('CA')
-            elif line[2].strip() == 'CB':
-                if line[4].strip() in list_cb and 'CG' in res_atom[(line[5],line[6])]:
-                    res_pick.append( [line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],'-1'] )
-                    if 'CB' not in res_info[(line[5],line[6])]:
-                        res_info[(line[5],line[6])].append('CB')
-                else:
-                    res_pick.append( [line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],' 0'] )
-            else:
-                res_pick.append( [line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],' 0'] )
-    return res_pick,res_info
+    ncres_atoms_all = {}
+    ncres_atoms_sc = {}
+    for line in lines:
+        c = line.split()
+        if c[0] not in ncres_atoms_all.keys():
+            ncres_atoms_all[c[0]] = []
+            ncres_atoms_sc[c[0]] = []
+        for at in c[1:]:
+            ncres_atoms_all[c[0]].append(at)
+            if at not in ['C','O','N','H','CA','HA','HA2','HA3']:
+                ncres_atoms_sc[c[0]].append(at)
+    print(ncres_atoms_all)
+    print(ncres_atoms_sc)
+    return ncres_atoms_all, ncres_atoms_sc
 
 def final_pick2(pdb,res_atom,res_info,sel_key):
-    list_cb = ['ARG','LYS','GLU','GLN','MET','TRP','TYR','PHE']
     res_pick = []
     for line in pdb:
-#        if (line[5],line[6]) in res_atom.keys() and line[4].strip() in list_cb:
-#            if line[2].strip() in res_atom[(line[5],line[6])]:
-#                if line[2].strip() == 'CB':
-#                    res_pick.append( [line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],'-1'] )
-#                    if 'CB' not in res_info[(line[5],line[6])]:
-#                        res_info[(line[5],line[6])].append('CB')
-#                else:
-#                    res_pick.append( [line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],' 0'] )
-        if (line[5],line[6]) in res_atom.keys() and line[2].strip() in res_atom[(line[5],line[6])]:
-            if line[2].strip() == 'CB':
-                if line[4].strip() in list_cb and (line[5],line[6]) not in sel_key:
-                    res_pick.append( [line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],'-1'] )
-                    if 'CB' not in res_info[(line[5],line[6])]:
-                        res_info[(line[5],line[6])].append('CB')
-                else:
-                    if 'CB' in res_info[(line[5],line[6])]:
-                        res_pick.append( [line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],'-1'] )
-                    else:
-                        res_pick.append( [line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],' 0'] )
-
+        key = (line[5],line[6])
+        if key in res_atom.keys() and line[2].strip() in res_atom[key]:
+            if line[2].strip() in res_info[key]:
+                res_pick.append( [line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],'-1'] )
             else:
-                if line[2].strip() in res_info[(line[5],line[6])]:
-                    res_pick.append( [line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],'-1'] )
-#            elif line[2].strip() not in res_info[(line[5],line[6])]:
-#                if line[2].strip() == 'CA':
-#                    res_pick.append( [line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],'-1'] )
-#                    res_info[(line[5],line[6])] = ['CA']
-                else:
-                    res_pick.append( [line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],' 0'] )
+                res_pick.append( [line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],' 0'] )
     return res_pick, res_info
 
 def get_sel_keys(seed_list):  

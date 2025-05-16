@@ -33,6 +33,8 @@ opts = {'path_to_scripts': ['Path to the RINRUS scripts bin directory','dir path
         'dist_noh': ['Calculate distance excluding hydrogens','true OR false    (only used if rin_program = distance)'], 
         'must_add': ['Fragments that must be included', 'ch:ID[:S/:N/:C] etc'],
         'model': ['Selected model(s)', 'all OR maximal OR max OR number'],
+        'unfrozen': ['Atoms to unfreeze', 'ch:ID[,ch:ID:CA,ch:ID:CB,...]'],
+        'nc_res_info': ['Noncanonical residue info file', 'filename'],
         'model_prot_ignore_ids': ['Residues avoided in model protonation','ch:ID[,ch:ID,...]'],
         'model_prot_ignore_atoms': ['Specific atoms avoided in model protonation','ch:ID:atom[,ch:ID:atom,...]'],
         'model_prot_ignore_atnames': ['Atom types avoided in model protonation','atom[,atom,...]'],
@@ -277,6 +279,12 @@ def trim_model(checked_dict,model_num,selfile,logger):
     if 'must_add' in checked_dict.keys():
         args.append('-mustadd')
         args.append(checked_dict['must_add'])
+    if 'unfrozen' in checked_dict.keys():
+        args.append('-unfrozen')
+        args.append(checked_dict['unfrozen'])
+    if 'nc_res_info' in checked_dict.keys():
+        args.append('-ncres')
+        args.append(checked_dict['nc_res_info'])
     result = subprocess.run(args,stdout=PIPE,stderr=STDOUT,universal_newlines=True)
     logger.info('Model trimming run as: ' + str(' '.join(args[1:])))
     return

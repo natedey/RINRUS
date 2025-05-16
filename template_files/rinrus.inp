@@ -20,6 +20,8 @@ dist_noH:
 ### model trimming and capping ###
 must_add: 
 model: maximal
+unfrozen:
+nc_res_info: 
 model_prot_ignore_ids: A:203
 model_prot_ignore_atoms:
 model_prot_ignore_atnames:

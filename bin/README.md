@@ -32,6 +32,8 @@ dist_satom:                ch:ID:atom[,ch:ID:atom,...]				only used with "rin_pr
 dist_max:                  number						only used with "rin_program: distance"
 dist_noh:                  true OR false					only used with "rin_program: distance"
 must_add:                  ch:ID[:S/:N/:C] etc
+unfrozen:		   ch:ID[,ch:ID:CA,cd:ID:CB,...]
+nc_res_info:		   filename
 model_prot_ignore_ids:     ch:ID[,ch:ID,...]
 model_prot_ignore_atoms:   ch:ID:atom[,ch:ID:atom,...]
 model_prot_ignore_atnames: atom[,atom,...]				
@@ -309,21 +311,21 @@ Use `rinrus_trim2_pdb.py` to generate trimmed cluster models based on the atoms/
 python3 ~/git/RINRUS/bin/rinrus_trim2_pdb.py -pdb 3bwm_h.pdb -s A:300,A:301,A:302
 
 # Example usage of rinrus_trim2_pdb using an arpeggio "contact_counts.dat" file and making only the maximal model
-python3 ~/git/RINRUS/bin/rinrus_trim2_pdb.py -pdb 3bwm_h.pdb -s A:300,A:301,A:302 -c contact_counts.dat -model max
+python3 ~/git/RINRUS/bin/rinrus_trim2_pdb.py -pdb 3bwm_h.pdb -s A:300,A:301,A:302 -ra contact_counts.dat -model max
 
 # All arguments for rinrus_trim2_pdb
 -pdb FILE       pre-processed PDB file (e.g. 3bwm_h.pdb)
 -s SEED         seed fragment(s)) (e.g. A:300,A:301,A:302)
 -ra FILE        atom info file (default: res_atoms.dat)
--model N        specify which model to create (number or 'max')
--mustadd RES	fragment(s) that must be in model (Chain:resID:<S/N/C/S+N/S+C/N+C/S+N+C>)
--unfrozen ATS   residues to unfreeze (Chain:resID:<CA/CB/CACB>)
--ncres FILE	non-canonical res info (file containing lines of "Chain:resID [all atom names]")
+-model N        specify which model to create (number or 'max' or 'all')
+-mustadd RES	fragment(s) that must be in model (ch:ID for whole res or ch:ID:<S/N/C/S+N/S+C/N+C/S+N+C>)
+-unfrozen RES   residues/atoms to avoid freezing (ch:ID or ch:ID:CA or ch:ID:CB)
+-ncres FILE	non-canonical res info (file containing lines of "resname [all atom names]")
 ```
 
-If no model is specified, the script will generate the entire "ladder" of possible models by adding residues based on their order in `res_atoms.dat`, otherwise only the model containing N residues will be created (or the maximal model if 'max' is specified). For each model, the files `res_N.pdb`, `res_N_froz_info.dat` and `res_N_atom_info.dat` are created. 
+If no model is specified, the script will generate the entire "ladder" of possible models by adding residues based on their order in `res_atoms.dat` (same as specifying '-model all'), otherwise only the model containing N residues will be created (or the maximal model if 'max' is specified). For each model, the files `res_N.pdb`, `res_N_froz_info.dat` and `res_N_atom_info.dat` are created. 
 
-If canonical residues are included in the seed, you can unfreeze CA and/or CB in these residues with the unfrozen flag. Specify the carbon atoms to unfreeze as CA, CB or CACB.
+RINRUS automatically freezes the CA atoms of recognised (standard or specified in the non-canonical res info file) residues, as well as CB of residues with large side chains (Arg, Lys, Glu, Gln, Met, Trp, Tyr and Phe). These can be removed with the unfrozen flag. Specifying just the residue will remove all automatically applied constraints, or CA/CB can be specifically unfrozen. RINRUS will print a warning if any part of the seed has been frozen in case these are part of substrate peptides or free amino acids etc that shouldn't be constrained.
 
 The mustadd flag is used to define groups that must be in the model but are not part of the seed (e.g. metal coordinating residues or groups covalently bonded to the seed). These are included independently of what is in `res_atoms.dat` so the model numbers might double count some groups. 
 
