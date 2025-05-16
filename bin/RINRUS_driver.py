@@ -45,8 +45,10 @@ opts = {'path_to_scripts': ['Path to the RINRUS scripts bin directory','dir path
         'seed_charge': ['Seed charge','integer    (only used if qm_input_format defined)'],
         'multiplicity': ['Multiplicity','integer    (only used if qm_input_format defined)'],
         'fsapt_fa': ['F-SAPT fragment A','ch:ID[,ch:ID,...]    (only used if qm_input_format = psi4-fsapt)']}
-# list of which opts have true/false values and need to be converted to booleans
+# list of opts which have true/false values and need to be converted to booleans
 tfopts = ['protonate_initial','dist_noh','gaussian_basis_intmp','qm_calc_hopt']
+# list of opts which specify residues/groups/atoms as ch:ID[:atom],ch:ID[:atom] etc and need to be checked for spaces
+resopts = ['seed','dist_satom','must_add','unfrozen','model_prot_ignore_ids','model_prot_ignore_atoms','model_prot_ignore_atnames','fsapt_fA']
 
 ### define log header info, gets details of commit ###
 def log_header(year):
@@ -99,6 +101,9 @@ def driver_file_reader(inpfile,logger,scriptpath):
                 checked_dict[key] = True
             else:
                 checked_dict[key] = False
+        # remove any spaces from res list values
+        elif key in resopts:
+            checked_dict[key] = inpdict[key].replace(' ','')
         # add other valid opts to dict
         elif key in opts.keys():
             checked_dict[key] = inpdict[key]
@@ -164,7 +169,8 @@ def run_reduce(pdb,logger,path_to_scripts):
     """
     print('Protonating input PDB file')
     path = os.path.expanduser(path_to_scripts+'reduce')
-    pdb_2 = pdb.replace('.pdb','')
+    pdb_2 = pdb.split('/')[-1]
+    pdb_2 = pdb_2.replace('.pdb','')
     args = path_to_scripts + '/reduce -NOFLIP -Quiet  '+ str(pdb)+ ' > '+ str(pdb_2)+'_h.pdb'
     io.StringIO(initial_value='', newline='\r')
     out = subprocess.run(args,shell=True,stdout=PIPE,stderr=STDOUT,universal_newlines=True)
@@ -197,7 +203,8 @@ def select_by_probe(pdb,seed,logger,path_to_scripts):
         _type_: .probe file
     """    
     print('Generating probe RIN')
-    probe = pdb.replace('.pdb','.probe')
+    pdb2 = pdb.split('/')[-1]
+    probe = pdb2.replace('.pdb','.probe')
     args = [path_to_scripts+'probe -unformated -MC -self "all" -Quiet '+ pdb +' > '+ probe]
     out = subprocess.run(args,shell=True,stdout=PIPE,stderr=STDOUT,universal_newlines=True)
     logger.info('Probe run as: '+ str(' '.join(args)))
@@ -286,7 +293,13 @@ def trim_model(checked_dict,model_num,selfile,logger):
         args.append('-ncres')
         args.append(checked_dict['nc_res_info'])
     result = subprocess.run(args,stdout=PIPE,stderr=STDOUT,universal_newlines=True)
+    # check if seed frozen atoms warning printed, extract from output if yes
+    out = result.stdout.split('\n')
+    out = [line for line in out if line and not (line == checked_dict['pdb'] or (line.startswith('res_') and line.endswith('.pdb')))]
     logger.info('Model trimming run as: ' + str(' '.join(args[1:])))
+    if out:
+        print('\n'.join(out))
+        logger.info('Trimming script printed this warning: \n'+ '\n'.join(out))
     return
 
 def protonate_model(checked_dict,model_num,logger):
@@ -461,9 +474,15 @@ def run_rinrus_driver(inpfile,scriptpath):
             checked_dict['model_prot_ignore_ids'] = checked_dict['seed']
         elif freezeinp.lower() == 'm':
             print('Manual input of exclusions (see documentation for pymol_protonate.py for help):')
-            checked_dict['model_prot_ignore_ids'] = input('-ignore_ids (whole residues to ignore): ')
-            checked_dict['model_prot_ignore_atoms'] = input('-ignore_atoms (specific atoms to ignore): ')
-            checked_dict['model_prot_ignore_atnames'] = input('-ignore_atnames (atom types to ignore): ')
+            cl_ids = input('-ignore_ids (whole residues to ignore): ').replace(' ','')
+            if cl_ids:
+                checked_dict['model_prot_ignore_ids'] = cl_ids
+            cl_ats = input('-ignore_atoms (specific atoms to ignore): ').replace(' ','')
+            if cl_ats:
+                checked_dict['model_prot_ignore_atoms'] = cl_ats
+            cl_names = input('-ignore_atnames (atom types to ignore): ').replace(' ','')
+            if cl_names:
+                checked_dict['model_prot_ignore_atnames'] = cl_names
         else:
             logger.info('Continuing without anything excluded from protonation')
     if 'model_prot_ignore_ids' in checked_dict.keys():
@@ -489,10 +508,10 @@ def run_rinrus_driver(inpfile,scriptpath):
             logger.info(f'Checked if F-SAPT input files for all models needed. Command line input: {fsaptcheck}')
 
     if checked_dict['model']=='all':
+        logger.info(f'Making all models')
+        print(f'Making all models')
+        trim_model(checked_dict,'all',selfile,logger)
         for num in range(minsize,totnum+1):
-            logger.info(f'Making model {num}')
-            print(f'Making model {num}')
-            trim_model(checked_dict,num,selfile,logger)
             protonate_model(checked_dict,num,logger)
             make_temp_pdb(num,checked_dict['path_to_scripts'],logger)
             if 'qm_input_format' in checked_dict.keys():
@@ -500,13 +519,14 @@ def run_rinrus_driver(inpfile,scriptpath):
                     create_input_file(checked_dict,str(num),logger)
                 elif num == totnum:
                     create_input_file(checked_dict,str(num),logger)
+            print(f'Made model {num}')
     else:
-        print(f'Making model {checked_dict["model"]}')
         trim_model(checked_dict,checked_dict['model'],selfile,logger)
         protonate_model(checked_dict,checked_dict['model'],logger)
         make_temp_pdb(checked_dict['model'],checked_dict['path_to_scripts'],logger)
         if 'qm_input_format' in checked_dict.keys():
             create_input_file(checked_dict,checked_dict['model'],logger)       
+        print(f'Made model {checked_dict["model"]}')
         
     logger.info('section done\n')
 

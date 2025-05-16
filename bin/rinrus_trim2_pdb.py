@@ -338,6 +338,6 @@ if __name__ == '__main__':
 
     ### print warning if any seed atoms frozen. only printed for largest model if making all models ###
     if seedfroz:
-        print('Warning: the following seed atoms have been frozen. To unfreeze atoms, use the "-unfrozen" flag or manually edit model pdb.')
+        print('Warning: the following seed atoms have been frozen. To unfreeze atoms, use the "unfrozen" option or manually edit model pdb.')
         for key in seedfroz:
             print(f'  - {" and ".join(seedfroz[key])} of seed residue {key[0]}:{key[1]}')
