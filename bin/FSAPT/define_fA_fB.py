@@ -113,9 +113,11 @@ if __name__ == '__main__':
     # filter out CA/HA atoms only present for capping/connecting from "proper" FGs
     caps = []
     for key in fBnum.keys():
-        if key.split(':')[-1] in ['WAT','HOH','MC','GLY']:
+        FG = key.split(':')[-1]
+        if FG in ['WAT','HOH','MC','GLY']:
             fb1.write(f'{key} {" ".join([str(i) for i in fBnum[key]])}\n')
-        elif not set(fBatom[key]).issubset({'CA','HA','HA2','HA3','H01','H02','H03'}):
+        #elif not set(fBatom[key]).issubset({'CA','HA','HA2','HA3','H01','H02','H03'}):
+        elif bool(set(fBatom[key]) & set(res_atoms_sc[FG])):
             fb1.write(f'{key} {" ".join([str(i) for i in fBnum[key]])}\n')
         else:
             caps = caps + fBnum[key]
