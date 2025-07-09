@@ -1,0 +1,23 @@
+# selected/ranked functional groups by distance: pdb ../../2cht_h_corrected_new.clean.pdb; seed A:203; disttype closest; cutoff 5.0; ignore H True
+A    203      0.0      C1   O1   C2   O2   C3   O3   C4   O4   C5   O5   C6   O7   C8   C9   C10  C11 
+A    90       2.874    CB   CG   CD   NE   CZ   NH1 
+A    7        2.9      NE   CZ   NH1  NH2 
+C    63       2.9      CD   NE   CZ   NH1  NH2 
+A    210      2.901    O   
+A    108      2.971    CD1  CE1  CE2  CZ   OH  
+C    60       3.093    N   
+C    75       3.289    N   
+A    78       3.343    CD   OE1  OE2 
+C    74       3.397    CB   OG1  CA  
+C    59       3.466    CB   CA  
+A    115      3.48     CB   CG   CD1  CD2  CA  
+C    57       3.494    CB   CG   CD1  CD2  CE1  CE2  CZ   CA  
+C    60       3.535    CB   CG   CA  
+C    73       3.577    C    O   
+C    75       3.738    CB   SG   CA  
+C    57       4.124    C    O   
+A    115      4.378    C    O   
+A    9        4.419    CB  
+C    59       4.43     N   
+C    73       4.806    CB  
+C    75       4.841    O   

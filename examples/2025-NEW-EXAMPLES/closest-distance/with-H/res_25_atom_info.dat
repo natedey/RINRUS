@@ -1,0 +1,23 @@
+ A     7   NE   CZ  NH1  NH2  HG3  HD3 HH11 HH12 HH21 HH22   CB   CG   CD  HB2  HB3  HG2  HD2   HE   CA   HA  HA2  HA3    C    O 
+ A     8   CA    C    O   HA  HA2  HA3    N    H 
+ A     9   CB  HB1  HB2  HB3   CA   HA  HA2  HA3    N    H    O    C 
+ A    10   CA   HA  HA2  HA3    N    H 
+ A    78   CD  OE1  OE2   CB   CG  HB2  HB3  HG2  HG3   CA   HA  HA2  HA3 
+ A    90   CB   CG   CD   NE   CZ  NH1  NH2  HB2  HB3  HG2  HG3  HD2  HD3 HH11 HH12 HH22   HE HH21   CA   HA  HA2  HA3 
+ A   108  CD1  CE1  CE2   CZ   OH  HD1  HE1   HH   CB   CG  CD2  HB2  HB3  HD2  HE2   CA   HA  HA2  HA3 
+ A   115   CB   CG  CD1  CD2  HB2  HB3   HG HD11 HD12 HD13 HD21 HD22 HD23   CA   HA    C    O  HB1  HA2  HA3 
+ A   116   CA   HA  HA2  HA3    N    H 
+ A   203   C1   O1   C2   O2   C3   O3   C4   O4   C5   O5   C6   O7   C8   C9  C10  C11  H01  H02  H05  H06  H07  H08  H09  H10  H11  HO5 
+ A   210    O   H1   H2 
+ A   249    O   H1   H2 
+ C    57   CB   CG  CD1  CD2  CE1  CE2   CZ  HB2  HB3  HD1  HD2  HE1  HE2   HZ   CA   HA    C    O  HA2  HA3 
+ C    58    N   CA    C    O   CB   CG   CD   HA  HB2  HB3  HG2  HG3  HD2  HD3  HA2  HA3    H 
+ C    59   CB  HB1  HB2  HB3   CA   HA    N    H  HA2  HA3    C    O 
+ C    60   CB   CG  HB2  HB3  HG3  HD2   CA   HA    N    H   CD   CE   NZ  HG2  HD3  HE2  HE3  HZ1  HZ2  HZ3  HA2  HA3 
+ C    63   CD   NE   CZ  NH1  NH2  HD2  HD3   HE HH11 HH12 HH21 HH22   CB   CG  HB2  HB3  HG2  HG3   CA   HA  HA2  HA3 
+ C    72   CA    C    O   HA  HA2  HA3 
+ C    73    C    O   CB  CG1  CG2   HB HG12 HG21 HG23   CA    N    H HG11 HG13 HG22   HA  HA2  HA3 
+ C    74   CB  CG2  OG1   HB  HG1 HG21 HG23   CA   HA HG22  HA2  HA3    N    H    C    O 
+ C    75    N    H   CB   SG  HB2  HB3   HG   CA   HA    C    O  HA2  HA3 
+ C    76   CA   HA  HA2  HA3    N    H 
+ C   232    O   H1   H2 

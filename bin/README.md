@@ -2,6 +2,10 @@
 
 The RINRUS workflow can be run all in one go with the driver or done step by step with the individual scripts. Both ways of using RINRUS are described in this document.
 
+> [!IMPORTANT]  
+> As of July 2025, all selection schemes (probe/arpeggio/distance) have been updated to group the selected atoms/contact counts from standard amino acid residues by protein functional groups (side chains and peptide bonds) instead of by residue IDs. This matches the partitioning used for F-SAPT analysis/ranking and the structural building blocks used in the trimming procedure. The different parts of each residue are now listed and ranked independently in `res_atoms.dat`, so they can be added at different stages when doing incremental model building. The contents of the final/maximal model will remain exactly the same but the `res_N`/`model_N` size label will usually be higher as this number reflects the number of separate groups in `res_atoms.dat`. [See examples for more information](../examples/2025_NEW_EXAMPLES). 
+
+
 # Using the driver
 The driver runs the entire RINRUS model building procedure from initial PDB structure to input file with one command (and a few interactive inputs along the way). The structure pre-processing described below in part 1 of the step-by-step usage instructions needs to be done before using the driver (except for protonation with reduce).
 
@@ -132,10 +136,10 @@ python3 $HOME/git/RINRUS/bin/probe2rins.py -f 3bwm_h_modify.probe -s A:300,A:301
 
 # All arguments for probe2rins:
 -f FILE   probe contacts file
--s SEED   seed fragment(s) (e.g. A:300,A:301,A:302)
+-s SEED   seed fragment(s) (e.g. "A:300,A:301,A:302")
 ```
 
-This produces `freq_per_res.dat`, `rin_list.dat`, `res_atoms.dat`, and `*.sif`.
+This produces `FG_probe_counts.dat` and `res_atoms.dat`.
 
 **Use `res_atoms.dat` as the input for the trimming procedure in part 3.**
 
@@ -159,15 +163,22 @@ python3 ~/git/RINRUS/bin/arpeggio/arpeggio.py 3bwm_h.pdb
 Then generate the active site RIN from arpeggio contacts using `arpeggio2rins.py`
 ````bash
 # Example usage of arpeggio2rins
-python3 ~/git/RINRUS/bin/arpeggio2rins.py -f 3bwm_h.contacts -s A:300,A:301,A:302
+python3 ~/git/RINRUS/bin/arpeggio2rins.py -f 3bwm_h.contacts -s A:300,A:301,A:302 -pdb 3bwm_h.pdb
 
 # All arguments for arpeggio2rins:
 -f FILE   arpeggio contacts file
--s SEED   seed fragment(s) (A:300,A:301,A:302)
+-s SEED   seed fragment(s) (e.g. "A:300,A:301,A:302")
+-pdb PDB  pdb file
+-prox     include proximal contacts (ignored by default, "-proximal" also works as a flag)
 ````
-This produces the files `contact_counts.dat`, `contype_counts.dat` and, `node_info.dat`. Both `contact_counts.dat` and `contype_counts.dat` have the same format as `res_atoms.dat`.
+This produces the files `FG_arpeggio_counts.dat`, `res_atoms.dat` and `res_atoms_types.dat`.
 
-**Use `contact_counts.dat` (residues ranked by number of contacts) or `contype_counts.dat` (residues ranked by number of interaction types) as the input for the trimming procedure in part 3.**
+The usage of `arpeggio2rins.py` is very similar to that of `probe2rins.py`, but the pdb file is additionally required to facilitate the FG-based grouping as the residue names are not printed in the arpeggio output. 
+By default, proximal contacts are ignored as these do not represent "meaningful" interactions, just that atoms are within 5 � of each other. 
+These can be included with the optional '-prox' or '-proximal' flag. 
+Note that the original version of `arpeggio2rins.py` only changed the counts when ignoring proximal contacts; atoms which only had proximal contacts were still included in `contact_counts.dat` (equivalent to `res_atoms.dat`) so unnecessary functional groups were often added to the models. This has been fixed in the new version (published July 2025).
+
+**Use `res_atoms.dat` (ranked first by number of contacts, then by number of types) or `res_atoms_types.dat` (ranked by types then contacts) as the input for the trimming procedure in part 3.**
 
 </details>
 
@@ -186,16 +197,23 @@ Use `dist_rank.py` to select all fragments with any atoms within a cutoff radius
 python3 ~/git/RINRUS/bin/dist_rank.py -pdb 3bwm_h.pdb -s A:300,A:301,A:302 -max 5 -type mass
 
 # All arguments for dist_rank
--type TYPE    how to calculate distance from seed ('closest' or 'avg' or 'mass')
--noH          ignore hydrogen atoms (true if flag present)
--max CUTOFF   cut off distance in Å (default: 5)
 -s SEED       seed fragment(s) (e.g. A:300,A:301,A:302)
 -satom ATOMS  seed atoms (e.g. A:301:C8,A:301:N9,A:302:C1,A:302:N1)
+-type TYPE    how to calculate distance from seed ('closest' or 'avg' or 'mass')
+-max CUTOFF   cut off distance in Å (default: 5)
+-noH          ignore hydrogen atoms (true if flag present)
+-store        store distances and pdb/seed/noH selections so they can be reanalysed with a new distance type/cutoff value
+-recut        use stored distances and pdb/seed/noH selections (overwrites any -s/-satom/-type/-noH flags used)
+-byres        group by residue instead of functional group for comparison with old selection schemes
 ```
 
-This produces a file `all_atoms_[type]_[max].dat` listing all atoms within the cutoff distance, which are then grouped by residue IDs to give `sorted_residues_[type]_[max].dat` and `res_atoms_by_residue.dat`. The atom list is also grouped by functional groups (matching the SC/MC partitioning used for F-SAPT) to give `sorted_FGs_[type]_[max].dat` and `res_atoms_by_FG.dat`.
+This produces a file `all_dists_table.dat` listing all distances of all atoms in the pdb from the given seed. 
+The atoms are filtered by distance type and cutoff value and grouped by functional group to give `sorted_FGs_[type]_[max].dat` and a matching `res_atoms.dat` file.
 
-**Use `res_atoms_by_residue.dat` or `res_atoms_by_FG.dat` as the input for the trimming procedure in part 3.**
+If you want to test different cutoffs/distance types, use the '-store' flag to save the distances/info about how they were calculated to a python dictionary in `all_dists.pkl`. 
+Then use the '-recut' flag to load the saved info instead of doing the initial distance calculations again.
+
+**Use `res_atoms.dat` as the input for the trimming procedure in part 3.**
 
 </details>
 

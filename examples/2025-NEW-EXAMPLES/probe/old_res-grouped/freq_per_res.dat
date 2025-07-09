@@ -1,0 +1,13 @@
+A    203      1600     wc:ligand_sc         wc:ligand_mc         wc:ligand_solvent    cc:ligand_sc         cc:ligand_mc         cc:ligand_solvent    so:ligand_sc         so:ligand_mc         bo:ligand_sc         bo:ligand_mc         hb:ligand_sc        
+A    115      242      wc:sc_ligand         cc:sc_ligand         so:sc_ligand         bo:sc_ligand        
+C    57       237      wc:sc_ligand         cc:sc_ligand         so:sc_ligand        
+A    90       202      wc:sc_ligand         cc:sc_ligand         so:sc_ligand         hb:sc_ligand        
+A    7        164      wc:sc_ligand         cc:sc_ligand         so:sc_ligand         hb:sc_ligand        
+C    59       149      wc:sc_ligand         cc:sc_ligand         so:sc_ligand        
+C    74       146      wc:mc_ligand         cc:mc_ligand         so:mc_ligand         bo:mc_ligand         wc:sc_ligand         cc:sc_ligand        
+A    210      97       wc:solvent_ligand    cc:solvent_ligand   
+C    63       95       wc:sc_ligand         cc:sc_ligand         so:sc_ligand        
+C    60       82       wc:mc_ligand         wc:sc_ligand         cc:sc_ligand         cc:mc_ligand        
+A    108      79       wc:sc_ligand         cc:sc_ligand         hb:sc_ligand        
+C    73       54       wc:mc_ligand         cc:mc_ligand         so:mc_ligand        
+C    75       53       wc:mc_ligand         cc:mc_ligand        

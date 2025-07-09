@@ -1,0 +1,53 @@
+HETATM    1  C1  TSA A 203      37.460  18.058  28.102  1.00 30.05           C  
+HETATM    2  O1  TSA A 203      36.015  19.027  26.455  1.00 37.68           O  
+HETATM    3  C2  TSA A 203      38.079  19.408  28.419  1.00 28.51           C  
+HETATM    4  O2  TSA A 203      35.097  17.660  27.820  1.00 40.14           O  
+HETATM    5  C3  TSA A 203      38.782  19.654  29.547  1.00 27.45           C  
+HETATM    6  O3  TSA A 203      41.738  17.676  28.572  1.00  7.79           O  
+HETATM    7  C4  TSA A 203      39.229  18.549  30.478  1.00 29.19           C  
+HETATM    8  O4  TSA A 203      41.036  18.268  26.593  1.00 18.52           O  
+HETATM    9  C5  TSA A 203      38.670  17.164  30.079  1.00 28.29           C  
+HETATM   10  O5  TSA A 203      38.869  18.965  31.768  1.00 26.40           O  
+HETATM   11  C6  TSA A 203      37.296  17.298  29.430  1.00 29.49           C  
+HETATM   12  O7  TSA A 203      39.477  16.377  29.196  1.00 25.78           O  
+HETATM   13  C8  TSA A 203      39.657  16.713  27.823  1.00 21.58           C  
+HETATM   14  C9  TSA A 203      38.353  17.214  27.171  1.00 25.37           C  
+HETATM   15  C10 TSA A 203      36.097  18.259  27.412  1.00 31.77           C  
+HETATM   16  C11 TSA A 203      40.903  17.621  27.648  1.00 21.20           C  
+HETATM   17  HO5 TSA A 203      39.407  19.734  31.917  1.00  0.00           H  
+HETATM   18  H01 TSA A 203      39.036  20.685  29.794  1.00 27.45           H  
+HETATM   19  H02 TSA A 203      37.950  20.218  27.702  1.00 28.51           H  
+HETATM   20  H05 TSA A 203      40.307  18.394  30.424  1.00 29.19           H  
+HETATM   21  H06 TSA A 203      38.640  16.636  31.032  1.00 28.29           H  
+HETATM   22  H07 TSA A 203      36.870  16.312  29.247  1.00 29.49           H  
+HETATM   23  H08 TSA A 203      36.628  17.850  30.091  1.00 29.49           H  
+HETATM   24  H09 TSA A 203      39.883  15.813  27.252  1.00 21.58           H  
+HETATM   25  H10 TSA A 203      38.647  17.865  26.348  1.00 25.37           H  
+HETATM   26  H11 TSA A 203      37.780  16.347  26.842  1.00 25.37           H  
+CONECT    1    3   11   14   15
+CONECT    2   15
+CONECT    3    1    5   19
+CONECT    4   15
+CONECT    5    3    7   18
+CONECT    6   16
+CONECT    7    5    9   10   20
+CONECT    8   16
+CONECT    9    7   11   12   21
+CONECT   10    7   17
+CONECT   11    1    9   22   23
+CONECT   12    9   13
+CONECT   13   12   14   16   24
+CONECT   14    1   13   25   26
+CONECT   15    1    2    4
+CONECT   16    6    8   13
+CONECT   17   10
+CONECT   18    5
+CONECT   19    3
+CONECT   20    7
+CONECT   21    9
+CONECT   22   11
+CONECT   23   11
+CONECT   24   13
+CONECT   25   14
+CONECT   26   14
+END

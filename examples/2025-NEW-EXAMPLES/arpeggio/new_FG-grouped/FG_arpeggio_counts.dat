@@ -1,0 +1,16 @@
+              total  types  clash  covalent  vdw_clash  vdw  hbond  weak_hbond  halogen_bond  ionic  metal_complex  aromatic  hydrophobic  carbonyl  polar  weak_polar
+A:203 (seed)     57      8      0         0          7    5      8           5             0     10              0         0            9         0     12           1
+A:7:ARG_SC       13      5      0         0          2    1      3           0             0      4              0         0            0         0      3           0
+C:63:ARG_SC      10      3      0         0          2    0      0           0             0      6              0         0            0         0      2           0
+C:59:ALA_SC       6      3      0         0          0    1      0           1             0      0              0         0            4         0      0           0
+C:57:PHE_SC       6      2      0         0          0    1      0           0             0      0              0         0            5         0      0           0
+A:90:ARG_SC       5      5      0         0          1    1      1           1             0      0              0         0            0         0      1           0
+A:108:TYR_SC      3      3      0         0          1    0      1           0             0      0              0         0            0         0      1           0
+A:210:HOH         3      3      0         0          1    0      1           0             0      0              0         0            0         0      1           0
+C:59:MC           2      2      0         0          0    1      0           0             0      0              0         0            0         0      1           0
+C:74:THR_SC       2      2      0         0          0    0      1           0             0      0              0         0            0         0      1           0
+C:74:MC           2      2      0         0          0    0      1           0             0      0              0         0            0         0      1           0
+A:115:LEU_SC      2      2      0         0          0    0      0           1             0      0              0         0            0         0      0           1
+C:60:LYS_SC       1      1      0         0          0    0      0           1             0      0              0         0            0         0      0           0
+A:78:GLU_SC       1      1      0         0          0    0      0           0             0      0              0         0            0         0      1           0
+C:73:MC           1      1      0         0          0    0      0           1             0      0              0         0            0         0      0           0

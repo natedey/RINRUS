@@ -1,258 +1,173 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
-This is a program created by Dr. Qianyi Cheng and the DeYonker research group
-at The University of Memphis.
-Date created 06.12.2019
+This is a program created by Dr. Dominique Wappett
+(based on the old program by Dr. Qianyi Cheng)
+and the DeYonker research group at The University of Memphis.
+Date created 2025-06-18
 """
+
+
 import os, sys, re
 from copy import *
 from numpy import *
 import argparse
 import pandas as pd
+from res_atoms import *
 
 
-aa_trans_dic = {
-'ALA': 'A', 'VAL': 'V', 'PHE': 'F', 'PRO': 'P', 'MET': 'M', 'ILE': 'I', 'LEU': 'L', 'ASP': 'D', 'GLU': 'E', 'LYS': 'K',
-'ARG': 'R', 'SER': 'S', 'THR': 'T', 'TYR': 'Y', 'HIS': 'H', 'CYS': 'C', 'ASN': 'N', 'GLN': 'Q', 'TRP': 'W', 'GLY': 'G',
-'2AS': 'D', '3AH': 'H', '5HP': 'E', 'ACL': 'R', 'AIB': 'A', 'ALM': 'A', 'ALO': 'T', 'ALY': 'K', 'ARM': 'R', 'ASA': 'D',
-'ASB': 'D', 'ASK': 'D', 'ASL': 'D', 'ASQ': 'D', 'AYA': 'A', 'BCS': 'C', 'BHD': 'D', 'BMT': 'T', 'BNN': 'A', 'BUC': 'C',
-'BUG': 'L', 'C5C': 'C', 'C6C': 'C', 'CCS': 'C', 'CEA': 'C', 'CHG': 'A', 'CLE': 'L', 'CME': 'C', 'CSD': 'A', 'CSO': 'C',
-'CSP': 'C', 'CSS': 'C', 'CSW': 'C', 'CXM': 'M', 'CY1': 'C', 'CY3': 'C', 'CYG': 'C', 'CYM': 'C', 'CYQ': 'C', 'DAH': 'F',
-'DAL': 'A', 'DAR': 'R', 'DAS': 'D', 'DCY': 'C', 'DGL': 'E', 'DGN': 'Q', 'DHA': 'A', 'DHI': 'H', 'DIL': 'I', 'DIV': 'V',
-'DLE': 'L', 'DLY': 'K', 'DNP': 'A', 'DPN': 'F', 'DPR': 'P', 'DSN': 'S', 'DSP': 'D', 'DTH': 'T', 'DTR': 'W', 'DTY': 'Y',
-'DVA': 'V', 'EFC': 'C', 'FLA': 'A', 'FME': 'M', 'GGL': 'E', 'GLZ': 'G', 'GMA': 'E', 'GSC': 'G', 'HAC': 'A', 'HAR': 'R',
-'HIC': 'H', 'HIP': 'H', 'HMR': 'R', 'HPQ': 'F', 'HTR': 'W', 'HYP': 'P', 'IIL': 'I', 'IYR': 'Y', 'KCX': 'K', 'LLP': 'K',
-'LLY': 'K', 'LTR': 'W', 'LYM': 'K', 'LYZ': 'K', 'MAA': 'A', 'MEN': 'N', 'MHS': 'H', 'MIS': 'S', 'MLE': 'L', 'MPQ': 'G',
-'MSA': 'G', 'MSE': 'M', 'MVA': 'V', 'NEM': 'H', 'NEP': 'H', 'NLE': 'L', 'NLN': 'L', 'NLP': 'L', 'NMC': 'G', 'OAS': 'S',
-'OCS': 'C', 'OMT': 'M', 'PAQ': 'Y', 'PCA': 'E', 'PEC': 'C', 'PHI': 'F', 'PHL': 'F', 'PR3': 'C', 'PRR': 'A', 'PTR': 'Y',
-'SAC': 'S', 'SAR': 'G', 'SCH': 'C', 'SCS': 'C', 'SCY': 'C', 'SEL': 'S', 'SEP': 'S', 'SET': 'S', 'SHC': 'C', 'SHR': 'K',
-'SOC': 'C', 'STY': 'Y', 'SVA': 'S', 'TIH': 'A', 'TPL': 'W', 'TPO': 'T', 'TPQ': 'A', 'TRG': 'K', 'TRO': 'W', 'TYB': 'Y',
-'TYQ': 'Y', 'TYS': 'Y', 'TYY': 'Y', 'AGM': 'R', 'GL3': 'G', 'SMC': 'C', 'ASX': 'B', 'CGU': 'E', 'CSX': 'C', 'GLX': 'Z'
-}
-
-mc_atoms_dic = {'N': '', 'CA': '', 'C': '', 'O': '', 'H': '', 'HA': '', 'OXT': '', 'HA2': '', 'HA3': '', 'H?': '', 'W': ''}
-
-def get_res_type(resID, atom):
-    if resID in aa_trans_dic.keys():
-        if atom in mc_atoms_dic.keys():
-            side = 'mc'
-        else:
-            side = 'sc'
-    else:
-        if resID == 'HOH' or resID == 'WAT':
-            side = 'solvent'
-        else:
-            side = 'ligand'
-    return side
-
-def get_inttype(c):
-    # 'wc':wide contact,'cc': close contact,'so':small overlap
-    # 'bo':big overlap
-    # 'hb':hydrogen bond
-    if c in ['wc','cc']:
-        action = 'cnt'
-    elif c in ['bo','so']:
-        action = 'ovl'
-    elif c == 'hb':
-        action = 'hbond'
-    else:
-        print('Cannot find interaction type!')
-        return "None"
-    return action
-
-def set_mc_sc_ligand(side1, side2):
-    if side1==None or side2==None:
-        return None, None
-    elif side1 == 'mc':
-        return side1, side2
-    elif side1 == 'sc':
-         if side2 == 'mc':
-             return side2, side1
-         else:
-             return side1, side2
-    elif side1 == 'ligand':
-        if (side2 in ['mc', 'sc']):
-            return side2, side1
-        else:
-            return side1, side2
-    elif side1 == 'solvent':
-        return side2, side1
-
-def get_side(c):
-    cha    = c[:2].strip()          # chain 
-    res_id = c[2:6].strip()         # res_id 
+def atom_split(c):
+### separate out atom labels from probe file ###
+    cha    = c[:2].strip()          # chain
+    res_id = c[2:6].strip()         # res_id
     res_nm = c[6:10].strip()        # res_name
-    atom   = c[10:-1].strip()       # atom_name
-    if c[-1] == ' ':
-        spe_c = 'A'
-    else:
-        spe_c = c[-1]
-    return cha, res_id, res_nm, atom, spe_c
+    name   = c[10:-1].strip()       # atom_name
+    atom = [cha, res_id, res_nm, name]
+    return atom
 
-def check_repeat(a, a_list):
-    if a not in a_list:
-        a_list.append(a)
-    return a_list
+def contact_dict_add(atomdict,contatom,ctype):
+### organize and count identified contacts ###
+    key = (contatom[0],int(contatom[1]))
+    if key not in atomdict.keys():
+        atomdict[key] = {'res': contatom[2]}
+    if contatom[3] not in atomdict[key].keys():
+        atomdict[key][contatom[3]]={'wc': 0, 'cc': 0, 'so': 0, 'bo': 0, 'hb': 0}
+    atomdict[key][contatom[3]][ctype] += 1
 
-def check_dict_repeat(key,a,dict):
-    try:
-        dict[key].append(a)
-    except:
-        dict[key] = [a]
-    return dict
-
-def probe_analysis(probefile,sel_res):
-    ### sel_res format A:300,A:301,A:302 ###
-    sel_res_list = sel_res.split(',')
-    res_list = deepcopy(sel_res_list)
-
-    res_acts = {}
-    actions  = []
-    siflines = {}
-    res_atoms = {}
-
-    with open(probefile,'r') as f:
-        lines = f.readlines()
-
+def probe_atom(probefile,seedlist):
+### get contact counts between any atom and seed ###
+    atomdict = {}
+    seedcontact = {s: {'wc': 0, 'cc': 0, 'so': 0, 'bo': 0, 'hb': 0} for s in seedlist}
+    seedatoms = {s: [] for s in seedlist}
+    lines = open(probefile,'r').readlines()
     for line in lines:
-        c = line.split(':')
-        obj1 = c[1]
-        acts = c[2]
-
-        cha1, res_id1, res_nm1, atom1, spe_c1 = get_side(c[3])           
-        cha2, res_id2, res_nm2, atom2, spe_c2 = get_side(c[4])           
-
-        if cha1 == cha2 and res_id1 == res_id2: continue
-        key1 = cha1+':'+res_id1
-        key2 = cha2+':'+res_id2
-        if key1 in sel_res_list or key2 in sel_res_list:
-            res_list = check_repeat(key1,res_list)
-            res_list = check_repeat(key2,res_list)
-            side1 = get_res_type(res_nm1,atom1)
-            side2 = get_res_type(res_nm2,atom2)
-            acts1 = acts+':'+side1+'_'+side2
-            acts2 = acts+':'+side2+'_'+side1
-            actions = check_repeat(acts1,actions)
-            actions = check_repeat(acts2,actions)
-            if key1 not in res_acts.keys():
-                res_acts[key1] = [acts1]
-            else:
-                res_acts[key1] = check_repeat(acts1,res_acts[key1])
-            if key2 not in res_acts.keys():
-                res_acts[key2] = [acts2]
-            else:
-                res_acts[key2] = check_repeat(acts2,res_acts[key2])
-            if cha1 < cha2 or ( cha1 == cha2 and int(res_id1) < int(res_id2) ):
-                order = key1+' '+acts1+' '+acts2+' '+key2
-            else:
-                order = key2+' '+acts2+' '+acts1+' '+key1
-            if order not in siflines.keys():
-                siflines[order] = 1
-            else:
-                siflines[order] += 1
-            res_atoms = check_dict_repeat(key1,atom1,res_atoms)
-            res_atoms = check_dict_repeat(key2,atom2,res_atoms)
-    return sorted(res_list), res_acts, actions, siflines, res_atoms            
-
-
-def order_reslist(res_list):
-    print(res_list)
-    res_dic = {}
-    for num,i in enumerate(res_list):
-        c = i.split(':')
-        if c[0] == '':
-            c[0]=('nc'+'_'+str(num))
-            res_dic[c[0]] = [int(c[1])]
+        line = line.split(':')
+        ctype = line[2]
+        at1 = atom_split(line[3])
+        at2 = atom_split(line[4])
+        # ignore if neither atom in line is in seed or both in seed
+        if at1[0]+':'+at1[1] not in seedlist and at2[0]+':'+at2[1] not in seedlist:
+            continue
+        if at1[0]+':'+at1[1] in seedlist and at2[0]+':'+at2[1] in seedlist:
+            continue
+        # pick which atom to add to dict
+        if at1[0]+':'+at1[1] in seedlist:
+            contatom = at2
+            seedatom = at1
         else:
-            res_dic[c[0]].append(int(c[1]))
-            
-        '''
-        try:
-            res_dic[c[0]].append(int(c[1]))
-        except IndexError:
-            print('Exception occured: Chain ID does not exist. Check Chain ID')
-            res_dic[c[0]] = [int(c[1])]
-        '''
-    return res_dic
+            contatom = at1
+            seedatom = at2
+        contact_dict_add(atomdict,contatom,ctype)
+        seedkey = seedatom[0]+':'+seedatom[1]
+        seedcontact[seedkey][ctype] += 1
+        seedatoms[seedkey].append(seedatom[3])
+    return atomdict, seedcontact, seedatoms
 
-def print_list(res_list):
-    for i in res_list:
-        print(i)
+def probe_fg(atomdict,seedcontact,seedatoms):
+### collect atoms and contact counts by functional groups ###
+    FGcontacts = {}
+    FGatomlists = {}
+    for key in atomdict.keys():
+        # if known amino acid res type, split into side and main chains
+        if atomdict[key]['res'] in res_atoms_all.keys():
+            for atom in [a for a in atomdict[key].keys() if a != 'res']:
+                # assign FG
+                if atom in ['C','O']:
+                    fg = key[0]+':'+str(key[1])+':MC'
+                elif atom in ['N','H']:
+                    fg = key[0]+':'+str(key[1]-1)+':MC'
+                else:
+                    fg = key[0]+':'+str(key[1])+':'+atomdict[key]['res']+'_SC'
+                # make sure FG is in dict
+                if fg not in FGcontacts.keys():
+                    FGcontacts[fg] = {'wc': 0, 'cc': 0, 'so': 0, 'bo': 0, 'hb': 0}
+                # add atom counts to overall FG counts
+                for ct in ['wc','cc','so','bo','hb']:
+                    FGcontacts[fg][ct] += atomdict[key][atom][ct]
+                # add atom name to atom list
+                if fg not in FGatomlists.keys():
+                    FGatomlists[fg] = []
+                FGatomlists[fg].append(atom)
+        # otherwise whole res is FG (ligands, cofactors, water, etc)
+        else:
+            for atom in [a for a in atomdict[key].keys() if a != 'res']:
+                fg = key[0]+':'+str(key[1])+':'+atomdict[key]['res']
+                # make sure FG is in dict
+                if fg not in FGcontacts.keys():
+                    FGcontacts[fg] = {'wc': 0, 'cc': 0, 'so': 0, 'bo': 0, 'hb': 0}
+                # add atom counts to overall FG counts
+                for ct in ['wc','cc','so','bo','hb']:
+                    FGcontacts[fg][ct] += atomdict[key][atom][ct]
+                # add atom name to atom list
+                if fg not in FGatomlists.keys():
+                    FGatomlists[fg] = []
+                FGatomlists[fg].append(atom)
+    allcont = FGcontacts
+    allats = FGatomlists
+    for s in seedcontact.keys():
+        allcont[s] = seedcontact[s]
+        allats[s] = unique(seedatoms[s]).tolist()
 
+    #return FGcontacts, FGatomlists
+    return allcont, allats
 
-def print_dict(dict):
-    for i in sorted(dict.keys()):
-        print(i, dict[i])
+def rinrus_probe_outputs(allcont,allats,seedcontact,probefile,sel_res):
+    ### make contact table and save ###
+    df = pd.DataFrame.from_dict(allcont,orient='index')
+    df.insert(loc=0,column='total',value=df[list(df.columns)].sum(axis=1))
+    df = df.sort_values(by='total', key=abs, ascending=False)
+    df.index = [i+' (seed)' if i in seedcontact.keys() else i for i in df.index]
+    df.to_string(buf=f'FG_probe_counts.dat')
+    df.index = [i.replace(' (seed)','') for i in df.index]
 
+    ### make res atoms file ###
+    f = open('res_atoms.dat','w')
+    f.write(f'# selected/ranked functional groups by probe: probe file {probefile}; seed {sel_res}\n')
+    for g in df.index.values:
+        # if MC, make sure atoms correspond to correct res id
+        if g.split(':')[-1] == 'MC': 
+            idx = int(g.split(":")[1])
+            if set(allats[g]).issubset({'C','O'}):
+                f.write(f'{g.split(":")[0]:<4} {idx:<8} {df.loc[g,"total"]:<8}')
+                for a in allats[g]:
+                    f.write(f' {a:<4}')
+                f.write('\n')
+            elif set(allats[g]).issubset({'N','H'}):
+                f.write(f'{g.split(":")[0]:<4} {idx+1:<8} {df.loc[g,"total"]:<8}')
+                for a in allats[g]:
+                    f.write(f' {a:<4}')
+                f.write('\n')
+            else:
+                f.write(f'{g.split(":")[0]:<4} {idx:<8} {df.loc[g,"total"]:<8}')
+                for a in [a for a in allats[g] if a in ['C','O']]:
+                    f.write(f' {a:<4}')
+                f.write('\n')
+                f.write(f'{g.split(":")[0]:<4} {idx+1:<8} {df.loc[g,"total"]:<8}')
+                for a in [a for a in allats[g] if a in ['N','H']]:
+                    f.write(f' {a:<4}')
+                f.write('\n')
+        else:
+            f.write(f'{g.split(":")[0]:<4} {g.split(":")[1]:<8} {df.loc[g,"total"]:<8}')
+            for a in allats[g]:
+                f.write(f' {a:<4}')
+            f.write('\n')
+    f.close()
 
-def write_res_freq(res_list, res_acts, res_atoms):
-    f_res = open('freq_per_res.dat','w')
-    df = {'Chain':[],'Res_Freq':[]}
-    for k in sorted(res_atoms, key=lambda k:len(res_atoms[k]),reverse=True):
-        cha,res = k.split(':')
-        df['Chain'].append(cha)
-        df['Res_Freq'].append(res)
-        #print(cha,res)
-        f_res.write('%-4s %-8s %-8d'%(cha,res,len(res_atoms[k])))
-        for act in res_acts[k]:
-            f_res.write(' %-20s'%act)
-        f_res.write('\n')
-    f_res.close()
-
-    df= pd.DataFrame(df)
-    #print(df)
-
-
-def write_res_atom(res_atoms,probefile,sel_res):
-    f_res = open('res_atoms.dat','w')
-    f_res.write(f'# selected/ranked residues by probe: probe file {probefile}; seed {sel_res}\n')
-    for k in sorted(res_atoms, key=lambda k:len(res_atoms[k]),reverse=True):
-        cha,res = k.split(':')
-        f_res.write('%-4s %-8s %-8d'%(cha,res,len(res_atoms[k])))
-        for i in unique(res_atoms[k]):
-            f_res.write(' %-4s'%i)
-        f_res.write('\n')
-    f_res.close()
-
-def write_rin(actions):
-    f_act = open('rin_list.dat','w')
-    for i in actions:
-        f_act.write('%-30s\n'%i)
-    f_act.close()
-
-def write_sif(siflines):
-    probef_n = probefile.split('/')[-1] 
-    f_sif = open(probef_n.replace(".probe",".sif"),'w')
-    for key in sorted(siflines.keys()):
-        f_sif.write('%-60s %10d\n'%(key,siflines[key]))
-    f_sif.close()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generate interaction information from probe file.\
             Usage: probe2rins.py -f probe_file -s seed')
     parser.add_argument('-f',dest='probefile',default=None,help='probe_file')
-    parser.add_argument('-s',dest='seed',default=None,help='seed for select RIN, in the format of "A:300,A:301,A:302"')
+    parser.add_argument('-s','-seed',dest='seed',default=None,help='seed for select RIN, in the format of "A:300,A:301,A:302"')
 
+    ### parse arguments ###
     args = parser.parse_args()
     probefile = args.probefile
     sel_res = args.seed
-    error_test = sel_res
-    error = error_test.split(',') 
-    sel_res = ''
-     
-    for s in error:
-        if ':' in s:
-            sel_res+=s+','
-            pass
-        else:
-            print('Is seed number: ' + str(s)+ ' supposed to not have a Chain ID? If so, please rerun with Chain ID ')
-            sel_res+=':'+s+','
-    sel_res=sel_res[:-1]
-    print(sel_res)
+    seedlist = sel_res.split(',')
 
-    res_list, res_acts, actions, siflines, res_atoms = probe_analysis(probefile,sel_res)
-    #res_dict = order_reslist(res_list)
-    write_sif(siflines)
-    write_rin(actions)
-    write_res_atom(res_atoms,probefile,sel_res)
-    write_res_freq(res_list,res_acts,res_atoms)
+    ### get and sort contacts ###
+    atomdict, seedcontact, seedatoms = probe_atom(probefile,seedlist)
+    allcont, allats = probe_fg(atomdict, seedcontact, seedatoms)
+
+    ### make rinrus outputs ###
+    rinrus_probe_outputs(allcont,allats,seedcontact,probefile,sel_res,'res_atoms.dat')

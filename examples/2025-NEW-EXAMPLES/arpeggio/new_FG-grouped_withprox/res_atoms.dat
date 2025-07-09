@@ -1,0 +1,26 @@
+# selected/ranked functional groups by arpeggio contact counts: arpeggio file ../2cht_h_corrected_new.clean.contacts; seed A:203; proximal contacts included
+A    203      260      C10  O2   O1   C9   C1   O5   C6   C5   C4   C2   C3   C11  C8   O3   O4   O7  
+C    57       36       CB   CA   CD2  CG   CE2  CD1  CZ   CE1 
+A    7        29       NH1  NH2  CZ   NE  
+C    63       28       NE   CZ   CD   NH1  NH2 
+A    90       27       CD   CG   CB   NH1  CZ   NE  
+A    115      24       CA   CB   CD2  CG   CD1 
+C    59       16       CA   CB  
+A    108      14       CZ   CD1  CE1  OH   CE2 
+C    74       12       CA   OG1  CB  
+A    210      11       O   
+C    59       10       O    C   
+#C   60       10       N   
+A    78       9        OE1  OE2  CD  
+C    73       9        O    C   
+#C   74       9        N   
+C    74       8        C   
+#C   75       8        N   
+C    60       8        CB   CG   CA  
+A    115      6        O    C   
+C    75       5        SG   CB   CA  
+C    57       2        O    C   
+C    59       2        N   
+C    73       2        CB  
+C    75       1        O   
+A    9        1        CB  

@@ -1,0 +1,16 @@
+# selected/ranked residues by arpeggio: contact file ../2cht_h_corrected_new.clean.contacts; seed ['A:203']; contact types
+       A     203       8   C10    O2    O1    C9    C1    O5    C6    C5    C4    C2    C3   C11    C8    O3    O4    O7
+       A       7       5   NH1   NH2    CZ    NE
+       A      90       5    CD    CG    CB   NH1    CZ    NE
+       C      60       3    CB    CG    CA     N
+       C      63       3    NE    CZ    CD   NH1   NH2
+       C      59       3     O     C    CA    CB     N
+       A     108       3    CZ   CD1   CE1    OH   CE2
+       A     210       3     O
+       C      57       2     O    CB     C    CA   CD2    CG   CE2   CD1    CZ   CE1
+       C      74       2    CA     N   OG1    CB     C
+       C      75       2    SG     N    CB    CA     O
+       A     115       2     O    CA    CB   CD2    CG   CD1     C
+       A      78       1   OE1   OE2    CD
+       C      73       1     O     C    CB
+       A       9       0    CB

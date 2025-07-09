@@ -1,0 +1,15 @@
+# selected/ranked functional groups by probe: probe file 2cht_h_corrected_new.clean.probe; seed A:203
+A    203      1600     C1   C10  C11  C2   C3   C5   C6   C8   H01  H02  H05  H06  H07  H08  H09  H11  HO5  O1   O2   O3   O4   O5   O7  
+A    115      242      CB   CG   CD2  HB3  HD13 HD22
+C    57       237      CB   CD2  CG   CD1  CE1  CZ   HB3  HB2 
+A    90       202      CD   HD2  HD3  NH1  HH11
+A    7        164      NH1  HH12 NH2  HH22
+C    59       149      HB3  CB   HB1  C O N H
+C    74       146      HA   CA   OG1 
+A    210      97       O    H2  
+C    63       95       CZ   NH1 
+A    108      79       CE1  CZ   HE1  HH  
+C    73       54       C    O   
+C    75       53       N    H   
+C    60       42       N   
+C    60       40       CA   HB2 

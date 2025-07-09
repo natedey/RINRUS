@@ -1,0 +1,14 @@
+# selected/ranked residues by probe: probe file ../2cht_h_corrected_new.clean.probe; seed A:203
+A    203      1600     C1   C10  C11  C2   C3   C5   C6   C8   H01  H02  H05  H06  H07  H08  H09  H11  HO5  O1   O2   O3   O4   O5   O7  
+A    115      242      CB   CD2  CG   HB3  HD13 HD22
+C    57       237      CB   CD1  CD2  CE1  CG   CZ   HB2  HB3 
+A    90       202      CD   HD2  HD3  HH11 NH1 
+A    7        164      HH12 HH22 NH1  NH2 
+C    59       149      CB   HB1  HB3 
+C    74       146      CA   HA   OG1 
+A    210      97       H2   O   
+C    63       95       CZ   NH1 
+C    60       82       CA   HB2  N   
+A    108      79       CE1  CZ   HE1  HH  
+C    73       54       C    O   
+C    75       53       H    N   
