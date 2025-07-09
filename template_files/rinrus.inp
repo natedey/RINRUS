@@ -1,5 +1,5 @@
 ### RINRUS driver input file ###
-# run `RINRUS_driver.py -opts` for help on values for each option
+# run `RINRUS_driver.py -h` for help on values for each option
 
 path_to_scripts: ~/git/RINRUS/bin/ 
 

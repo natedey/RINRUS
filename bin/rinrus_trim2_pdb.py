@@ -109,7 +109,7 @@ def trim_pdb_models(sm,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd):
                 if (cha,res_id+1) not in res_atom.keys() and pdb_res_name[(cha,res_id+1)] not in ('HOH', 'WAT','O'):
                     ### DAW: Check if next residue is proline ###
                     if pdb_res_name[(cha,res_id+1)] == 'PRO':
-                        res_atom[(cha,res_id+1)] = ['N', 'CA', 'C', 'O', 'CB', 'CG', 'CD', 'HA', '2HB', '3HB', '2HG', '3HG', '2HD', '3HD']
+                        res_atom[(cha,res_id+1)] = res_atoms_all['PRO']
                         ### DAW: Complete the other peptide bond of proline as well ###
                         if (cha,res_id+2) not in res_atom.keys():
                             res_atom[(cha,res_id+2)] = ['CA','HA','HA2','HA3','N','H']
@@ -181,15 +181,15 @@ def trim_pdb_models(sm,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd):
                 # check if any prolines missing side chains
                 if pdb_res_name[key] == 'PRO' and 'N' in res_atom[key] and 'CB' not in res_atom[key]:
                     change = 1
-                    for atom in ['N', 'CA', 'C', 'O', 'CB', 'CG', 'CD', 'HA', '2HB', '3HB', '2HG', '3HG', '2HD', '3HD']:
+                    for atom in res_atoms_all['PRO']:
                         if atom not in res_atom[key]:
                             res_atom[key].append(atom)
                     if (cha, res_id+1) in res_atom.keys():
-                        for atom in ['N', 'H', 'CA', 'HA']:
+                        for atom in ['N', 'H', 'CA', 'HA', 'HA2', 'HA3']:
                             if atom not in res_atom[(cha, res_id+1)]:
                                 res_atom[(cha, res_id+1)].append(atom)
                     else:
-                        res_atom[(cha, res_id+1)] = ['N', 'H', 'CA', 'HA']
+                        res_atom[(cha, res_id+1)] = ['N', 'H', 'CA', 'HA', 'HA2', 'HA3']
             
                 # check if any new unconnected adjacent CAs
                 if 'CA' in res_atom[key]:

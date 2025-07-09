@@ -16,8 +16,15 @@ def check_mc(res,value):
     case3 = ['N','CA','C','O','H','HA','HA2','HA3']
     case4 = ['CA','HA','HA2','HA3']
     ### if res name is PRO, then include entire residue ###
+    ### DAW 2025-06-16: unless only C-terminus, that can be included on its own ###
     if res == 'PRO':
-        value = res_atoms_all[res]
+        pro_sc_nt = set(res_atoms_sc['PRO']+['N'])
+        if not bool(set(value)&pro_sc_nt) and ('C' in value or 'O' in value):
+            for i in ['CA','C','O','HA','HA2','HA3']:
+                if i not in value:
+                    value.append(i)
+        else:
+            value = res_atoms_all[res]
 
     if bool(set(value)&set(case1)) and 'C' not in value and 'O' not in value:
         for i in ['N','CA','H','HA','HA2','HA3']:
@@ -42,13 +49,14 @@ def check_mc(res,value):
 
 def check_sc(res,value,ncres_atoms_sc):
     if res == 'PRO':
-        value = res_atoms_all[res]
-    elif res != 'PRO' and res in res_atoms_sc.keys():
+        if bool(set(value)&set(res_atoms_sc[res])):
+            value = res_atoms_all[res]
+    elif res in res_atoms_sc.keys():
         if bool(set(value)&set(res_atoms_sc[res])):
             for i in res_atoms_sc[res]:
                 if i not in value:
                     value.append(i)
-    elif res != 'PRO' and res in ncres_atoms_sc.keys():
+    elif res in ncres_atoms_sc.keys():
         if bool(set(value)&set(ncres_atoms_sc[res])):
             for i in ncres_atoms_sc[res]:
                 if i not in value:
@@ -71,8 +79,6 @@ def get_noncanonical_resinfo(ncres):
             ncres_atoms_all[c[0]].append(at)
             if at not in ['C','O','N','H','CA','HA','HA2','HA3']:
                 ncres_atoms_sc[c[0]].append(at)
-    print(ncres_atoms_all)
-    print(ncres_atoms_sc)
     return ncres_atoms_all, ncres_atoms_sc
 
 def final_pick2(pdb,res_atom,res_info,sel_key):

@@ -409,7 +409,7 @@ def run_rinrus_driver(inpfile,scriptpath):
             logger.info('Command line dist_type input: '+ str(checked_dict['dist_type']))
         select_by_distance(checked_dict,logger)
         selfile = 'res_atoms_by_FG.dat'
-    elif RIN_program.lower() == 'manual':
+    elif checked_dict['rin_program'].lower() == 'manual':
         if checked_dict['res_atoms_file']:
             selfile = checked_dict['res_atoms_file']
         else:

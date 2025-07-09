@@ -47,29 +47,38 @@ def write_model_building(seedlist,mlist,seednamed):
     ### uncomment line below to have table ordered by chain sequence rather than when added to model
     #allfgs=sorted(sorted(allfgs, key = lambda x : x[1], reverse = True), key = lambda x : x[0])
     allfgs = seednamed + allfgs
+    
+    maxlen = max([len(f'{i[0]}:{i[1]}') for i in allfgs])+2
 
     tab=[]
     for k in allfgs:
-        fgline=[]
+        kname = f'{k[0]}:{k[1]}'
+        fgline=[f'{kname:<{maxlen}}']
         for m in modelfgs:
             if k in m:
                 fgline.append('x ')
             else:
-                fgline.append(' ')
+                fgline.append('  ')
         tab.append(fgline)
 
-    tab=pd.DataFrame(tab)
-    tab.index=[f'{fg[0]}:{fg[1]}' for fg in allfgs]
-    #tab.columns=[f'mod{m}' for m in mlist]
-    tab.columns=mlist
+    #tab=pd.DataFrame(tab)
+    #tab.index=[f'{fg[0]}:{fg[1]}' for fg in allfgs]
+    #tab.columns=mlist
+
+    tabdf=pd.DataFrame(tab)
+    modlist = [f'{"FG":<{maxlen}}']+[f'{i:<2}' for i in mlist]
 
     with open('seq_model_contents.dat', 'w') as f:
-        f.write(tab.to_string())
+        #f.write(tab.to_string())
+        f.write(f'{" ".join(modlist)}\n')
+        for l in tab:
+            f.write(f'{" ".join(l)}\n')
+        #f.write('\n\n')
         f.write('\n\n')
 
-        for i in range(len(tab.columns)):
-            for j in range(i+1,len(tab.columns)):
-                if tab.iloc[:,i].equals(tab.iloc[:,j]):
+        for i in range(len(tabdf.columns)):
+            for j in range(i+1,len(tabdf.columns)):
+                if tabdf.iloc[:,i].equals(tabdf.iloc[:,j]):
                     f.write(f'Models {mlist[i]} and {mlist[j]} are the same!\n')
 
     return

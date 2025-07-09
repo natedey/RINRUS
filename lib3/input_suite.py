@@ -283,8 +283,8 @@ def write_xtb_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,re
 
     inp.write("\n\n")
     ### info_line ###
-    inp.write("%s"%lines[8])
-    inp.write("\n")
+    inp.write("%s"%res_count)
+    inp.write("\n\n")
     inp.write("%d %d\n"%(charge+tot_charge,multiplicity))
 
     for atom in pic_atom:
