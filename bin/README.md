@@ -174,7 +174,7 @@ python3 ~/git/RINRUS/bin/arpeggio2rins.py -f 3bwm_h.contacts -s A:300,A:301,A:30
 This produces the files `FG_arpeggio_counts.dat`, `res_atoms.dat` and `res_atoms_types.dat`.
 
 The usage of `arpeggio2rins.py` is very similar to that of `probe2rins.py`, but the pdb file is additionally required to facilitate the FG-based grouping as the residue names are not printed in the arpeggio output. 
-By default, proximal contacts are ignored as these do not represent "meaningful" interactions, just that atoms are within 5 � of each other. 
+By default, proximal contacts are ignored as these do not represent "meaningful" interactions, just that atoms are within 5 Å of each other. 
 These can be included with the optional '-prox' or '-proximal' flag. 
 Note that the original version of `arpeggio2rins.py` only changed the counts when ignoring proximal contacts; atoms which only had proximal contacts were still included in `contact_counts.dat` (equivalent to `res_atoms.dat`) so unnecessary functional groups were often added to the models. This has been fixed in the new version (published July 2025).
 
@@ -200,7 +200,7 @@ python3 ~/git/RINRUS/bin/dist_rank.py -pdb 3bwm_h.pdb -s A:300,A:301,A:302 -max 
 -s SEED       seed fragment(s) (e.g. A:300,A:301,A:302)
 -satom ATOMS  seed atoms (e.g. A:301:C8,A:301:N9,A:302:C1,A:302:N1)
 -type TYPE    how to calculate distance from seed ('closest' or 'avg' or 'mass')
--max CUTOFF   cut off distance in Å (default: 5)
+-max CUTOFF   cut off distance in Ã (default: 5)
 -noH          ignore hydrogen atoms (true if flag present)
 -store        store distances and pdb/seed/noH selections so they can be reanalysed with a new distance type/cutoff value
 -recut        use stored distances and pdb/seed/noH selections (overwrites any -s/-satom/-type/-noH flags used)
@@ -406,6 +406,7 @@ python3 $HOME/git/RINRUS/bin/write_input.py -pdb model_N_template.pdb -c 2 -form
 -basisinfo 'intmp' (Gaussian only) use basis set info from the input template file instead of the library in $HOME/git/RINRUS/lib3/gaussian_basis_dict.py
 ```
 <br> 
+
 F-SAPT input files can be set up in one of two ways:
 ```bash
 # Specify format as psi4-fsapt
