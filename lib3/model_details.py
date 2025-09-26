@@ -66,6 +66,7 @@ def write_model_building(seedlist,mlist,seednamed):
     #tab.columns=mlist
 
     tabdf=pd.DataFrame(tab)
+    tabdf = tabdf.drop(columns=0)
     modlist = [f'{"FG":<{maxlen}}']+[f'{i:<2}' for i in mlist]
 
     with open('seq_model_contents.dat', 'w') as f:

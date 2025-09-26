@@ -55,9 +55,10 @@ def write_gau_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,re
         method = lines[1].strip().split('/')
         if len(ecplist) > 0:
             inp.write("%s/genecp "%method[0])
-        else:
+        elif len(method) == 1 or method[1] == 'gen':
             inp.write("%s/gen "%method[0])
-        #inp.write("%s "%lines[1].strip())
+        else:
+            inp.write("%s "%lines[1].strip())
         
     if lines[2][0] != '#':
         optl = lines[2].split()

@@ -170,4 +170,4 @@ if __name__ == "__main__":
     allcont, allats = probe_fg(atomdict, seedcontact, seedatoms)
 
     ### make rinrus outputs ###
-    rinrus_probe_outputs(allcont,allats,seedcontact,probefile,sel_res,'res_atoms.dat')
+    rinrus_probe_outputs(allcont,allats,seedcontact,probefile,sel_res)
