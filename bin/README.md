@@ -27,26 +27,26 @@ rin_program:               probe OR arpeggio OR distance OR manual
 model:                     all OR maximal OR max OR number
 
 # optional
-path_to_scripts:           path to RINRUS bin directory				defaults to same folder as RINRUS_driver.py
+path_to_scripts:           path to RINRUS bin directory		defaults to same folder as RINRUS_driver.py
 protonate_initial:         true OR false 					defaults to false
 res_atoms_file:            filename 						only used with "rin_program: manual"
-arpeggio_rank:             contacts OR types 					only used with "rin_program: arpeggio"
-dist_type:                 avg OR com OR closest				only used with "rin_program: distance"
-dist_satom:                ch:ID:atom[,ch:ID:atom,...]				only used with "rin_program: distance"
-dist_max:                  number						only used with "rin_program: distance"
+arpeggio_rank:             contacts OR types 				only used with "rin_program: arpeggio"
+dist_type:                 avg OR com OR closest			only used with "rin_program: distance"
+dist_satom:                ch:ID:atom[,ch:ID:atom,...]		only used with "rin_program: distance"
+dist_max:                  number						    only used with "rin_program: distance"
 dist_noh:                  true OR false					only used with "rin_program: distance"
 must_add:                  ch:ID[:S/:N/:C] etc
-unfrozen:		   ch:ID[,ch:ID:CA,cd:ID:CB,...]
-nc_res_info:		   filename
+unfrozen:		   		   ch:ID[,ch:ID:CA,cd:ID:CB,...]
+nc_res_info:		       filename
 model_prot_ignore_ids:     ch:ID[,ch:ID,...]
 model_prot_ignore_atoms:   ch:ID:atom[,ch:ID:atom,...]
 model_prot_ignore_atnames: atom[,atom,...]				
 qm_input_format:           gaussian OR orca OR qchem OR gau-xtb OR psi4-fsapt	if no value, no QM inputs and remaining options ignored
-qm_input_template:         filename						defaults to those in RINRUS/template_files/
+qm_input_template:         filename							defaults to those in RINRUS/template_files/
 gaussian_basis_intmp:      [true/false]						defaults to false
 qm_calc_hopt:              [true/false]						defaults to false
-seed_charge:               integer						defaults to 0
-multiplicity:              integer						defaults to 1
+seed_charge:               integer							defaults to 0
+multiplicity:              integer							defaults to 1
 fsapt_fa:                  ch:ID[,ch:ID,...]
 ```
 A [template rinrus.inp file](../template_files/rinrus.inp) listing all options is provided in the template_files directory. Unneeded options can be deleted, commented out or just given no value. 
@@ -82,6 +82,15 @@ $HOME/git/RINRUS/bin/make_template_pdb.py -model N
 $HOME/git/RINRUS/bin/write_input.py -format qm_input_format -c seed_charge -pdb model_N_template.pdb [-intmp qm_input_template] [-basisinfo intmp] [-type hopt] [-fA fsapt_fa]
 ```
 </details>
+
+### Note about using the driver with metalloenzymes
+
+Probe ignores metal coordination interactions which can be a problem if you have a metal centre as part of the seed. A few options for getting around this when using the driver:
+1. Use arpeggio instead
+2. Use the must_add option to make sure the groups that coordinate the metal are included in the model even if probe doesn't pick them up
+3. Partially use our workaround mentioned in the step-by-step instructions below: create a modified version of the starting structure with the metal centre switched to an O atom, run probe and probe2rins manually with that structure, switch the O atom in res_atoms.dat back to the metal, then run the driver with the original structure and rin_program set to manual to finish the model building/QM input preparation steps
+
+
 
 # Step by step usage of RINRUS
 
