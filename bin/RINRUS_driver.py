@@ -38,12 +38,12 @@ opts = {'path_to_scripts': ['Path to the RINRUS scripts bin directory','dir path
         'model_prot_ignore_ids': ['Residues avoided in model protonation','ch:ID[,ch:ID,...]'],
         'model_prot_ignore_atoms': ['Specific atoms avoided in model protonation','ch:ID:atom[,ch:ID:atom,...]'],
         'model_prot_ignore_atnames': ['Atom types avoided in model protonation','atom[,atom,...]'],
-        'qm_input_format': ['Format for QM input file(s)', 'gaussian OR orca OR qchem OR gau-xtb OR psi4-fsapt'],
-        'qm_input_template': ['Specified QM input template','filename    (only used if qm_input_format defined)'],
+        'qm_input_format': ['Format for QM input file(s)', 'gaussian OR orca OR qchem OR gau-xtb OR psi4-fsapt OR none'],
+        'qm_input_template': ['Specified QM input template','filename    (only used if qm_input_format defined and not none)'],
 	'gaussian_basis_intmp': ['Source of basis sets for Gaussian input', 'true OR false    (only used if qm_input_format = gaussian)'], 
-        'qm_calc_hopt': ['Freeze all heavy atoms in QM input', 'true OR false   (only used if qm_input_format defined and not psi4-fsapt)'],
-        'seed_charge': ['Seed charge','integer    (only used if qm_input_format defined)'],
-        'multiplicity': ['Multiplicity','integer    (only used if qm_input_format defined)'],
+        'qm_calc_hopt': ['Freeze all heavy atoms in QM input', 'true OR false   (only used if qm_input_format defined and not psi4-fsapt and not none)'],
+        'seed_charge': ['Seed charge','integer    (only used if qm_input_format defined and not none)'],
+        'multiplicity': ['Multiplicity','integer    (only used if qm_input_format defined and not none)'],
         'fsapt_fa': ['F-SAPT fragment A','ch:ID[,ch:ID,...]    (only used if qm_input_format = psi4-fsapt)']}
 # list of opts which have true/false values and need to be converted to booleans
 tfopts = ['protonate_initial','dist_noh','gaussian_basis_intmp','qm_calc_hopt']
@@ -126,13 +126,13 @@ def driver_file_reader(inpfile,logger,scriptpath):
                 del checked_dict[i]
     if checked_dict['rin_program'].lower() != 'manual' and 'res_atoms_file' in checked_dict.keys():
         del checked_dict['res_atoms_file']
-    if 'qm_input_format' in checked_dict.keys():
+    if 'qm_input_format' in checked_dict.keys() and checked_dict['qm_input_format'].lower() != 'none':
         if checked_dict['qm_input_format'] != 'psi4-fsapt' and 'fsapt_fa' in checked_dict.keys():
             del checked_dict['fsapt_fa']
         if checked_dict['qm_input_format'].lower() != 'gaussian' and 'gaussian_basis_intmp' in checked_dict.keys():
             del checked_dict['gaussian_basis_intmp']
     else:
-        for i in ['qm_input_template','gaussian_basis_intmp','qm_calc_hopt','seed_charge','multiplicity','fsapt_fA']:
+        for i in ['qm_input_format','qm_input_template','gaussian_basis_intmp','qm_calc_hopt','seed_charge','multiplicity','fsapt_fA']:
             if i in checked_dict.keys():
                 del checked_dict[i]
     # flag to use gaussian basis info in template file or not
@@ -377,7 +377,7 @@ def run_rinrus_driver(inpfile,scriptpath):
 
     
     ### INITIAL PROTONATION
-    if checked_dict['protonate_initial']:
+    if 'protonate_initial' in checked_dict.keys() and checked_dict['protonate_initial']:
         logger.info('PROTONATION OF INITIAL PDB:')
         mod_pdb = run_reduce(checked_dict['pdb'],logger,checked_dict['path_to_scripts'])
         checked_dict['pdb'] = modpdb
@@ -539,11 +539,17 @@ if __name__ == '__main__':
 
     ml = max([len(key) for key in opts.keys()])
     opthelp = 'Recognized keywords and values in input file:\n'
-    for key in opts.keys():
+    opthelp += '---Required---\n'
+    for key in ['pdb','seed','rin_program','model','qm_input_format']:
         opthelp += f'  {key+":":<{ml+1}} {opts[key][1]}\n'
+    opthelp += '---Optional---\n'
+    for key in [o for o in opts.keys() if o not in ['pdb','seed','rin_program','model','qm_input_format']]:
+        opthelp += f'  {key+":":<{ml+1}} {opts[key][1]}\n'
+    #for key in opts.keys():
+    #    opthelp += f'  {key+":":<{ml+1}} {opts[key][1]}\n'
 
     parser = argparse.ArgumentParser(description='RINRUS driver module', epilog=opthelp, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('-i', dest='driver_input', default='rinrus.inp', help='RINRUS driver input file')
+    parser.add_argument('-i', dest='driver_input', default='rinrus.inp', help='RINRUS driver input file (default: rinrus.inp)')
 
     args = parser.parse_args()
     

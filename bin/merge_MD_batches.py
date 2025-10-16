@@ -33,6 +33,7 @@ if __name__ == '__main__':
     atom_master = {}
     MD_wats = {}
     Ntot = 0
+    watperframe = {}
     for d in dirlist:
         # count no. frames in dir
         Ntot += len(glob.glob(f'{d}/*.pdb'))
@@ -56,6 +57,13 @@ if __name__ == '__main__':
             with open(f'{d}/batch_waterinfo.pkl','rb') as fp:
                 batch_wat = pickle.load(fp)
             MD_wats.update(batch_wat)
+        
+        ### get n waters per frame info even if waters not included
+        wats = open(f'{d}/waters_per_frame.dat','r').readlines()[1:-4]
+        for w in wats:
+            w = w.strip().split()
+            watperframe[w[0]] = float(w[1])
+
 
     ### all data from probe/arpeggio/distance collected in rawdf ###
     ### condense, sort and rank below this point as required     ###
@@ -97,4 +105,10 @@ if __name__ == '__main__':
         watcount = pd.DataFrame.from_dict(watcount,orient='index')
         MD_wats['counts'] = pd.concat([watcount, watcount.apply(['mean','median','max','min']).round(2)])
         res_atoms_add_waters(seedlist,MD_wats,batchfile)
-    
+        MD_wats['counts'].to_string(buf='waters_per_frame.dat',header=['N_waters_with_contacts'])
+    else:
+        #still write waters per frame even without full water analysis
+        watperframe = pd.DataFrame.from_dict(watperframe,orient='index',columns=['N_waters_with_contacts'])
+        watperframe = pd.concat([watperframe, watperframe.apply(['mean','median','max','min']).round(2)])
+        watperframe.to_string(buf='waters_per_frame.dat',header=['N_waters_with_contacts'])
+

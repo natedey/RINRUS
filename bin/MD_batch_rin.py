@@ -233,7 +233,7 @@ def process_raw_df(rawdf):
     summdf = summdf.sort_values(by=[(selcols[0],'nf'),(selcols[0],'mean')],ascending=False)
     rankcol = summdf[(selcols[0],'prop_f')].copy()
 
-    return resdf, summdf, rankcol
+    return rawdf, resdf, summdf, rankcol
 
 
 ### make res atoms file ###
@@ -330,7 +330,7 @@ if __name__ == '__main__':
 
     ### run all processing ###
     rawdf, atom_master, MD_wats = batch_processing(path_to_scripts,pdbfiles,seedlist,seedinp,whichtests,args.mdwat)
-    resdf, summdf, rankcol = process_raw_df(rawdf)
+    rawdf, resdf, summdf, rankcol = process_raw_df(rawdf)
     
     ### print the summary dataframe to the console and save as text file
     print(summdf)
