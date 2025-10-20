@@ -11,6 +11,7 @@ protonate_initial: False
 seed: A:203 
 RIN_program: probe
 res_atoms_file:
+arpeggio_proximal: 
 arpeggio_rank: 
 dist_type:
 dist_satom:

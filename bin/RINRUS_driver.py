@@ -26,6 +26,7 @@ opts = {'path_to_scripts': ['Path to the RINRUS scripts bin directory','dir path
         'seed': ['Seed', 'ch:ID[,ch:ID,...]'],
         'rin_program': ['RIN program','probe OR arpeggio OR distance OR manual'],
         'res_atoms_file': ['Specified res_atoms file','filename    (only used if rin_program = manual)'], 
+        'arpeggio_proximal': ['Include arpeggio proximal interactions','true OR false    (only used if rin_program = arpeggio)'],
         'arpeggio_rank': ['Arpeggio ranking','contacts OR types    (only used if rin_program = arpeggio)'], 
         'dist_type': ['Distance type', 'avg OR com OR closest    (only used if rin_program = distance)'], 
         'dist_satom': ['Distance satom', 'ch:ID:atom[,ch:ID:atom,...]    (only used if rin_program = distance)'], 
@@ -46,7 +47,7 @@ opts = {'path_to_scripts': ['Path to the RINRUS scripts bin directory','dir path
         'multiplicity': ['Multiplicity','integer    (only used if qm_input_format defined and not none)'],
         'fsapt_fa': ['F-SAPT fragment A','ch:ID[,ch:ID,...]    (only used if qm_input_format = psi4-fsapt)']}
 # list of opts which have true/false values and need to be converted to booleans
-tfopts = ['protonate_initial','dist_noh','gaussian_basis_intmp','qm_calc_hopt']
+tfopts = ['protonate_initial','arpeggio_proximal','dist_noh','gaussian_basis_intmp','qm_calc_hopt']
 # list of opts which specify residues/groups/atoms as ch:ID[:atom],ch:ID[:atom] etc and need to be checked for spaces
 resopts = ['seed','dist_satom','must_add','unfrozen','model_prot_ignore_ids','model_prot_ignore_atoms','model_prot_ignore_atnames','fsapt_fA']
 
@@ -118,8 +119,12 @@ def driver_file_reader(inpfile,logger,scriptpath):
     # add split up seed list to dict
     checked_dict['seedlist'] = [s for s in checked_dict['seed'].split(',') if s]    
     # remove any suboptions that don't match parent option
-    if checked_dict['rin_program'].lower() != 'arpeggio' and 'arpeggio_rank' in checked_dict.keys():
-        del checked_dict['arpeggio_rank']
+    if checked_dict['rin_program'].lower() != 'arpeggio':
+        for i in ['arpeggio_proximal','arpeggio_rank']:
+            if i in checked_dict.keys():
+                del checked_dict[i]
+        #and 'arpeggio_rank' in checked_dict.keys():
+        #del checked_dict['arpeggio_rank']
     if checked_dict['rin_program'].lower() != 'distance':
         for i in ['dist_type','dist_satom','dist_max','dist_noh']:
             if i in checked_dict.keys():
@@ -223,8 +228,11 @@ def select_by_probe(pdb,seed,logger,path_to_scripts):
     logger.info('RIN analysis run as: '+ str(' '.join(args[1:])))
     return probe
     
-def select_by_arpeggio(pdb,seed,path_to_scripts,logger):
+def select_by_arpeggio(checked_dict,logger):
     print('Generating arpeggio RIN')
+    pdb = checked_dict['pdb']
+    seed = checked_dict['seed']
+    path_to_scripts = checked_dict['path_to_scripts']
     path = os.path.expanduser(path_to_scripts+'arpeggio/arpeggio.py')
     arg = [sys.executable,path,str(pdb)]
     result = subprocess.run(arg,stdout=PIPE,stderr=STDOUT,universal_newlines=True)
@@ -239,7 +247,9 @@ def select_by_arpeggio(pdb,seed,path_to_scripts,logger):
         sys.exit()
     print('Analyzing arpeggio RIN')
     path = os.path.expanduser(path_to_scripts+'arpeggio2rins.py')
-    arg = [sys.executable,path,'-f',str(pdb).replace('pdb','contacts'),'-s',seed]
+    arg = [sys.executable,path,'-pdb',str(pdb),'-f',str(pdb).replace('pdb','contacts'),'-s',seed]
+    if 'arpeggio_proximal' in checked_dict.keys() and checked_dict['arpeggio_proximal']:
+        arg.append('-prox')
     result = subprocess.run(arg,stdout=PIPE,stderr=STDOUT,universal_newlines=True)
     logger.info('RIN analysis run as: '+ str(' '.join(arg[1:])))
     return
@@ -391,17 +401,17 @@ def run_rinrus_driver(inpfile,scriptpath):
         probe = select_by_probe(checked_dict['pdb'],checked_dict['seed'],logger,checked_dict['path_to_scripts'])
         selfile = 'res_atoms.dat'
     elif checked_dict['rin_program'].lower() == 'arpeggio':
-        select_by_arpeggio(checked_dict['pdb'],checked_dict['seed'],checked_dict['path_to_scripts'],logger)
+        select_by_arpeggio(checked_dict,logger)
         if 'arpeggio_rank' in checked_dict.keys() and checked_dict['arpeggio_rank'] == 'counts':
-            selfile = 'contact_counts.dat'
+            selfile = 'res_atoms.dat'
         elif 'arpeggio_rank' in checked_dict.keys() and checked_dict['arpeggio_rank'] == 'types':
-            selfile = 'contype_counts.dat'
+            selfile = 'res_atoms_types.dat'
         else: 
             arprank = input('Build models with arpeggio contact count or type ranking? (counts/types)\n')
             if arprank == 'counts':
-                selfile = 'contact_counts.dat'
+                selfile = 'res_atoms.dat'
             elif arprank == 'types':
-                selfile = 'contype_counts.dat'
+                selfile = 'res_atoms_types.dat'
                 logger.info('Command line arpeggio_rank input: ' + arprank)
     elif checked_dict['rin_program'].lower() == 'distance':
         if not checked_dict['dist_type']:
