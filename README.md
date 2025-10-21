@@ -21,7 +21,7 @@ Prof. Nathan DeYonker, Department of Chemistry, University of Memphis at ndyonke
 Clone this repository, then add `bin` to your `PATH` and library code under `lib3` to your `PYTHONPATH`. For example, in `~/git`:
 ``` bash
 cd ~/git
-git clone git@github.com:natedey/RINRUS.git
+git clone https://github.com/natedey/RINRUS.git
 export PATH="~/git/RINRUS/bin:$PATH"
 export PYTHONPATH="~/git/RINRUS/lib3:$PYTHONPATH"
 ```
