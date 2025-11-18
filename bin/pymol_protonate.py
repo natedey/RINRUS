@@ -72,13 +72,8 @@ with open("log.pml", "w") as logf:
         name = os.path.splitext(pdbfilename)[0]
         outputfilename = f"{name}_h.pdb"
         logf.write(f"load {pdbfilename}\n")
-        if args.ignore_ids is not None:
-            logf.write(
-                f'cmd.select("sel","{name}{notres}{notats} and not ({notatn})")\n'
-            )
-            logf.write('cmd.h_add("sel")\n')
-        else:
-            logf.write(f'cmd.h_add("{name}")\n')
+        logf.write(f'cmd.select("sel","{name}{notres}{notats} and not ({notatn})")\n')
+        logf.write('cmd.h_add("sel")\n')
         logf.write(f'cmd.save("./{outputfilename}")\n')
 
 cmd = "pymol -qc log.pml"
