@@ -339,7 +339,7 @@ def make_temp_pdb(model_num,path_to_scripts,logger):
 def create_input_file(checked_dict,model_num,logger):
     path = os.path.expanduser(checked_dict['path_to_scripts']+'write_input.py')
     modpdb = f'model_{model_num}_template.pdb'
-    inpn = f'{model_num}.inp'
+    inpn = f'model_{model_num}.inp'
     arg = [sys.executable,path,'-format',checked_dict['qm_input_format'],'-c',checked_dict['seed_charge'],'-pdb',modpdb,'-inpn',inpn]
     if 'qm_input_template' in checked_dict.keys():
         arg.append('-intmp')
