@@ -133,7 +133,6 @@ def gaussian_freq(lines):
                 
     return atom_idx[3], freq_xyz, freq_info
 
-
 def gaussian_atom_names(lines,natoms):
     atom_name = []
     for i in range(len(lines)):

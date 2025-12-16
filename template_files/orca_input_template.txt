@@ -5,4 +5,5 @@ method: B3LYP
 disp: D3BJ
 basis: def2-SVP
 auxbasis: def2/J
-solvent_epsilon: 4
+solvent: CPCM(water)
+cpcm_epsilon: 4

@@ -26,10 +26,8 @@ if __name__ == '__main__':
     ### if no name specified, use output file name
     if args.name:
         fname = args.name.replace('.pdb','')
-        dfltname = False
     else:
         fname = output.split('/')[-1].replace('.xyz','')
-        dfltname = True
 
     ### read xyz and pdb files
     pdb, res_info, tot_charge = read_pdb(args.pdbf)

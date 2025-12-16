@@ -320,7 +320,6 @@ def write_xtb_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,re
 write orca input files using orca template file
 """
 def write_orca_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,res_count,hopt):
-    ### inp_name default can be 1.inp, but first is name.input such as 9.input
     ### From input_template file ###
     ### nprocs
     ### maxcore
@@ -333,6 +332,7 @@ def write_orca_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,r
 
     with open(inp_temp) as f:
         lines = f.readlines()
+    hline = ["!"]
     for line in lines:
         if line.startswith('#'): continue
         if line.startswith('jobtype'):
@@ -341,35 +341,47 @@ def write_orca_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,r
                 jobtype = [x.strip() for x in v[1].split('/')]
             else:
                 jobtype = v[1].strip()
+            hline.append(jobtype)
         if line.startswith('nprocs'):
             nprocs = line.split(':')[1].strip()
         if line.startswith('maxcore'):
             maxcore = line.split(':')[1].strip()
         if line.startswith('method'):
             method = line.split(':')[1].strip()
+            hline.append(method)
         if line.startswith('disp'):
             disp = line.split(':')[1].strip()
+            hline.append(disp)
         if line.startswith('basis'):
             basis = line.split(':')[1].strip()
+            hline.append(basis)
         if line.startswith('auxbasis'):
             auxbasis = line.split(':')[1].strip()
+            hline.append(auxbasis)
         if line.startswith('ecp'):
             ecp = line.split(':')[1].strip()
-        if line.startswith('solvent_epsilon'):
-            sol = line.split(':')[1].strip()
-        if line.startswith('def_basis'):
-            start = lines.index(line)
-            def_basis = []
-            for l in range(start+1,len(lines)):
-                def_basis.append(lines[l])
-
+            hline.append(ecp)
+        if line.startswith('solvent'):
+            solv = line.split(':')[1].strip()
+            hline.append(solv)
+        if line.startswith('cpcm_epsilon'):
+            soleps = line.split(':')[1].strip()
+        # DAW note: idea was that custom basis could be put at end of input template so read from keyword to end. 
+        # but I haven't yet got around to adding code to format and add the custom basis into the input file...
+        #if line.startswith('def_basis'):
+        #    start = lines.index(line)
+        #    def_basis = []
+        #    for l in range(start+1,len(lines)):
+        #        def_basis.append(lines[l])
 
     ## write input
     inp = open('%s'%inp_name,'w')
-    inp.write("! %s %s %s %s %s CPCM(water)\n"%(jobtype,method,disp,basis,auxbasis))
+    #inp.write("! %s %s %s %s %s CPCM(water)\n"%(jobtype,method,disp,basis,auxbasis))
+    inp.write(" ".join(hline)+"\n")
     inp.write("%%pal nprocs %s end\n"%nprocs)
     inp.write("%%maxcore %s000\n"%maxcore)
-    inp.write("%%cpcm epsilon %s end\n"%sol)
+    if 'soleps' in locals() and soleps:
+        inp.write("%%cpcm epsilon %s end\n"%soleps)
     inp.write("%geom\n  constraints\n")
     for i in range(len(pic_atom)):
         atom = pic_atom[i]
@@ -384,7 +396,7 @@ def write_orca_input(inp_name,inp_temp,charge,multiplicity,pic_atom,tot_charge,r
     for i in range(len(pic_atom)):
         atom = pic_atom[i]
         if atom[16] == '-1':
-            inp.write("%6s %8.3f %8.3f %8.3f  M = 99999.9\n"%(atom[14].strip(),atom[8],atom[9],atom[10]))
+            inp.write("%6s %8.3f %8.3f %8.3f  M = 999999999999.9\n"%(atom[14].strip(),atom[8],atom[9],atom[10]))
         else:
             inp.write("%6s %8.3f %8.3f %8.3f\n"%(atom[14].strip(),atom[8],atom[9],atom[10]))
     inp.write("*\n")
