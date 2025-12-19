@@ -150,12 +150,18 @@ def driver_file_reader(inpfile,logger,scriptpath):
     if 'path_to_scripts' in checked_dict.keys():
         if checked_dict['path_to_scripts'].startswith('~'):
             checked_dict['path_to_scripts'] = os.path.expanduser(checked_dict['path_to_scripts'])
-        elif checked_dict['path_to_scripts'].startswith('$'):
+        elif '$' in checked_dict['path_to_scripts']:
             checked_dict['path_to_scripts'] = os.path.expandvars(checked_dict['path_to_scripts'])
     else:
         checked_dict['path_to_scripts'] = str(scriptpath)
     if not checked_dict['path_to_scripts'].endswith('/'):
         checked_dict['path_to_scripts'] += '/'
+    # same cleaning up for variables/~ in input template path
+    if 'qm_input_template' in checked_dict.keys():
+        if checked_dict['qm_input_template'].startswith('~'):
+            checked_dict['qm_input_template'] = os.path.expanduser(checked_dict['qm_input_template'])
+        elif '$' in checked_dict['qm_input_template']:
+            checked_dict['qm_input_template'] = os.path.expandvars(checked_dict['qm_input_template'])
 
     # logging:
     logger.info('Inputs parsed and checked. Using options:')
