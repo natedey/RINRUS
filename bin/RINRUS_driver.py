@@ -383,8 +383,9 @@ def run_rinrus_driver(inpfile,scriptpath):
     #change to date + message format for main part of log
     logger.handlers[0].setFormatter(logging.Formatter(fmt='%(asctime)s %(message)s',datefmt='%Y-%m-%d %H:%M:%S'))
     logger.info('RUNNING RINRUS DRIVER:')
-    logger.info('Python executable being used: ' + sys.executable + '\n\n')
-
+    logger.info('Python executable being used: ' + sys.executable)
+    #pymolv = subprocess.run(['pymol', '--version'],stdout=PIPE).stdout.strip()    
+    logger.info('User\'s PyMOL version: '+ str(subprocess.run(['pymol', '--version'],stdout=PIPE).stdout.decode()) + '\n')
     
     ### PARSE INPUTS
     logger.info('READING DRIVER INPUT FILE:')
