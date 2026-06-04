@@ -18,7 +18,7 @@ pd.set_option('display.max_rows', 500)
 
 if __name__ == '__main__':
     """ 
-    Usage: merge_batches.py -dirs [dirs]
+    Usage: merge_MD_batches.py -s [seed] -dirs [dirs] [-addwat]
     """
     parser = argparse.ArgumentParser(description='merge data from batch processed dirs')
     parser.add_argument('-s','-seed',dest='seed',help='seed ch:ID[,ch:ID,ch:ID]')

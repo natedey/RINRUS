@@ -32,8 +32,10 @@ opts = {'path_to_scripts': ['Path to the RINRUS scripts bin directory','dir path
         'dist_satom': ['Distance satom', 'ch:ID:atom[,ch:ID:atom,...]    (only used if rin_program = distance)'], 
         'dist_max': ['Distance max radius', 'number    (only used if rin_program = distance)'],
         'dist_noh': ['Calculate distance excluding hydrogens','true OR false    (only used if rin_program = distance)'], 
+        'dist_byres': ['Calculate distance for residues instead of FGs', 'true OR false    (only used if rin_program = distance)'],
         'must_add': ['Fragments that must be included', 'ch:ID[:S/:N/:C] etc'],
-        'model': ['Selected model(s)', 'all OR maximal OR max OR number'],
+        'model': ['Selected model(s)', 'all OR maximal OR max OR number of fragments'],
+        'modelsize': ['Desired approximate model size', 'number of atoms'],
         'unfrozen': ['Atoms to unfreeze', 'ch:ID[,ch:ID:CA,ch:ID:CB,...]'],
         'nc_res_info': ['Noncanonical residue info file', 'filename'],
         'model_prot_ignore_ids': ['Residues avoided in model protonation','ch:ID[,ch:ID,...]'],
@@ -42,12 +44,12 @@ opts = {'path_to_scripts': ['Path to the RINRUS scripts bin directory','dir path
         'qm_input_format': ['Format for QM input file(s)', 'gaussian OR orca OR qchem OR gau-xtb OR psi4-fsapt OR none'],
         'qm_input_template': ['Specified QM input template','filename    (only used if qm_input_format defined and not none)'],
 	'gaussian_basis_intmp': ['Source of basis sets for Gaussian input', 'true OR false    (only used if qm_input_format = gaussian)'], 
-        'qm_calc_hopt': ['Freeze all heavy atoms in QM input', 'true OR false   (only used if qm_input_format defined and not psi4-fsapt and not none)'],
+        'qm_input_hopt': ['Freeze all heavy atoms in QM input', 'true OR false   (only used if qm_input_format defined and not psi4-fsapt and not none)'],
         'seed_charge': ['Seed charge','integer    (only used if qm_input_format defined and not none)'],
         'multiplicity': ['Multiplicity','integer    (only used if qm_input_format defined and not none)'],
         'fsapt_fa': ['F-SAPT fragment A','ch:ID[,ch:ID,...]    (only used if qm_input_format = psi4-fsapt)']}
 # list of opts which have true/false values and need to be converted to booleans
-tfopts = ['protonate_initial','arpeggio_proximal','dist_noh','gaussian_basis_intmp','qm_calc_hopt']
+tfopts = ['protonate_initial','arpeggio_proximal','dist_noh', 'dist_byres','gaussian_basis_intmp','qm_input_hopt']
 # list of opts which specify residues/groups/atoms as ch:ID[:atom],ch:ID[:atom] etc and need to be checked for spaces
 resopts = ['seed','dist_satom','must_add','unfrozen','model_prot_ignore_ids','model_prot_ignore_atoms','model_prot_ignore_atnames','fsapt_fA']
 
@@ -112,9 +114,9 @@ def driver_file_reader(inpfile,logger,scriptpath):
         else:
             logger.info(f'Unrecognized option {key} in driver input will be ignored.')
     # warn user and quit if any of the 4 necessary options have not been specified
-    if 'pdb' not in checked_dict.keys() or 'seed' not in checked_dict.keys() or 'rin_program' not in checked_dict.keys() or 'model' not in checked_dict.keys():
-        print('Input needs to contain PDB, seed, RIN_program and model options at minimum. Please check input!')
-        logger.info('Input needs to contain PDB, seed, RIN_program and model options at minimum. Quitting RINRUS')
+    if 'pdb' not in checked_dict.keys() or 'seed' not in checked_dict.keys() or 'rin_program' not in checked_dict.keys() or ('model' not in checked_dict.keys() and 'modelsize' not in checked_dict.keys()):
+        print('Input needs to contain PDB, seed, RIN_program, and model or modelsize options at minimum. Please check input!')
+        logger.info('Input needs to contain PDB, seed, RIN_program, and model or modelsize options at minimum. Quitting RINRUS')
         sys.exit()
     # add split up seed list to dict
     checked_dict['seedlist'] = [s for s in checked_dict['seed'].split(',') if s]    
@@ -126,7 +128,7 @@ def driver_file_reader(inpfile,logger,scriptpath):
         #and 'arpeggio_rank' in checked_dict.keys():
         #del checked_dict['arpeggio_rank']
     if checked_dict['rin_program'].lower() != 'distance':
-        for i in ['dist_type','dist_satom','dist_max','dist_noh']:
+        for i in ['dist_type','dist_satom','dist_max','dist_noh','dist_byres']:
             if i in checked_dict.keys():
                 del checked_dict[i]
     if checked_dict['rin_program'].lower() != 'manual' and 'res_atoms_file' in checked_dict.keys():
@@ -137,9 +139,11 @@ def driver_file_reader(inpfile,logger,scriptpath):
         if checked_dict['qm_input_format'].lower() != 'gaussian' and 'gaussian_basis_intmp' in checked_dict.keys():
             del checked_dict['gaussian_basis_intmp']
     else:
-        for i in ['qm_input_format','qm_input_template','gaussian_basis_intmp','qm_calc_hopt','seed_charge','multiplicity','fsapt_fA']:
+        for i in ['qm_input_format','qm_input_template','gaussian_basis_intmp','qm_input_hopt','seed_charge','multiplicity','fsapt_fA']:
             if i in checked_dict.keys():
                 del checked_dict[i]
+    if 'modelsize' in checked_dict.keys():
+        checked_dict['model'] = 'bysize'
     # flag to use gaussian basis info in template file or not
     if 'qm_input_format' in checked_dict.keys() and checked_dict['qm_input_format'].lower() == 'gaussian':
         if 'gaussian_basis_intmp' in checked_dict.keys() and checked_dict['gaussian_basis_intmp']:
@@ -272,8 +276,10 @@ def select_by_distance(checked_dict,logger):
     if 'dist_max' in checked_dict.keys():
         arg.append('-max')
         arg.append(checked_dict['dist_max'])
-    if 'dist_noh' in checked_dict.keys():
+    if 'dist_noh' in checked_dict.keys() and checked_dict['dist_noh']:
         arg.append('-noH')
+    if 'dist_byres' in checked_dict.keys() and checked_dict['dist_byres']:
+        arg.append('-byres')
     result = subprocess.run(arg,stdout=PIPE,stderr=STDOUT,universal_newlines=True)
     logger.info('Distance selection run as: '+ str(' '.join(arg[1:])))
     return
@@ -296,9 +302,12 @@ def res_atom_count(filename,must_add,Seedlist):
     totnum = seednum + resnum + addnum
     return seednum,resnum,addnum,totnum
 
-def trim_model(checked_dict,model_num,selfile,logger):
+def trim_model(checked_dict,model_num,totnum,selfile,logger):
     path = os.path.expanduser(checked_dict['path_to_scripts']+'rinrus_trim2_pdb.py')
-    args = [sys.executable,path, '-s',checked_dict['seed'], '-pdb',checked_dict['pdb'],'-ra',str(selfile), '-model', str(model_num)]
+    if model_num == 'bysize':
+        args = [sys.executable,path, '-s',checked_dict['seed'], '-pdb',checked_dict['pdb'],'-ra',str(selfile), '-modelsize', checked_dict['modelsize']]
+    else:
+        args = [sys.executable,path, '-s',checked_dict['seed'], '-pdb',checked_dict['pdb'],'-ra',str(selfile), '-model', str(model_num)]
     if 'must_add' in checked_dict.keys():
         args.append('-mustadd')
         args.append(checked_dict['must_add'])
@@ -311,8 +320,17 @@ def trim_model(checked_dict,model_num,selfile,logger):
     result = subprocess.run(args,stdout=PIPE,stderr=STDOUT,universal_newlines=True)
     # check if seed frozen atoms warning printed, extract from output if yes
     out = result.stdout.split('\n')
-    out = [line for line in out if line and not (line == checked_dict['pdb'] or (line.startswith('res_') and line.endswith('.pdb')))]
     logger.info('Model trimming run as: ' + str(' '.join(args[1:])))
+    out = [line for line in out if line and not (line == checked_dict['pdb'] or (line.startswith('res_') and line.endswith('.pdb')))]
+    if model_num == 'bysize':
+        modelmade = [line for line in out if f'modelsize {checked_dict["modelsize"]} =>' in line]
+        if modelmade:
+            modelmade = modelmade[0].split()[-1]
+            checked_dict['model'] = modelmade
+        else:
+            checked_dict['model'] = totnum
+        logger.info(f'-modelsize {checked_dict["modelsize"]} created model {checked_dict["model"]}')
+        out = [line for line in out if f'modelsize {checked_dict["modelsize"]} =>' not in line]
     if out:
         print('\n'.join(out))
         logger.info('Trimming script printed this warning: \n'+ '\n'.join(out))
@@ -425,7 +443,7 @@ def run_rinrus_driver(inpfile,scriptpath):
             checked_dict['dist_type'] = input("Distance type not specified in input file: select closest or avg or mass \n")
             logger.info('Command line dist_type input: '+ str(checked_dict['dist_type']))
         select_by_distance(checked_dict,logger)
-        selfile = 'res_atoms_by_FG.dat'
+        selfile = 'res_atoms.dat'
     elif checked_dict['rin_program'].lower() == 'manual':
         if checked_dict['res_atoms_file']:
             selfile = checked_dict['res_atoms_file']
@@ -456,12 +474,16 @@ def run_rinrus_driver(inpfile,scriptpath):
         model_num = checked_dict['model'].lower()
     except:
         model_num = checked_dict['model']
-    logger.info('Valid model sizes ' + str(option))
-    logger.info('The user selected the model option in driver_input: '+ str(model_num))
-    print('Model selected in driver input: ' + str(model_num))
+    logger.info('Valid model sizes: ' + str(option))
+    if model_num == 'bysize':
+        logger.info('The user selected the model option in driver_input: modelsize '+ str(checked_dict['modelsize']))
+        print('Model selected in driver input: modelsize ' + str(checked_dict['modelsize']))
+    else:
+        logger.info('The user selected the model option in driver_input: '+ str(model_num))
+        print('Model selected in driver input: ' + str(model_num))
     
     option.append('all')
-    if (model_num.strip().isnumeric() == True and int(model_num) in option) or model_num in ['all','max','maximal']:
+    if (model_num.strip().isnumeric() == True and int(model_num) in option) or model_num in ['all','max','maximal','bysize']:
         if model_num in ['max','maximal']:
             model_num = totnum
         x = True
@@ -527,7 +549,7 @@ def run_rinrus_driver(inpfile,scriptpath):
     if checked_dict['model']=='all':
         logger.info(f'Making all models')
         print(f'Making all models')
-        trim_model(checked_dict,'all',selfile,logger)
+        trim_model(checked_dict,'all',totnum,selfile,logger)
         for num in range(minsize,totnum+1):
             protonate_model(checked_dict,num,logger)
             make_temp_pdb(num,checked_dict['path_to_scripts'],logger)
@@ -538,12 +560,18 @@ def run_rinrus_driver(inpfile,scriptpath):
                     create_input_file(checked_dict,str(num),logger)
             print(f'Made model {num}')
     else:
-        trim_model(checked_dict,checked_dict['model'],selfile,logger)
+        trim_model(checked_dict,checked_dict['model'],totnum,selfile,logger)
         protonate_model(checked_dict,checked_dict['model'],logger)
         make_temp_pdb(checked_dict['model'],checked_dict['path_to_scripts'],logger)
         if 'qm_input_format' in checked_dict.keys():
             create_input_file(checked_dict,checked_dict['model'],logger)       
         print(f'Made model {checked_dict["model"]}')
+        if checked_dict['model'] != totnum:
+            protonate_model(checked_dict,str(totnum),logger)
+            make_temp_pdb(str(totnum),checked_dict['path_to_scripts'],logger)
+            if 'qm_input_format' in checked_dict.keys():
+                create_input_file(checked_dict,str(totnum),logger)
+            print(f'Made model {totnum}')
         
     logger.info('section done\n')
 
@@ -556,11 +584,11 @@ if __name__ == '__main__':
 
     ml = max([len(key) for key in opts.keys()])
     opthelp = 'Recognized keywords and values in input file:\n'
-    opthelp += '---Required---\n'
-    for key in ['pdb','seed','rin_program','model','qm_input_format']:
+    opthelp += '---Required (only one of model or modelsize required)---\n'
+    for key in ['pdb','seed','rin_program','model','modelsize']:
         opthelp += f'  {key+":":<{ml+1}} {opts[key][1]}\n'
     opthelp += '---Optional---\n'
-    for key in [o for o in opts.keys() if o not in ['pdb','seed','rin_program','model','qm_input_format']]:
+    for key in [o for o in opts.keys() if o not in ['pdb','seed','rin_program','model','modelsize']]:
         opthelp += f'  {key+":":<{ml+1}} {opts[key][1]}\n'
     #for key in opts.keys():
     #    opthelp += f'  {key+":":<{ml+1}} {opts[key][1]}\n'

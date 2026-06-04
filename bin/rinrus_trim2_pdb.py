@@ -9,6 +9,7 @@ from read_write_pdb import *
 from copy import *
 from check_residue_atom import *
 import argparse
+import numpy as np
 import pandas as pd
 from model_details import *
 
@@ -224,6 +225,9 @@ def trim_pdb_models(sm,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd):
     # save list of seed frozen atoms to be printed at end of run #
     seedfroz = {key: res_info[key] for key in res_info.keys() if key in sel_key and res_info[key]}
 
+    return seedfroz, res_atom, res_info, res_pick
+
+def write_model_files(sm,res_atom,res_info,res_pick):
     f1 = open('res_%s_atom_info.dat'%str(sm),'w')        
     f2 = open('res_%s_froz_info.dat'%str(sm),'w')        
     for key in sorted(res_atom.keys()):
@@ -241,7 +245,7 @@ def trim_pdb_models(sm,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd):
     outf = 'res_%s.pdb'%str(sm)
     write_pdb(outf,res_pick)
 
-    return seedfroz
+    return
 
 def get_ufree_atom(ufree):
     ufree_atoms = {}
@@ -259,12 +263,13 @@ def get_ufree_atom(ufree):
 if __name__ == '__main__':
     
     parser = argparse.ArgumentParser(description='Trim large PDB file according to res_atoms.dat, write trimmed pdb in working directory')
-    parser.add_argument('-pdb', dest='r_pdb', default='None', help='protonated pdbfile')
-    parser.add_argument('-s','-seed', dest='seed', default='None', help='Chain:Resid,Chain:Resid')
+    parser.add_argument('-pdb', dest='r_pdb', default='None', help='Protonated pdbfile')
+    parser.add_argument('-s','-seed', dest='seed', default='None', help='Seed specified in form "Chain:Resid,Chain:Resid"')
     parser.add_argument('-ra', dest='r_atom', default='res_atoms.dat', help='res_atoms file containing atom info for each residue')
     parser.add_argument('-ncres', dest='ncres', default='None', help='Noncanonical residue information')
     parser.add_argument('-unfrozen', dest='ufree', default='None', help='Atoms/residues to avoid constraining. Ch:ID to unfreeze all, or ch:ID:CA or ch:ID:CB')
-    parser.add_argument('-model', dest='method', default='All', help='generate one or all trimmed models, if "7" is given, then will generate the 7th model, "max" for only maximal model')
+    parser.add_argument('-model', dest='method', default='All', help='Generate one or all trimmed models, if "7" is given, then will generate the 7th model, "max" for only maximal model')
+    parser.add_argument('-modelsize', dest='Natoms', default=None, help='Pick model by number of atoms instead of number of fragments (overrides model argument)')
     parser.add_argument('-mustadd', dest='mustadd', default=None, help='Necessary non-seed fragments ([S]ide chain, [N]-term, [C]-term) e.g. "A:7:S+C,A:8:N"')
 
     args = parser.parse_args()
@@ -275,6 +280,10 @@ if __name__ == '__main__':
     ncres  = args.ncres
     ufree = args.ufree
     method = args.method.lower()
+    if args.Natoms:
+        # set size limit as 90% of given val to account for capping H
+        sizelim = np.ceil(int(args.Natoms)*0.9)
+        method = 'bysize'
     mustadd = args.mustadd
 
     if ncres != 'None':
@@ -322,19 +331,35 @@ if __name__ == '__main__':
         lmax = len(sel_key) + l_non_seed + l_must
         lmin = len(sel_key) + l_must
  
-    if method == 'all':
+    if method == 'bysize':
+        for i in range(lmin,lmax+1):
+            seedfroz, res_atom, res_info, res_pick = trim_pdb_models(i,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd)
+            if len(res_pick) >= sizelim:
+                write_model_files(i,res_atom,res_info,res_pick)
+                print(f'modelsize {args.Natoms} => model {i}')
+                break
+        # also write max model for comparison to selected smaller model
+        seedfroz, res_atom, res_info, res_pick = trim_pdb_models(lmax,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd)
+        write_model_files(lmax,res_atom,res_info,res_pick)
+    elif method == 'all':
         mlist=[]
         for i in range(lmin,lmax+1):
-            seedfroz = trim_pdb_models(i,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd)
+            seedfroz, res_atom, res_info, res_pick = trim_pdb_models(i,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd)
+            write_model_files(i,res_atom,res_info,res_pick)
             mlist.append(i)
         ### write sequential model contents file
         seednamed=[(f'{s[0]}:{s[1]}',pdb_res_name[s]) for s in sel_key]
         write_model_building(sel_key,mlist,seednamed)
     elif method == 'max':
-        seedfroz = trim_pdb_models(lmax,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd)
+        seedfroz, res_atom, res_info, res_pick = trim_pdb_models(lmax,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd)
+        write_model_files(lmax,res_atom,res_info,res_pick)
     else:
         res_l = int(method)
-        seedfroz = trim_pdb_models(res_l,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd)
+        seedfroz, res_atom, res_info, res_pick = trim_pdb_models(res_l,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd)
+        write_model_files(res_l,res_atom,res_info,res_pick)
+        # also write max model for comparison to selected smaller model
+        seedfroz, res_atom, res_info, res_pick = trim_pdb_models(lmax,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd)
+        write_model_files(lmax,res_atom,res_info,res_pick)
 
     ### print warning if any seed atoms frozen. only printed for largest model if making all models ###
     if seedfroz:

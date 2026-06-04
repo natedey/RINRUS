@@ -20,11 +20,12 @@ python $HOME/git/RINRUS/bin/RINRUS_driver.py -i rinrus.inp
 ### Input file
 The driver recognises the following (case independent) options in `rinrus.inp`.
 ```
-# required
+# required (only one of model or modelsize required, modelsize overrides model)
 pdb:                       starting PDB filename
 seed:                      ch:ID[,ch:ID,...]
 rin_program:               probe OR arpeggio OR distance OR manual
-model:                     all OR maximal OR max OR number
+model:                     all OR maximal OR max OR number of fragments
+modelsize:		   approx desired number of atoms
 
 # optional
 path_to_scripts:           path to RINRUS bin directory		defaults to same folder as RINRUS_driver.py
@@ -34,7 +35,8 @@ arpeggio_rank:             contacts OR types 				only used with "rin_program: ar
 dist_type:                 avg OR com OR closest			only used with "rin_program: distance"
 dist_satom:                ch:ID:atom[,ch:ID:atom,...]		only used with "rin_program: distance"
 dist_max:                  number						    only used with "rin_program: distance"
-dist_noh:                  true OR false					only used with "rin_program: distance"
+dist_noh:                  true OR false					only used with "rin_program: distance" (default false)
+dist_byres:		   true OR false					only used with "rin_program: distance" (default false)
 must_add:                  ch:ID[:S/:N/:C] etc
 unfrozen:		   		   ch:ID[,ch:ID:CA,cd:ID:CB,...]
 nc_res_info:		       filename
@@ -43,8 +45,8 @@ model_prot_ignore_atoms:   ch:ID:atom[,ch:ID:atom,...]
 model_prot_ignore_atnames: atom[,atom,...]				
 qm_input_format:           gaussian OR orca OR qchem OR gau-xtb OR psi4-fsapt	if no value, no QM inputs and remaining options ignored
 qm_input_template:         filename							defaults to those in RINRUS/template_files/
-gaussian_basis_intmp:      [true/false]						defaults to false
-qm_calc_hopt:              [true/false]						defaults to false
+gaussian_basis_intmp:      [true/false]						only used with "qm_input_format: gaussian" (default false)
+qm_input_hopt:              [true/false]						defaults to false
 seed_charge:               integer							defaults to 0
 multiplicity:              integer							defaults to 1
 fsapt_fa:                  ch:ID[,ch:ID,...]
@@ -345,12 +347,21 @@ python3 ~/git/RINRUS/bin/rinrus_trim2_pdb.py -pdb 3bwm_h.pdb -s A:300,A:301,A:30
 -s SEED         seed fragment(s)) (e.g. A:300,A:301,A:302)
 -ra FILE        atom info file (default: res_atoms.dat)
 -model N        specify which model to create (number or 'max' or 'all')
+-modelsize X	specify which model to create based on desired approx model size (number of atoms, overrides '-model')
 -mustadd RES	fragment(s) that must be in model (ch:ID for whole res or ch:ID:<S/N/C/S+N/S+C/N+C/S+N+C>)
 -unfrozen RES   residues/atoms to avoid freezing (ch:ID or ch:ID:CA or ch:ID:CB)
 -ncres FILE	non-canonical res info (file containing lines of "resname [all atom names]")
 ```
 
-If no model is specified, the script will generate the entire "ladder" of possible models by adding residues based on their order in `res_atoms.dat` (same as specifying '-model all'), otherwise only the model containing N residues will be created (or the maximal model if 'max' is specified). For each model, the files `res_N.pdb`, `res_N_froz_info.dat` and `res_N_atom_info.dat` are created. 
+For each model made, the files `res_N.pdb` (uncapped model), `res_N_froz_info.dat` (list of frozen atoms) and `res_N_atom_info.dat` (list of all atoms from each residue) are created.
+If no model or modelsize is specified, the script will generate the entire "ladder" of possible models by adding residues based on their order in `res_atoms.dat` (same as specifying '-model all').
+A specific model from the sequence can be selected with the model argument: '-model max' will give just the maximal model, 
+or '-model N' will give the Nth model in the sequence/model with N fragments (N = no. seed frags + no. mustadd frags + lines of `res_atoms.dat`).
+Alternatively, '-modelsize X' can be used to get a model of approximately the desired size. 
+This option simply makes the first model from the sequence whose size pre-capping is >=90% of X (or the maximal model if that threshold is not reached). 
+It does not impose a strict limit or guarantee that the created model will be the closest one to the given size after the capping hydrogens have been added. 
+If you need stricter control of the model size, we recommend making the full sequence and selecting the most appropriate model manually. 
+With both the '-model N' or '-modelsize X' options, the maximal model will always be created too for comparison. 
 
 RINRUS automatically freezes the CA atoms of recognised (standard or specified in the non-canonical res info file) residues, as well as CB of residues with large side chains (Arg, Lys, Glu, Gln, Met, Trp, Tyr and Phe). These can be removed with the unfrozen flag. Specifying just the residue will remove all automatically applied constraints, or CA/CB can be specifically unfrozen. RINRUS will print a warning if any part of the seed has been frozen in case these are part of substrate peptides or free amino acids etc that shouldn't be constrained.
 
