@@ -461,7 +461,7 @@ def run_rinrus_driver(inpfile,scriptpath):
     else:
         seednum,resnum,addnum,totnum = res_atom_count(selfile,'',checked_dict['seedlist'])
     if addnum == 0:
-        minsize = seednum+1
+        minsize = seednum
     else:
         minsize = seednum+addnum
 

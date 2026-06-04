@@ -83,6 +83,7 @@ def get_noncanonical_resinfo(ncres):
 
 def final_pick2(pdb,res_atom,res_info,sel_key):
     res_pick = []
+    picked_atoms = {}
     for line in pdb:
         key = (line[5],line[6])
         if key in res_atom.keys() and line[2].strip() in res_atom[key]:
@@ -90,7 +91,12 @@ def final_pick2(pdb,res_atom,res_info,sel_key):
                 res_pick.append( [line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],'-1'] )
             else:
                 res_pick.append( [line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],' 0'] )
-    return res_pick, res_info
+            if key in picked_atoms.keys():
+                picked_atoms[key].append(line[2].strip())
+            else:
+                picked_atoms[key] = [line[2].strip()]
+    res_atom = picked_atoms
+    return res_pick, res_info, res_atom
 
 def get_sel_keys(seed_list):  
     seeds = seed_list.split(',')
