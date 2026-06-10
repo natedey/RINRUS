@@ -278,7 +278,7 @@ if __name__ == '__main__':
     parser.add_argument('-ncres', dest='ncres', default='None', help='Noncanonical residue information')
     parser.add_argument('-unfrozen', dest='ufree', default='None', help='Atoms/residues to avoid constraining. Ch:ID to unfreeze all, or ch:ID:CA or ch:ID:CB')
     parser.add_argument('-model', dest='method', default='All', help='Generate one or all trimmed models, if "7" is given, then will generate the 7th model, "max" for only maximal model')
-    parser.add_argument('-modelsize', dest='Natoms', default=None, help='Pick model by number of atoms instead of number of fragments (overrides model argument)')
+    parser.add_argument('-approx_model_size_limit', dest='Natoms', default=None, help='Pick model by number of atoms instead of number of fragments (overrides model argument)')
     parser.add_argument('-mustadd', dest='mustadd', default=None, help='Necessary non-seed fragments ([S]ide chain, [N]-term, [C]-term) e.g. "A:7:S+C,A:8:N"')
 
     args = parser.parse_args()
@@ -363,10 +363,14 @@ if __name__ == '__main__':
                 seedfroz, res_atom, res_info, res_pick = trim_pdb_models(i,pdb_res_name,pdb_res_atom,Alist,ufree_atoms,mustadd,oldresatom)
                 if len(res_pick) >= sizelim:
                     write_model_files(i,res_atom,res_info,res_pick)
-                    print(f'modelsize {args.Natoms} => model {i}')
+                    print(f'approx_model_size_limit {args.Natoms} => model {i}')
+                    if i == lmin:
+                        print('Warning: approx_model_size_limit cutoff already reached in first model (only seed and any must_add fragments)!')
                     break
                 else:
                     oldresatom = res_atom
+                    if i == lmax:
+                        print('Warning: approx_model_size_limit cutoff not reached by maximal model!')
         elif method == 'all':
             mlist=[]
             oldresatom = None

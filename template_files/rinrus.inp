@@ -21,7 +21,7 @@ dist_noH:
 ### model trimming and capping ###
 must_add: 
 model: maximal
-modelsize:
+approx_model_size_limit:
 unfrozen:
 nc_res_info: 
 model_prot_ignore_ids: A:203

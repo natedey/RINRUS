@@ -43,6 +43,8 @@ These examples show off each of the probe, arpeggio and distance selection/ranki
 
 ### Warning about possible discontinuities in sequential model building!
 
+***As of June 2026, this issue is now fixed! Now RINRUS will not add anything to smaller models that isn't in the maximal model, and makes sure that each model includes everything from the last one. For the example discussed below, only C:59:MC is added to anchor C:59:ALA_SC because none of C:58 is in the maximal model. If it were, then C:57:MC/C:58:SC/C:58:MC would also be added at this point and retained throughout the rest of the models even if they did not meet the criteria for inclusion in all of them.***
+
 The RINRUS trimming algorithm has a condition for "disconnected" glycine or alanine side chains [or any residue where CA and/or its hydrogen(s) are the only atoms selected]. 
 If the condition is met then main chain groups will be added on both sides to avoid creating floating methane or ethane molecules in the QM-cluster models. 
 When making the full set of incrementally built models with `rinrus_trim2_pdb.py`, each model is built independently of the others. 

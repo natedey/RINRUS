@@ -35,7 +35,7 @@ opts = {'path_to_scripts': ['Path to the RINRUS scripts bin directory','dir path
         'dist_byres': ['Calculate distance for residues instead of FGs', 'true OR false    (only used if rin_program = distance)'],
         'must_add': ['Fragments that must be included', 'ch:ID[:S/:N/:C] etc'],
         'model': ['Selected model(s)', 'all OR maximal OR max OR number of fragments'],
-        'modelsize': ['Desired approximate model size', 'number of atoms'],
+        'approx_model_size_limit': ['Desired approximate model size', 'number of atoms'],
         'unfrozen': ['Atoms to unfreeze', 'ch:ID[,ch:ID:CA,ch:ID:CB,...]'],
         'nc_res_info': ['Noncanonical residue info file', 'filename'],
         'model_prot_ignore_ids': ['Residues avoided in model protonation','ch:ID[,ch:ID,...]'],
@@ -114,9 +114,9 @@ def driver_file_reader(inpfile,logger,scriptpath):
         else:
             logger.info(f'Unrecognized option {key} in driver input will be ignored.')
     # warn user and quit if any of the 4 necessary options have not been specified
-    if 'pdb' not in checked_dict.keys() or 'seed' not in checked_dict.keys() or 'rin_program' not in checked_dict.keys() or ('model' not in checked_dict.keys() and 'modelsize' not in checked_dict.keys()):
-        print('Input needs to contain PDB, seed, RIN_program, and model or modelsize options at minimum. Please check input!')
-        logger.info('Input needs to contain PDB, seed, RIN_program, and model or modelsize options at minimum. Quitting RINRUS')
+    if 'pdb' not in checked_dict.keys() or 'seed' not in checked_dict.keys() or 'rin_program' not in checked_dict.keys() or ('model' not in checked_dict.keys() and 'approx_model_size_limit' not in checked_dict.keys()):
+        print('Input needs to contain PDB, seed, RIN_program, and model or approx_model_size_limit options at minimum. Please check input!')
+        logger.info('Input needs to contain PDB, seed, RIN_program, and model or approx_model_size_limit options at minimum. Quitting RINRUS')
         sys.exit()
     # add split up seed list to dict
     checked_dict['seedlist'] = [s for s in checked_dict['seed'].split(',') if s]    
@@ -142,7 +142,7 @@ def driver_file_reader(inpfile,logger,scriptpath):
         for i in ['qm_input_format','qm_input_template','gaussian_basis_intmp','qm_input_hopt','seed_charge','multiplicity','fsapt_fA']:
             if i in checked_dict.keys():
                 del checked_dict[i]
-    if 'modelsize' in checked_dict.keys():
+    if 'approx_model_size_limit' in checked_dict.keys():
         checked_dict['model'] = 'bysize'
     # flag to use gaussian basis info in template file or not
     if 'qm_input_format' in checked_dict.keys() and checked_dict['qm_input_format'].lower() == 'gaussian':
@@ -305,7 +305,7 @@ def res_atom_count(filename,must_add,Seedlist):
 def trim_model(checked_dict,model_num,totnum,selfile,logger):
     path = os.path.expanduser(checked_dict['path_to_scripts']+'rinrus_trim2_pdb.py')
     if model_num == 'bysize':
-        args = [sys.executable,path, '-s',checked_dict['seed'], '-pdb',checked_dict['pdb'],'-ra',str(selfile), '-modelsize', checked_dict['modelsize']]
+        args = [sys.executable,path, '-s',checked_dict['seed'], '-pdb',checked_dict['pdb'],'-ra',str(selfile), '-approx_model_size_limit', checked_dict['approx_model_size_limit']]
     else:
         args = [sys.executable,path, '-s',checked_dict['seed'], '-pdb',checked_dict['pdb'],'-ra',str(selfile), '-model', str(model_num)]
     if 'must_add' in checked_dict.keys():
@@ -323,14 +323,14 @@ def trim_model(checked_dict,model_num,totnum,selfile,logger):
     logger.info('Model trimming run as: ' + str(' '.join(args[1:])))
     out = [line for line in out if line and not (line == checked_dict['pdb'] or (line.startswith('res_') and line.endswith('.pdb')))]
     if model_num == 'bysize':
-        modelmade = [line for line in out if f'modelsize {checked_dict["modelsize"]} =>' in line]
+        modelmade = [line for line in out if f'approx_model_size_limit {checked_dict["approx_model_size_limit"]} =>' in line]
         if modelmade:
             modelmade = modelmade[0].split()[-1]
             checked_dict['model'] = modelmade
         else:
             checked_dict['model'] = totnum
-        logger.info(f'-modelsize {checked_dict["modelsize"]} created model {checked_dict["model"]}')
-        out = [line for line in out if f'modelsize {checked_dict["modelsize"]} =>' not in line]
+        logger.info(f'-approx_model_size_limit {checked_dict["approx_model_size_limit"]} created model {checked_dict["model"]}')
+        out = [line for line in out if f'approx_model_size_limit {checked_dict["approx_model_size_limit"]} =>' not in line]
     if out:
         print('\n'.join(out))
         logger.info('Trimming script printed this warning: \n'+ '\n'.join(out))
@@ -364,7 +364,13 @@ def create_input_file(checked_dict,model_num,logger):
     path = os.path.expanduser(checked_dict['path_to_scripts']+'write_input.py')
     modpdb = f'model_{model_num}_template.pdb'
     inpn = f'model_{model_num}.inp'
-    arg = [sys.executable,path,'-format',checked_dict['qm_input_format'],'-c',checked_dict['seed_charge'],'-pdb',modpdb,'-inpn',inpn]
+    arg = [sys.executable,path,'-format',checked_dict['qm_input_format'],'-pdb',modpdb,'-inpn',inpn]
+    if 'seed_charge' in checked_dict.keys():
+        arg.append('-c')
+        arg.append(checked_dict['seed_charge'])
+    if 'multiplicity' in checked_dict.keys():
+        arg.append('-m')
+        arg.append(checked_dict['multiplicity'])
     if 'qm_input_template' in checked_dict.keys():
         arg.append('-intmp')
         arg.append(checked_dict['qm_input_template'])
@@ -476,8 +482,8 @@ def run_rinrus_driver(inpfile,scriptpath):
         model_num = checked_dict['model']
     logger.info('Valid model sizes: ' + str(option))
     if model_num == 'bysize':
-        logger.info('The user selected the model option in driver_input: modelsize '+ str(checked_dict['modelsize']))
-        print('Model selected in driver input: modelsize ' + str(checked_dict['modelsize']))
+        logger.info('The user selected the model option in driver_input: approx_model_size_limit '+ str(checked_dict['approx_model_size_limit']))
+        print('Model selected in driver input: approx_model_size_limit ' + str(checked_dict['approx_model_size_limit']))
     else:
         logger.info('The user selected the model option in driver_input: '+ str(model_num))
         print('Model selected in driver input: ' + str(model_num))
@@ -584,11 +590,11 @@ if __name__ == '__main__':
 
     ml = max([len(key) for key in opts.keys()])
     opthelp = 'Recognized keywords and values in input file:\n'
-    opthelp += '---Required (only one of model or modelsize required)---\n'
-    for key in ['pdb','seed','rin_program','model','modelsize']:
+    opthelp += '---Required (only one of model or approx_model_size_limit required)---\n'
+    for key in ['pdb','seed','rin_program','model','approx_model_size_limit']:
         opthelp += f'  {key+":":<{ml+1}} {opts[key][1]}\n'
     opthelp += '---Optional---\n'
-    for key in [o for o in opts.keys() if o not in ['pdb','seed','rin_program','model','modelsize']]:
+    for key in [o for o in opts.keys() if o not in ['pdb','seed','rin_program','model','approx_model_size_limit']]:
         opthelp += f'  {key+":":<{ml+1}} {opts[key][1]}\n'
     #for key in opts.keys():
     #    opthelp += f'  {key+":":<{ml+1}} {opts[key][1]}\n'
