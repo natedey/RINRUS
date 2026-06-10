@@ -71,7 +71,7 @@ Further preprocessing of ligands likely required!
 
 The entire processed-PDB-to-input-file RINRUS workflow can be run at once using the driver, or steps can be run individually.
 
-Full usage instructions are described in [bin/](bin/README.md).
+Full usage instructions are described in the [documentation wiki](https://natedey.github.io/RINRUS_docs/).
 
 
 ## Contributors
