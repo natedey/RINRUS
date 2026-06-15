@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/136205837.svg)](https://zenodo.org/badge/latestdoi/136205837)
+
 # RINRUS
 
 Residue Interaction Network-based ResidUe Selector (RINRUS) is a QM-cluster model building tool for biomolecular systems. Starting from a raw PDB file, after running a series of preparation tasks, the tool will

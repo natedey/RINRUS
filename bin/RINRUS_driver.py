@@ -57,12 +57,12 @@ resopts = ['seed','dist_satom','must_add','unfrozen','model_prot_ignore_ids','mo
 def log_header(year):
     gitpath = str(Path(__file__).resolve().parents[1])
     pwd = os.getcwd()
-    gitver = subprocess.run(f"cd {gitpath}; git show -s --pretty='format:%h %cd' --date=format-local:'%Y-%m-%d %H:%M'; cd {pwd}",shell=True,stdout=PIPE,stderr=STDOUT,universal_newlines=True)
-    gitver = gitver.stdout.split()
+    gitver = subprocess.run(f"cd {gitpath}; git show -s --pretty='format:%(describe:tags=1) %cd' --date=format:'%Y-%m-%d %H:%M %z'; cd {pwd}",shell=True,stdout=PIPE,stderr=STDOUT,universal_newlines=True)
+    gitver = gitver.stdout.split(maxsplit=1)
     headtxt = ('--------------------------------------------------------------------------------------\n'
     '              RINRUS: The Residue Interaction Network ResidUe Selector                \n'
     '--------------------------------------------------------------------------------------\n'
-    f'(C) 2018-{year}. Using version {gitver[0]}, published on github {gitver[1]} at {gitver[2]}.        \n'
+    f'(C) 2018-{year}. Version {gitver[0]}, published on github {gitver[1]}\n'
     'Developed in the group of Prof. Nathan DeYonker at the University of Memphis, TN USA. \n'
     'Contributors: Q. Cheng, N. DeYonker, D. Wappett, T. Summers, D. Agbaglo, T. Suhagia,  \n'
     '    T. Santaloci, J. Bachega.                                                         \n'
@@ -73,7 +73,7 @@ def log_header(year):
     clbanner = ('--------------------------------------------------------------------------------------\n'
     '           Running RINRUS: The Residue Interaction Network ResidUe Selector           \n'
     'Developed in the group of Prof. Nathan DeYonker at the University of Memphis, TN USA. \n'
-    f'(C) 2018-{year}. Using version {gitver[0]}, published on github {gitver[1]} at {gitver[2]}.        \n'
+    f'(C) 2018-{year}. Version {gitver[0]}, published on github {gitver[1]}\n'
     '--------------------------------------------------------------------------------------\n')
     return headtxt,clbanner
 

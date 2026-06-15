@@ -32,7 +32,7 @@ model_prot_ignore_atnames:
 QM_input_format: gaussian
 QM_input_template: 
 Gaussian_basis_intmp: False
-QM_calc_hopt: True
+QM_input_hopt: True
 seed_charge: -2
 multiplicity: 1
 fsapt_fA:

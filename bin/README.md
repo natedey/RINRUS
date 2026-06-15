@@ -1,9 +1,11 @@
+> [!IMPORTANT]
+> As of June 2026, we are moving our documentation over to the [RINRUS_docs wiki](https://natedey.github.io/RINRUS_docs/). Please head over there for the most recent and detailed usage instructions.
+
 # How to make QM-cluster models and input files with RINRUS
 
 The RINRUS workflow can be run all in one go with the driver or done step by step with the individual scripts. Both ways of using RINRUS are described in this document.
 
-> [!IMPORTANT]  
-> As of July 2025, all selection schemes (probe/arpeggio/distance) have been updated to group the selected atoms/contact counts from standard amino acid residues by protein functional groups (side chains and peptide bonds) instead of by residue IDs. This matches the partitioning used for F-SAPT analysis/ranking and the structural building blocks used in the trimming procedure. The different parts of each residue are now listed and ranked independently in `res_atoms.dat`, so they can be added at different stages when doing incremental model building. The contents of the final/maximal model will remain exactly the same but the `res_N`/`model_N` size label will usually be higher as this number reflects the number of separate groups in `res_atoms.dat`. [See examples for more information](../examples/2025_NEW_EXAMPLES). 
+**Note for anyone who used RINRUS before July 2025:** All selection schemes (probe/arpeggio/distance) have been updated to group the selected atoms/contact counts from standard amino acid residues by protein functional groups (side chains and peptide bonds) instead of by residue IDs. This matches the partitioning used for F-SAPT analysis/ranking and the structural building blocks used in the trimming procedure. The different parts of each residue are now listed and ranked independently in `res_atoms.dat`, so they can be added at different stages when doing incremental model building. The contents of the final/maximal model will remain exactly the same but the `res_N`/`model_N` size label will usually be higher as this number reflects the number of separate groups in `res_atoms.dat`. [See examples for more information](../examples/2025_NEW_EXAMPLES). 
 
 
 # Using the driver

@@ -351,7 +351,7 @@ if __name__ == '__main__':
             print(f'  - {" and ".join(seedfroz[key])} of seed residue {key[0]}:{key[1]}')
 
     ### trim any smaller models from the max model ###
-    if method != 'max':
+    if method not in ['max','maximal']:
         pdb, tres_info, ttot_charge = read_pdb(f'res_{lmax}.pdb')
         pdb_res_atom = {key: [] for key in pdb_res_name.keys()}
         for line in pdb:
