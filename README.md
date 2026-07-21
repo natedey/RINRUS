@@ -1,3 +1,4 @@
+[![DOI](https://img.shields.io/badge/DOI-10.1002%2Fwcms.70078-blue)](https://doi.org/10.1002/wcms.70078)
 [![DOI](https://zenodo.org/badge/136205837.svg)](https://zenodo.org/badge/latestdoi/136205837)
 
 # RINRUS
@@ -8,10 +9,8 @@ Residue Interaction Network-based ResidUe Selector (RINRUS) is a QM-cluster mode
 
 RINRUS is the first tool available that performs automated and algorithmic trimming and capping of enzyme models. Reproducibility is embedded into the model construction workflow, setting new community standards.
 
-A software review paper is in preparation. For now, the best way to acknowledge RINRUS is to cite:
-[DOI: 10.1016/j.bpj.2021.07.029](https://doi.org/10.1016/j.bpj.2021.07.029)
-and
-[DOI: 10.1039/D3CP06100K](https://doi.org/10.1039/D3CP06100K)
+To acknowledge RINRUS, please cite our [software review](https://doi.org/10.1002/wcms.70078) and the [zenodo repository](https://doi.org/10.5281/zenodo.20629403). 
+
 
 The development of RINRUS has been supported by the National Science Foundation Division of Biological Infrastructure
 (CAREER BIO-1846408) and the Department of Energy Basic Energy Sciences (SBIR DE-SC0021568).

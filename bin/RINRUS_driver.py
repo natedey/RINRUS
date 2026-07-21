@@ -66,8 +66,8 @@ def log_header(year):
     'Developed in the group of Prof. Nathan DeYonker at the University of Memphis, TN USA. \n'
     'Contributors: Q. Cheng, N. DeYonker, D. Wappett, T. Summers, D. Agbaglo, T. Suhagia,  \n'
     '    T. Santaloci, J. Bachega.                                                         \n'
-    'Acknowledge RINRUS by citing: github.com/natedey/RINRUS, DOI:10.1016/j.bpj.2021.07.029\n'
-    '    and DOI:10.1039/D3CP06100K                                                        \n'
+    'Please acknowledge RINRUS by citing our software paper: DOI:10.1002/wcms.70078        \n'
+    '    and the zenodo repository for the code: DOI:10.5281/zenodo.20629403               \n'
     '--------------------------------------------------------------------------------------' )
 
     clbanner = ('--------------------------------------------------------------------------------------\n'
